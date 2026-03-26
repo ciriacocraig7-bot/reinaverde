@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌿 Reina Verde — Plataforma de Catering Corporativo
 
-## Getting Started
+**"El Uber del Catering"** — PWA completa para catering corporativo con automatización total: pedido → pago → producción → logística → ejecución → feedback.
 
-First, run the development server:
+## Stack Tecnológico
+
+| Capa | Tecnología |
+|------|-----------|
+| Frontend | Next.js 16, React 19, TypeScript |
+| Estilos | Tailwind CSS v4, componentes shadcn-style |
+| Estado | Zustand (auth-store, cart-store) |
+| Base de datos | PostgreSQL + Prisma ORM v7.5 |
+| Autenticación | JWT + bcrypt + sistema de roles |
+| Pagos | Wompi (Colombia) |
+| PWA | Service Worker, manifest.json, offline support |
+| Validación | Zod schemas |
+
+## Inicio Rápido
 
 ```bash
+# 1. Instalar dependencias
+npm install
+
+# 2. Copiar variables de entorno
+cp .env.example .env
+
+# 3. Configurar DATABASE_URL en .env con tu PostgreSQL
+
+# 4. Generar cliente Prisma
+npx prisma generate
+
+# 5. Ejecutar migraciones
+npx prisma migrate dev
+
+# 6. Iniciar servidor de desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrir [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Roles del Sistema
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Rol | Ruta | Descripción |
+|-----|------|-------------|
+| **ADMIN** | `/admin` | Dashboard con KPIs, gestión completa |
+| **CLIENTE** | `/cliente` | Pedidos, eventos, facturas, feedback |
+| **CHEF** | `/chef` | Cola de producción, ingredientes |
+| **STAFF** | `/staff` | Entregas, asignaciones, tracking |
+| **PROVEEDOR** | `/proveedor` | Pedidos de insumos, catálogo |
+| **FINANZAS** | `/finanzas` | Facturación, pagos, reportes |
 
-## Learn More
+## Módulos
 
-To learn more about Next.js, take a look at the following resources:
+1. **Pedidos** — Selección de menú, personalización, cotización automática, checkout 3 pasos
+2. **Eventos** — Corporativo, bodas, social, suscripción con timeline
+3. **Producción** — Planificación de cocina, ingredientes, estados de preparación
+4. **Logística** — Asignación de staff, rutas, tracking
+5. **Finanzas** — Facturación, pagos Wompi, reportes
+6. **Proveedores** — Gestión de insumos, pedidos automáticos
+7. **Feedback** — Calificaciones y reviews
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Flujo Principal
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+Cliente → Selecciona evento → Configura menú → Recibe cotización
+→ Paga (Wompi) → Sistema activa: Producción + Logística + Staff
+→ Ejecución del evento → Feedback
+```
 
-## Deploy on Vercel
+## Integración Wompi
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Checkout redirect con firma de integridad
+- Webhook `POST /api/webhooks/wompi` para confirmación de pagos
+- Soporte: tarjeta crédito/débito, PSE, Nequi
+- Configurable vía variables de entorno (sandbox/producción)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Variables de Entorno
+
+Ver `.env.example` para la lista completa. Principales:
+
+- `DATABASE_URL` — Conexión PostgreSQL
+- `JWT_SECRET` — Secreto para tokens JWT
+- `NEXT_PUBLIC_WOMPI_PUBLIC_KEY` — Llave pública Wompi
+- `WOMPI_PRIVATE_KEY` — Llave privada Wompi
+
+## Estructura del Proyecto
+
+```
+src/
+├── app/                  # Next.js App Router (22 rutas)
+│   ├── api/              # REST API (auth, menu, orders, webhooks)
+│   ├── admin/            # Dashboard administrador
+│   ├── cliente/          # Dashboard cliente
+│   ├── chef/             # Dashboard cocina
+│   ├── staff/            # Dashboard logística
+│   ├── proveedor/        # Dashboard proveedor
+│   ├── finanzas/         # Dashboard finanzas
+│   ├── menu/             # Menú público con filtros
+│   ├── orden/            # Checkout 3 pasos
+│   ├── login/            # Autenticación
+│   └── registro/         # Registro (individual + empresa B2B)
+├── components/           # UI components (button, card, input, etc.)
+├── lib/                  # Core utilities
+│   ├── auth/             # JWT, passwords, permissions
+│   ├── db/               # Prisma client
+│   ├── validators/       # Zod schemas
+│   └── wompi/            # Integración Wompi
+├── stores/               # Zustand (auth, cart)
+└── middleware.ts          # Route protection
+```
+
+## Deploy en Vercel
+
+```bash
+# Build de producción
+npm run build
+
+# O deploy directo
+npx vercel
+```
+
+## Escalabilidad Futura (SaaS Multi-tenant)
+
+- Tenant ID por tabla para multi-empresa
+- Subdominios por cliente
+- Planes de suscripción
+- API keys para integraciones externas
+- White-labeling
+- Integración con IA para recomendaciones

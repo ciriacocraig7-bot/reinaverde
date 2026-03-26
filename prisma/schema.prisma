@@ -1,0 +1,631 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════════════════════════
+
+enum UserRole {
+  CLIENTE
+  ADMIN
+  CHEF
+  STAFF
+  PROVEEDOR
+  FINANZAS
+}
+
+enum OrderStatus {
+  DRAFT
+  QUOTED
+  PAYMENT_PENDING
+  PAID
+  IN_PRODUCTION
+  READY
+  IN_TRANSIT
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REVIEWED
+}
+
+enum EventType {
+  CORPORATIVO
+  BODA
+  SOCIAL
+  SUSCRIPCION
+  PRIVADO
+}
+
+enum EventStatus {
+  PLANNING
+  CONFIRMED
+  IN_PREPARATION
+  READY
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  VOIDED
+  ERROR
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PSE
+  NEQUI
+  CASH_ON_DELIVERY
+}
+
+enum ProductionStatus {
+  PENDING
+  IN_PROGRESS
+  QUALITY_CHECK
+  COMPLETED
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  EN_ROUTE
+  ARRIVED
+  COMPLETED
+}
+
+enum SupplierOrderStatus {
+  DRAFT
+  SENT
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+}
+
+enum BusinessLine {
+  CATERING
+  CANABICO
+  LIOFILIZADOS
+}
+
+enum ShopOrderStatus {
+  PENDING
+  CONFIRMED
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH & USERS
+// ═══════════════════════════════════════════════════════════════
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  phone         String?
+  role          UserRole  @default(CLIENTE)
+  avatar        String?
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  company         Company?        @relation("CompanyContact")
+  ownedCompany    Company?        @relation("CompanyOwner")
+  orders          Order[]
+  events          Event[]
+  staffAssignments StaffAssignment[]
+  feedbacks       Feedback[]
+  sessions        Session[]
+  shopOrders      ShopOrder[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPANIES (B2B)
+// ═══════════════════════════════════════════════════════════════
+
+model Company {
+  id          String   @id @default(uuid())
+  name        String
+  nit         String?  @unique
+  address     String?
+  city        String?
+  phone       String?
+  ownerId     String   @unique
+  contactId   String?  @unique
+  creditLimit Decimal? @db.Decimal(12, 2)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner   User  @relation("CompanyOwner", fields: [ownerId], references: [id])
+  contact User? @relation("CompanyContact", fields: [contactId], references: [id])
+  orders  Order[]
+  events  Event[]
+
+  @@map("companies")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MENU & PRODUCTS
+// ═══════════════════════════════════════════════════════════════
+
+model MenuCategory {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  image       String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items MenuItem[]
+
+  @@map("menu_categories")
+}
+
+model MenuItem {
+  id              String   @id @default(uuid())
+  categoryId      String
+  name            String
+  description     String?
+  image           String?
+  basePrice       Decimal  @db.Decimal(10, 2)
+  preparationTime Int      @default(30)
+  servesMin       Int      @default(1)
+  servesMax       Int      @default(100)
+  isVegetarian    Boolean  @default(false)
+  isVegan         Boolean  @default(false)
+  isGlutenFree    Boolean  @default(false)
+  allergens       String[]
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category    MenuCategory  @relation(fields: [categoryId], references: [id])
+  ingredients MenuItemIngredient[]
+  orderItems  OrderItem[]
+
+  @@map("menu_items")
+}
+
+model Ingredient {
+  id          String   @id @default(uuid())
+  name        String
+  unit        String
+  costPerUnit Decimal  @db.Decimal(10, 2)
+  stock       Decimal  @default(0) @db.Decimal(10, 2)
+  minStock    Decimal  @default(0) @db.Decimal(10, 2)
+  supplierId  String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  supplier          Supplier?            @relation(fields: [supplierId], references: [id])
+  menuItems         MenuItemIngredient[]
+  supplierOrderItems SupplierOrderItem[]
+
+  @@map("ingredients")
+}
+
+model MenuItemIngredient {
+  id           String  @id @default(uuid())
+  menuItemId   String
+  ingredientId String
+  quantity     Decimal @db.Decimal(10, 3)
+
+  menuItem   MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@unique([menuItemId, ingredientId])
+  @@map("menu_item_ingredients")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ORDERS
+// ═══════════════════════════════════════════════════════════════
+
+model Order {
+  id               String      @id @default(uuid())
+  orderNumber      String      @unique
+  userId           String
+  companyId        String?
+  eventId          String?
+  status           OrderStatus @default(DRAFT)
+  subtotal         Decimal     @db.Decimal(12, 2)
+  tax              Decimal     @default(0) @db.Decimal(12, 2)
+  discount         Decimal     @default(0) @db.Decimal(12, 2)
+  total            Decimal     @db.Decimal(12, 2)
+  guestCount       Int         @default(1)
+  deliveryDate     DateTime
+  deliveryTime     String
+  deliveryAddress  String
+  deliveryCity     String?
+  notes            String?
+  dietaryNotes     String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id])
+  company    Company?   @relation(fields: [companyId], references: [id])
+  event      Event?     @relation(fields: [eventId], references: [id])
+  items      OrderItem[]
+  payments   Payment[]
+  production Production?
+  delivery   Delivery?
+  invoice    Invoice?
+  feedback   Feedback?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String  @id @default(uuid())
+  orderId      String
+  menuItemId   String
+  quantity     Int
+  unitPrice    Decimal @db.Decimal(10, 2)
+  totalPrice   Decimal @db.Decimal(10, 2)
+  customNotes  String?
+
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@map("order_items")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════════════════════════
+
+model Event {
+  id          String      @id @default(uuid())
+  userId      String
+  companyId   String?
+  name        String
+  type        EventType
+  status      EventStatus @default(PLANNING)
+  date        DateTime
+  startTime   String
+  endTime     String?
+  location    String
+  guestCount  Int
+  description String?
+  budget      Decimal?    @db.Decimal(12, 2)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id])
+  company Company? @relation(fields: [companyId], references: [id])
+  orders  Order[]
+  timeline EventTimeline[]
+  staffAssignments StaffAssignment[]
+
+  @@map("events")
+}
+
+model EventTimeline {
+  id          String   @id @default(uuid())
+  eventId     String
+  time        String
+  title       String
+  description String?
+  sortOrder   Int      @default(0)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_timelines")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAYMENTS (WOMPI)
+// ═══════════════════════════════════════════════════════════════
+
+model Payment {
+  id                String        @id @default(uuid())
+  orderId           String
+  wompiTransactionId String?      @unique
+  wompiReference    String?       @unique
+  amount            Decimal       @db.Decimal(12, 2)
+  currency          String        @default("COP")
+  method            PaymentMethod?
+  status            PaymentStatus @default(PENDING)
+  metadata          Json?
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRODUCTION (KITCHEN)
+// ═══════════════════════════════════════════════════════════════
+
+model Production {
+  id          String           @id @default(uuid())
+  orderId     String           @unique
+  status      ProductionStatus @default(PENDING)
+  assignedTo  String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  notes       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("productions")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOGISTICS & DELIVERY
+// ═══════════════════════════════════════════════════════════════
+
+model Delivery {
+  id             String         @id @default(uuid())
+  orderId        String         @unique
+  status         DeliveryStatus @default(PENDING)
+  assignedTo     String?
+  vehicleInfo    String?
+  estimatedTime  DateTime?
+  departedAt     DateTime?
+  arrivedAt      DateTime?
+  completedAt    DateTime?
+  latitude       Decimal?       @db.Decimal(10, 7)
+  longitude      Decimal?       @db.Decimal(10, 7)
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("deliveries")
+}
+
+model StaffAssignment {
+  id        String   @id @default(uuid())
+  eventId   String
+  userId    String
+  role      String
+  notes     String?
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+  @@map("staff_assignments")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FINANCE
+// ═══════════════════════════════════════════════════════════════
+
+model Invoice {
+  id            String   @id @default(uuid())
+  orderId       String   @unique
+  invoiceNumber String   @unique
+  subtotal      Decimal  @db.Decimal(12, 2)
+  tax           Decimal  @db.Decimal(12, 2)
+  total         Decimal  @db.Decimal(12, 2)
+  issuedAt      DateTime @default(now())
+  dueDate       DateTime
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("invoices")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUPPLIERS
+// ═══════════════════════════════════════════════════════════════
+
+model Supplier {
+  id          String   @id @default(uuid())
+  name        String
+  contactName String?
+  email       String?
+  phone       String?
+  address     String?
+  nit         String?  @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ingredients   Ingredient[]
+  supplierOrders SupplierOrder[]
+
+  @@map("suppliers")
+}
+
+model SupplierOrder {
+  id          String              @id @default(uuid())
+  supplierId  String
+  status      SupplierOrderStatus @default(DRAFT)
+  totalAmount Decimal?            @db.Decimal(12, 2)
+  notes       String?
+  orderedAt   DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  supplier Supplier            @relation(fields: [supplierId], references: [id])
+  items    SupplierOrderItem[]
+
+  @@map("supplier_orders")
+}
+
+model SupplierOrderItem {
+  id              String  @id @default(uuid())
+  supplierOrderId String
+  ingredientId    String
+  quantity        Decimal @db.Decimal(10, 2)
+  unitPrice       Decimal @db.Decimal(10, 2)
+  totalPrice      Decimal @db.Decimal(10, 2)
+
+  supplierOrder SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
+  ingredient    Ingredient    @relation(fields: [ingredientId], references: [id])
+
+  @@map("supplier_order_items")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEEDBACK
+// ═══════════════════════════════════════════════════════════════
+
+model Feedback {
+  id          String   @id @default(uuid())
+  orderId     String   @unique
+  userId      String
+  foodRating  Int
+  serviceRating Int
+  overallRating Int
+  comment     String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@map("feedbacks")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// E-COMMERCE (CANÁBICO & LIOFILIZADOS)
+// ═══════════════════════════════════════════════════════════════
+
+model ProductCategory {
+  id           String       @id @default(uuid())
+  businessLine BusinessLine
+  name         String
+  slug         String
+  description  String?
+  icon         String?
+  image        String?
+  sortOrder    Int          @default(0)
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  products Product[]
+
+  @@unique([businessLine, slug])
+  @@map("product_categories")
+}
+
+model Product {
+  id           String       @id @default(uuid())
+  businessLine BusinessLine
+  categoryId   String
+  name         String
+  slug         String
+  description  String?
+  shortDesc    String?
+  image        String?
+  images       String[]
+  icon         String?
+  price        Decimal      @db.Decimal(10, 2)
+  comparePrice Decimal?     @db.Decimal(10, 2)
+  sku          String?      @unique
+  weight       String?
+  unit         String?
+  stock        Int          @default(0)
+  lowStock     Int          @default(5)
+  tags         String[]
+  badge        String?
+  isFeatured   Boolean      @default(false)
+  isActive     Boolean      @default(true)
+  metadata     Json?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  category       ProductCategory  @relation(fields: [categoryId], references: [id])
+  shopOrderItems ShopOrderItem[]
+
+  @@unique([businessLine, slug])
+  @@map("products")
+}
+
+model ShopOrder {
+  id              String          @id @default(uuid())
+  orderNumber     String          @unique
+  businessLine    BusinessLine
+  userId          String
+  status          ShopOrderStatus @default(PENDING)
+  subtotal        Decimal         @db.Decimal(12, 2)
+  tax             Decimal         @default(0) @db.Decimal(12, 2)
+  shipping        Decimal         @default(0) @db.Decimal(12, 2)
+  discount        Decimal         @default(0) @db.Decimal(12, 2)
+  total           Decimal         @db.Decimal(12, 2)
+  shippingName    String
+  shippingAddress String
+  shippingCity    String
+  shippingPhone   String
+  shippingNotes   String?
+  paymentMethod   PaymentMethod?
+  wompiTransactionId String?      @unique
+  wompiReference  String?         @unique
+  paidAt          DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  trackingNumber  String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user  User            @relation(fields: [userId], references: [id])
+  items ShopOrderItem[]
+
+  @@map("shop_orders")
+}
+
+model ShopOrderItem {
+  id         String  @id @default(uuid())
+  orderId    String
+  productId  String
+  quantity   Int
+  unitPrice  Decimal @db.Decimal(10, 2)
+  totalPrice Decimal @db.Decimal(10, 2)
+
+  order   ShopOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product   @relation(fields: [productId], references: [id])
+
+  @@map("shop_order_items")
+}

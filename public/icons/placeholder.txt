@@ -1,0 +1,2 @@
+Replace this with actual PWA icons (192x192 and 512x512 PNG files).
+Generate icons at: https://realfavicongenerator.net/
