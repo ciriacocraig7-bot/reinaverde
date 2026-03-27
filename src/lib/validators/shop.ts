@@ -50,6 +50,7 @@ export const createShopOrderSchema = z.object({
   shippingCity: z.string().min(2, "Ciudad requerida"),
   shippingPhone: z.string().min(7, "Teléfono requerido"),
   shippingNotes: z.string().optional(),
+  paymentProvider: z.enum(["WOMPI", "BOLD"]).optional(),
 });
 
 export const updateShopOrderStatusSchema = z.object({

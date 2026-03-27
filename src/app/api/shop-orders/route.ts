@@ -121,6 +121,7 @@ export async function POST(request: NextRequest) {
           shippingCity: data.shippingCity,
           shippingPhone: data.shippingPhone,
           shippingNotes: data.shippingNotes,
+          paymentProvider: data.paymentProvider || "WOMPI",
           items: { create: itemsWithPrices },
         },
         include: {

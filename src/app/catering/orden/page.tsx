@@ -10,6 +10,29 @@ import { Select } from "@/components/ui/select";
 import { useCartStore } from "@/stores/cart-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatCurrency } from "@/lib/utils";
+import { BoldPaymentButton } from "@/components/payment/bold-button";
+
+interface BoldConfig {
+  apiKey: string;
+  amount: number;
+  currency: "COP" | "USD";
+  orderId: string;
+  integritySignature: string;
+  description?: string;
+  tax?: string;
+  redirectionUrl?: string;
+  customerData?: {
+    email?: string;
+    fullName?: string;
+    phone?: string;
+    dialCode?: string;
+  };
+  billingAddress?: {
+    address?: string;
+    city?: string;
+    country?: string;
+  };
+}
 
 const STEPS = ["Resumen", "Detalles", "Pago"];
 
@@ -24,6 +47,7 @@ const EVENT_TYPE_OPTIONS = [
 export default function OrderPage() {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [boldConfig, setBoldConfig] = useState<BoldConfig | null>(null);
   const { isAuthenticated } = useAuthStore();
   const {
     items,
@@ -63,23 +87,33 @@ export default function OrderPage() {
     setLoading(true);
 
     try {
-      const WOMPI_PUBLIC_KEY = process.env.NEXT_PUBLIC_WOMPI_PUBLIC_KEY;
-      const reference = `RV-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      const amountInCents = total() * 100;
+      const reference = `${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const amount = Math.round(total());
 
-      if (WOMPI_PUBLIC_KEY) {
-        const checkoutUrl = new URL("https://checkout.wompi.co/p/");
-        checkoutUrl.searchParams.set("public-key", WOMPI_PUBLIC_KEY);
-        checkoutUrl.searchParams.set("currency", "COP");
-        checkoutUrl.searchParams.set("amount-in-cents", amountInCents.toString());
-        checkoutUrl.searchParams.set("reference", reference);
-        checkoutUrl.searchParams.set("redirect-url", `${window.location.origin}/orden/confirmacion`);
+      const itemsSummary = items.map((i) => `${i.quantity}x ${i.name}`).join(", ");
 
-        window.location.href = checkoutUrl.toString();
-      } else {
-        toast.success("Pedido creado exitosamente. Referencia: " + reference);
-        clearCart();
+      const res = await fetch("/api/catering/pay/bold", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount,
+          reference,
+          description: `Catering: ${itemsSummary}`.slice(0, 100),
+          customerName: "",
+          customerEmail: "",
+          customerPhone: "",
+          deliveryAddress,
+          deliveryCity,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Error al configurar pago");
       }
+
+      const boldData = await res.json();
+      setBoldConfig(boldData);
+      setStep(3);
     } catch {
       toast.error("Error al procesar el pago");
     } finally {
@@ -280,8 +314,8 @@ export default function OrderPage() {
                   <div className="bg-primary-fixed/30 border border-outline-variant/10 rounded-xl p-4 flex items-start gap-3">
                     <span className="material-symbols-outlined text-primary mt-0.5">verified_user</span>
                     <div>
-                      <h4 className="font-bold text-on-surface mb-1">Pago seguro con Wompi</h4>
-                      <p className="text-sm text-on-surface-variant">Aceptamos tarjetas de crédito/débito, PSE, Nequi y otros medios de pago. Serás redirigido al checkout seguro de Wompi.</p>
+                      <h4 className="font-bold text-on-surface mb-1">Pago seguro con Bold</h4>
+                      <p className="text-sm text-on-surface-variant">Aceptamos tarjetas de crédito/débito, PSE, Nequi, Daviplata y otros medios de pago.</p>
                     </div>
                   </div>
                   <div className="bg-surface-container-low rounded-xl p-5 space-y-2">
@@ -303,12 +337,60 @@ export default function OrderPage() {
                     <button onClick={() => setStep(1)} className="flex-1 py-3 px-6 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors active:scale-[0.98]">Atrás</button>
                     <button onClick={handlePay} disabled={loading} className="flex-1 py-3 px-6 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                       {loading ? (
-                        <><span className="material-symbols-outlined text-lg animate-spin">progress_activity</span> Procesando...</>
+                        <><span className="material-symbols-outlined text-lg animate-spin">progress_activity</span> Preparando pago...</>
                       ) : (
-                        <><span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span> Pagar {formatCurrency(total())}</>
+                        <><span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span> Pagar con Bold {formatCurrency(total())}</>
                       )}
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && boldConfig && (
+              <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-outline-variant/5 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-on-surface-variant">lock</span>
+                  <h4 className="text-lg font-semibold tracking-tight">Pago Seguro con Bold</h4>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="p-4 bg-primary-fixed/30 rounded-xl border border-outline-variant/10 text-center">
+                    <p className="text-sm text-on-surface-variant mb-2">Total a pagar</p>
+                    <p className="text-3xl font-bold text-on-surface">{formatCurrency(total())}</p>
+                  </div>
+
+                  <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant/10">
+                    <p className="text-sm text-on-surface-variant mb-4">Haz clic en el botón de abajo para completar tu pago de forma segura:</p>
+                    <BoldPaymentButton
+                      apiKey={boldConfig.apiKey}
+                      amount={boldConfig.amount}
+                      currency={boldConfig.currency}
+                      orderId={boldConfig.orderId}
+                      integritySignature={boldConfig.integritySignature}
+                      description={boldConfig.description}
+                      tax={boldConfig.tax}
+                      redirectionUrl={boldConfig.redirectionUrl}
+                      customerData={boldConfig.customerData}
+                      billingAddress={boldConfig.billingAddress}
+                      buttonStyle="dark-L"
+                      onPaymentStarted={() => {
+                        clearCart();
+                        toast.success("Procesando pago...");
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 p-3 bg-primary-fixed/20 rounded-lg">
+                    <span className="material-symbols-outlined text-primary text-lg">verified</span>
+                    <p className="text-xs text-on-surface-variant">Pago procesado de forma segura por Bold.co — Tarjeta, PSE, Nequi, Daviplata</p>
+                  </div>
+
+                  <button 
+                    onClick={() => setStep(2)} 
+                    className="w-full py-3 px-6 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors"
+                  >
+                    Volver
+                  </button>
                 </div>
               </div>
             )}

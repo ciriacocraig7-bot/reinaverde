@@ -47,7 +47,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Store reference on the order for webhook matching
     await prisma.shopOrder.update({
       where: { id },
-      data: { wompiReference: reference },
+      data: { 
+        wompiReference: reference,
+        paymentProvider: "WOMPI",
+      },
     });
 
     return NextResponse.json({ paymentUrl, reference });

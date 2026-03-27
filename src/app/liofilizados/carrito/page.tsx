@@ -7,14 +7,43 @@ import { useLiofilizadosCart } from "@/stores/shop-cart-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatCurrency } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { BoldPaymentButton } from "@/components/payment/bold-button";
 
 const STEPS = ["Carrito", "Envío", "Pago"];
+
+interface BoldConfig {
+  apiKey: string;
+  amount: number;
+  currency: "COP" | "USD";
+  orderId: string;
+  integritySignature: string;
+  description?: string;
+  tax?: string;
+  redirectionUrl?: string;
+  customerData?: {
+    email?: string;
+    fullName?: string;
+    phone?: string;
+    dialCode?: string;
+    documentNumber?: string;
+    documentType?: "CC" | "CE" | "NIT" | "PP" | "TI";
+  };
+  billingAddress?: {
+    address?: string;
+    zipCode?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+}
 
 export default function LiofilizadosCarritoPage() {
   const { items, removeItem, updateQuantity, subtotal, tax, shippingCost, total, itemCount, shipping, setShipping, clearCart } = useLiofilizadosCart();
   const { isAuthenticated } = useAuthStore();
   const [step, setStep] = useState(0);
   const [processing, setProcessing] = useState(false);
+  const [boldConfig, setBoldConfig] = useState<BoldConfig | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   if (items.length === 0) {
     return (
@@ -61,6 +90,7 @@ export default function LiofilizadosCarritoPage() {
           shippingCity: shipping.city,
           shippingPhone: shipping.phone,
           shippingNotes: shipping.notes || undefined,
+          paymentProvider: "BOLD",
         }),
       });
       if (!orderRes.ok) {
@@ -68,21 +98,19 @@ export default function LiofilizadosCarritoPage() {
         throw new Error(err.error || "Error al crear pedido");
       }
       const { order } = await orderRes.json();
+      setOrderId(order.id);
 
-      // 2. Initiate Wompi payment
-      const payRes = await fetch(`/api/shop-orders/${order.id}/pay`, {
+      // 2. Get Bold button config
+      const boldRes = await fetch(`/api/shop-orders/${order.id}/pay/bold`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!payRes.ok) {
-        clearCart();
-        toast.success("Pedido creado. Pago pendiente.");
-        window.location.href = "/liofilizados/confirmacion";
-        return;
+      if (!boldRes.ok) {
+        throw new Error("Error al configurar pago con Bold");
       }
-      const { paymentUrl } = await payRes.json();
-      clearCart();
-      window.location.href = paymentUrl;
+      const boldData = await boldRes.json();
+      setBoldConfig(boldData);
+      setStep(2);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al procesar el pedido");
     } finally {
@@ -169,18 +197,43 @@ export default function LiofilizadosCarritoPage() {
               </div>
             )}
 
-            {step === 2 && (
+            {step === 2 && boldConfig && (
               <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm space-y-6">
                 <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
-                  <span className="material-symbols-outlined text-amber-600">credit_card</span> Método de Pago
+                  <span className="material-symbols-outlined text-amber-600">lock</span> Pago Seguro con Bold
                 </h2>
-                <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="material-symbols-outlined text-amber-600">account_balance</span>
-                    <span className="font-bold text-amber-800">Pago con Wompi</span>
-                  </div>
-                  <p className="text-sm text-amber-700">Tarjeta de crédito, débito, PSE, Nequi y más.</p>
+                
+                <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-center">
+                  <p className="text-sm text-amber-800 mb-2">Total a pagar</p>
+                  <p className="text-3xl font-bold text-amber-900">{formatCurrency(total())}</p>
                 </div>
+
+                <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant/10">
+                  <p className="text-sm text-on-surface-variant mb-4">Haz clic en el botón de abajo para completar tu pago de forma segura:</p>
+                  <BoldPaymentButton
+                    apiKey={boldConfig.apiKey}
+                    amount={boldConfig.amount}
+                    currency={boldConfig.currency}
+                    orderId={boldConfig.orderId}
+                    integritySignature={boldConfig.integritySignature}
+                    description={boldConfig.description}
+                    tax={boldConfig.tax}
+                    redirectionUrl={boldConfig.redirectionUrl}
+                    customerData={boldConfig.customerData}
+                    billingAddress={boldConfig.billingAddress}
+                    buttonStyle="dark-L"
+                    onPaymentStarted={() => {
+                      clearCart();
+                      toast.success("Procesando pago...");
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 p-3 bg-amber-50/50 rounded-lg">
+                  <span className="material-symbols-outlined text-amber-500 text-lg">verified</span>
+                  <p className="text-xs text-amber-700">Pago procesado de forma segura por Bold.co — Tarjeta, PSE, Nequi, Daviplata</p>
+                </div>
+
                 <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant/10 space-y-2">
                   <h3 className="font-bold text-sm">Resumen de envío</h3>
                   <p className="text-sm text-on-surface-variant"><strong>Enviar a:</strong> {shipping.name}</p>
@@ -206,17 +259,17 @@ export default function LiofilizadosCarritoPage() {
               <div className="flex justify-between text-lg font-bold"><span>Total</span><span className="text-amber-700">{formatCurrency(total())}</span></div>
             </div>
             <div className="mt-6 space-y-3">
-              {step < 2 ? (
-                <button onClick={() => setStep(step + 1)} disabled={!canProceed} className="w-full py-3 px-6 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              {step === 0 ? (
+                <button onClick={() => setStep(1)} className="w-full py-3 px-6 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                   Continuar <span className="material-symbols-outlined text-lg">arrow_forward</span>
                 </button>
-              ) : (
-                <button onClick={handleCheckout} disabled={processing} className="w-full py-3 px-6 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                  {processing ? <><span className="material-symbols-outlined text-lg animate-spin">progress_activity</span> Procesando...</> : <><span className="material-symbols-outlined text-lg">lock</span> Pagar {formatCurrency(total())}</>}
+              ) : step === 1 ? (
+                <button onClick={handleCheckout} disabled={!canProceed || processing} className="w-full py-3 px-6 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                  {processing ? <><span className="material-symbols-outlined text-lg animate-spin">progress_activity</span> Preparando pago...</> : <><span className="material-symbols-outlined text-lg">lock</span> Pagar con Bold {formatCurrency(total())}</>}
                 </button>
-              )}
-              {step > 0 && (
-                <button onClick={() => setStep(step - 1)} className="w-full py-3 px-6 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors">
+              ) : null}
+              {step === 1 && (
+                <button onClick={() => setStep(0)} className="w-full py-3 px-6 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors">
                   Volver
                 </button>
               )}

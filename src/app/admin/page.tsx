@@ -245,6 +245,70 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Payment Gateway Settings */}
+      <div className="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/10 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center">
+            <span className="material-symbols-outlined text-white">payment</span>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-on-surface">Pasarelas de Pago</h3>
+            <p className="text-sm text-on-surface-variant">Configura las opciones de pago para e-commerce</p>
+          </div>
+        </div>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Default Gateway */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-on-surface">Pasarela Activa</label>
+            <div className="flex gap-3">
+              <div className="flex-1 p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-left">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-emerald-900">Bold.co</span>
+                  <span className="text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">Activo</span>
+                </div>
+                <p className="text-xs text-emerald-700">Botón de pagos embebido — Tarjeta, PSE, Nequi, Daviplata</p>
+              </div>
+              <div className="flex-1 p-4 rounded-xl border border-outline-variant/20 bg-surface-container-low text-left opacity-50">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-on-surface-variant">Wompi</span>
+                  <span className="text-xs bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full">Inactivo</span>
+                </div>
+                <p className="text-xs text-on-surface-variant">Deshabilitado</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Gateway Status */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-on-surface">Estado de Integraciones</label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span className="text-sm">Bold.co Botón de Pagos</span>
+                </div>
+                <span className="text-xs text-emerald-600 font-medium">Conectado</span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span className="text-sm">Bold.co Webhook</span>
+                </div>
+                <span className="text-xs text-emerald-600 font-medium">Configurado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-outline-variant/10">
+          <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+            <span className="material-symbols-outlined text-base">verified</span>
+            <p>Todos los pagos se procesan de forma segura a través de Bold.co con checkout embebido.</p>
+          </div>
+        </div>
+      </div>
+
       {/* Operational Insight Block */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/10 shadow-sm relative overflow-hidden">

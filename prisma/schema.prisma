@@ -97,6 +97,11 @@ enum BusinessLine {
   LIOFILIZADOS
 }
 
+enum PaymentProvider {
+  WOMPI
+  BOLD
+}
+
 enum ShopOrderStatus {
   PENDING
   CONFIRMED
@@ -600,9 +605,12 @@ model ShopOrder {
   shippingCity    String
   shippingPhone   String
   shippingNotes   String?
+  paymentProvider PaymentProvider @default(WOMPI)
   paymentMethod   PaymentMethod?
   wompiTransactionId String?      @unique
   wompiReference  String?         @unique
+  boldTransactionId String?      @unique
+  boldReference   String?         @unique
   paidAt          DateTime?
   shippedAt       DateTime?
   deliveredAt     DateTime?
