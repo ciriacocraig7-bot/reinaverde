@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useCanabicoCart } from "@/stores/shop-cart-store";
+import { usePharmaCart } from "@/stores/shop-cart-store";
 import { formatCurrency } from "@/lib/utils";
 import { useProducts, type ProductData } from "@/hooks/use-products";
 
@@ -20,12 +20,12 @@ const FALLBACK_PRODUCTS: ProductData[] = [
 
 const FALLBACK_CATEGORIES = ["Todos", "Aceites", "Flores", "Tinturas", "Tópicos", "Kits", "Pet"];
 
-export default function CanabicoCatalogoPage() {
+export default function PharmaCatalogoPage() {
   const [filter, setFilter] = useState("Todos");
-  const addItem = useCanabicoCart((s) => s.addItem);
-  const cartCount = useCanabicoCart((s) => s.itemCount);
+  const addItem = usePharmaCart((s) => s.addItem);
+  const cartCount = usePharmaCart((s) => s.itemCount);
   const { products, categories, loading } = useProducts({
-    businessLine: "CANABICO",
+    businessLine: "PHARMA",
     fallbackProducts: FALLBACK_PRODUCTS,
     fallbackCategories: FALLBACK_CATEGORIES,
   });
@@ -40,17 +40,17 @@ export default function CanabicoCatalogoPage() {
     <div className="min-h-screen bg-surface text-on-surface">
       {/* Nav */}
       <nav className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-        <Link href="/canabico" className="flex items-center gap-3">
+        <Link href="/pharma" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-lg shadow-violet-900/20">
             <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>spa</span>
           </div>
-          <span className="text-xl font-bold tracking-tighter">Reina Verde <span className="text-violet-600">Canábico</span></span>
+          <span className="text-xl font-bold tracking-tighter">Reina Verde <span className="text-violet-600">Pharma</span></span>
         </Link>
         <div className="flex items-center gap-3">
           <Link href="/" className="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1">
             <span className="material-symbols-outlined text-lg">home</span> Hub
           </Link>
-          <Link href="/canabico/carrito" className="relative p-2 text-on-surface-variant hover:text-on-surface transition-colors">
+          <Link href="/pharma/carrito" className="relative p-2 text-on-surface-variant hover:text-on-surface transition-colors">
             <span className="material-symbols-outlined text-xl">shopping_cart</span>
             {cartCount() > 0 && <span className="absolute -top-0.5 -right-0.5 h-5 w-5 flex items-center justify-center rounded-full bg-violet-600 text-white text-[10px] font-bold">{cartCount()}</span>}
           </Link>
@@ -62,11 +62,11 @@ export default function CanabicoCatalogoPage() {
 
       <div className="max-w-7xl mx-auto px-8 py-8">
         <div className="mb-8">
-          <Link href="/canabico" className="inline-flex items-center text-sm text-on-surface-variant hover:text-on-surface mb-4 gap-1">
+          <Link href="/pharma" className="inline-flex items-center text-sm text-on-surface-variant hover:text-on-surface mb-4 gap-1">
             <span className="material-symbols-outlined text-lg">arrow_back</span> Volver
           </Link>
           <h1 className="text-4xl font-semibold tracking-tight">Catálogo</h1>
-          <p className="text-on-surface-variant mt-2">Productos canábicos certificados y 100% legales</p>
+          <p className="text-on-surface-variant mt-2">Productos de bienestar certificados y 100% legales</p>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-8">
@@ -99,7 +99,7 @@ export default function CanabicoCatalogoPage() {
         </div>
 
         {cartCount() > 0 && (
-          <Link href="/canabico/carrito" className="fixed bottom-6 right-6 bg-gradient-to-br from-violet-600 to-purple-800 text-white px-6 py-3.5 rounded-full shadow-xl shadow-violet-900/30 hover:brightness-110 transition-all flex items-center gap-2 z-40 active:scale-95">
+          <Link href="/pharma/carrito" className="fixed bottom-6 right-6 bg-gradient-to-br from-violet-600 to-purple-800 text-white px-6 py-3.5 rounded-full shadow-xl shadow-violet-900/30 hover:brightness-110 transition-all flex items-center gap-2 z-40 active:scale-95">
             <span className="material-symbols-outlined">shopping_cart</span>
             <span className="font-bold">Ver Carrito ({cartCount()})</span>
           </Link>

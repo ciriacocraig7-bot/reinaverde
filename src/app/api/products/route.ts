@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const where: Record<string, unknown> = { isActive: true };
 
-    if (businessLine === "CANABICO" || businessLine === "LIOFILIZADOS") {
+    if (businessLine === "PHARMA" || businessLine === "LIOFILIZADOS") {
       where.businessLine = businessLine;
     }
     if (categorySlug) {

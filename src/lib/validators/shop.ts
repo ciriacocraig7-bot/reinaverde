@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // ─── Products ───────────────────────────────────────────────
 export const createProductSchema = z.object({
-  businessLine: z.enum(["CANABICO", "LIOFILIZADOS"]),
+  businessLine: z.enum(["PHARMA", "LIOFILIZADOS"]),
   categoryId: z.string().uuid(),
   name: z.string().min(2, "Nombre requerido"),
   slug: z.string().min(2),
@@ -27,7 +27,7 @@ export const updateProductSchema = createProductSchema.partial().omit({ business
 
 // ─── Categories ─────────────────────────────────────────────
 export const createCategorySchema = z.object({
-  businessLine: z.enum(["CANABICO", "LIOFILIZADOS"]),
+  businessLine: z.enum(["PHARMA", "LIOFILIZADOS"]),
   name: z.string().min(2, "Nombre requerido"),
   slug: z.string().min(2),
   description: z.string().optional(),
@@ -43,7 +43,7 @@ export const shopOrderItemSchema = z.object({
 });
 
 export const createShopOrderSchema = z.object({
-  businessLine: z.enum(["CANABICO", "LIOFILIZADOS"]),
+  businessLine: z.enum(["PHARMA", "LIOFILIZADOS"]),
   items: z.array(shopOrderItemSchema).min(1, "Debe agregar al menos un producto"),
   shippingName: z.string().min(2, "Nombre requerido"),
   shippingAddress: z.string().min(5, "Dirección requerida"),

@@ -18,7 +18,7 @@ const TRUST_POINTS = [
   { icon: "support_agent", title: "Asesoría Experta", desc: "Equipo de profesionales para guiar tu experiencia de bienestar." },
 ];
 
-export default function CanabicoHomePage() {
+export default function PharmaHomePage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface">
       {/* Nav */}
@@ -27,7 +27,7 @@ export default function CanabicoHomePage() {
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-lg shadow-violet-900/20">
             <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>spa</span>
           </div>
-          <span className="text-xl font-bold tracking-tighter text-on-surface">Reina Verde <span className="text-violet-600">Canábico</span></span>
+          <span className="text-xl font-bold tracking-tighter text-on-surface">Reina Verde <span className="text-violet-600">Pharma</span></span>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/" className="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1">
@@ -53,10 +53,10 @@ export default function CanabicoHomePage() {
                 <span className="bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">Nuestra Ciencia</span>
               </h1>
               <p className="text-lg text-on-surface-variant mb-10 max-w-lg leading-relaxed">
-                Productos canábicos de grado premium, respaldados por ciencia, certificados por laboratorios independientes y 100% legales en Colombia.
+                Productos de bienestar de grado premium, respaldados por ciencia, certificados por laboratorios independientes y 100% legales en Colombia.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link href="/canabico/catalogo" className="px-8 py-4 bg-gradient-to-br from-violet-600 to-purple-800 text-white rounded-xl font-semibold shadow-lg shadow-violet-900/20 hover:scale-[1.02] transition-transform active:scale-95 flex items-center gap-2">
+                <Link href="/pharma/catalogo" className="px-8 py-4 bg-gradient-to-br from-violet-600 to-purple-800 text-white rounded-xl font-semibold shadow-lg shadow-violet-900/20 hover:scale-[1.02] transition-transform active:scale-95 flex items-center gap-2">
                   Ver Catálogo <span className="material-symbols-outlined text-xl">arrow_forward</span>
                 </Link>
                 <a href="#categorias" className="px-8 py-4 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors active:scale-95">
@@ -96,7 +96,7 @@ export default function CanabicoHomePage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {CATEGORIES.map((cat) => (
-              <Link href="/canabico/catalogo" key={cat.name}>
+              <Link href="/pharma/catalogo" key={cat.name}>
                 <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm hover:translate-y-[-4px] transition-all duration-300 group relative overflow-hidden">
                   <div className="absolute top-4 right-4">
                     <span className="bg-violet-50 text-violet-700 text-[10px] font-bold px-2.5 py-1 rounded-full">{cat.tag}</span>
@@ -124,7 +124,7 @@ export default function CanabicoHomePage() {
             <h2 className="text-3xl sm:text-4xl font-bold mt-6 tracking-tight">¿Listo para tu experiencia de bienestar?</h2>
             <p className="text-violet-200 text-lg mt-4 max-w-2xl mx-auto">Productos certificados, envío discreto a toda Colombia y asesoría personalizada.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-              <Link href="/canabico/catalogo" className="bg-white text-violet-700 font-bold px-8 py-4 rounded-xl hover:bg-violet-50 transition-colors active:scale-95 duration-150">
+              <Link href="/pharma/catalogo" className="bg-white text-violet-700 font-bold px-8 py-4 rounded-xl hover:bg-violet-50 transition-colors active:scale-95 duration-150">
                 Explorar Catálogo
               </Link>
             </div>
@@ -140,7 +140,7 @@ export default function CanabicoHomePage() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center">
               <span className="material-symbols-outlined text-white text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>spa</span>
             </div>
-            <span className="text-lg font-bold text-white">Reina Verde Canábico</span>
+            <span className="text-lg font-bold text-white">Reina Verde Pharma</span>
           </div>
           <p className="text-sm opacity-50">&copy; {new Date().getFullYear()} Reina Verde</p>
         </div>

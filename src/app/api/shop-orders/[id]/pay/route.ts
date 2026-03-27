@@ -29,7 +29,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const amountInCents = Math.round(Number(order.total) * 100);
     const reference = `SHOP-${order.orderNumber}`;
-    const businessSlug = order.businessLine === "CANABICO" ? "canabico" : "liofilizados";
+    const businessSlug = order.businessLine === "PHARMA" ? "pharma" : "liofilizados";
     const redirectUrl = `${BASE_URL}/${businessSlug}/confirmacion?order=${order.id}`;
 
     const paymentUrl = await createPaymentLink({

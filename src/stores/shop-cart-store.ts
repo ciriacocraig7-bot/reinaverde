@@ -96,5 +96,5 @@ function createShopCartStore(storeName: string) {
   );
 }
 
-export const useCanabicoCart = createShopCartStore("rv-canabico-cart");
+export const usePharmaCart = createShopCartStore("rv-pharma-cart");
 export const useLiofilizadosCart = createShopCartStore("rv-liofilizados-cart");

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const businessSlug = order.businessLine === "CANABICO" ? "canabico" : "liofilizados";
+    const businessSlug = order.businessLine === "PHARMA" ? "pharma" : "liofilizados";
     
     // Amount in cents (sin decimales para Bold)
     const amount = Math.round(Number(order.total));

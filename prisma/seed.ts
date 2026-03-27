@@ -9,19 +9,19 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log("🌱 Seeding e-commerce data...");
 
-  // ─── Canábico Categories ──────────────────────────────────
-  const canabicoCategories = await Promise.all([
-    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "CANABICO", slug: "aceites" } }, update: {}, create: { businessLine: "CANABICO", name: "Aceites", slug: "aceites", icon: "spa", sortOrder: 1 } }),
-    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "CANABICO", slug: "flores" } }, update: {}, create: { businessLine: "CANABICO", name: "Flores", slug: "flores", icon: "local_florist", sortOrder: 2 } }),
-    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "CANABICO", slug: "tinturas" } }, update: {}, create: { businessLine: "CANABICO", name: "Tinturas", slug: "tinturas", icon: "science", sortOrder: 3 } }),
-    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "CANABICO", slug: "topicos" } }, update: {}, create: { businessLine: "CANABICO", name: "Tópicos", slug: "topicos", icon: "self_improvement", sortOrder: 4 } }),
-    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "CANABICO", slug: "kits" } }, update: {}, create: { businessLine: "CANABICO", name: "Kits", slug: "kits", icon: "inventory_2", sortOrder: 5 } }),
-    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "CANABICO", slug: "pet" } }, update: {}, create: { businessLine: "CANABICO", name: "Pet", slug: "pet", icon: "pets", sortOrder: 6 } }),
+  // ─── Pharma Categories ──────────────────────────────────
+  const pharmaCategories = await Promise.all([
+    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "PHARMA", slug: "aceites" } }, update: {}, create: { businessLine: "PHARMA", name: "Aceites", slug: "aceites", icon: "spa", sortOrder: 1 } }),
+    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "PHARMA", slug: "flores" } }, update: {}, create: { businessLine: "PHARMA", name: "Flores", slug: "flores", icon: "local_florist", sortOrder: 2 } }),
+    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "PHARMA", slug: "tinturas" } }, update: {}, create: { businessLine: "PHARMA", name: "Tinturas", slug: "tinturas", icon: "science", sortOrder: 3 } }),
+    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "PHARMA", slug: "topicos" } }, update: {}, create: { businessLine: "PHARMA", name: "Tópicos", slug: "topicos", icon: "self_improvement", sortOrder: 4 } }),
+    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "PHARMA", slug: "kits" } }, update: {}, create: { businessLine: "PHARMA", name: "Kits", slug: "kits", icon: "inventory_2", sortOrder: 5 } }),
+    prisma.productCategory.upsert({ where: { businessLine_slug: { businessLine: "PHARMA", slug: "pet" } }, update: {}, create: { businessLine: "PHARMA", name: "Pet", slug: "pet", icon: "pets", sortOrder: 6 } }),
   ]);
-  console.log(`  ✓ ${canabicoCategories.length} canábico categories`);
+  console.log(`  ✓ ${pharmaCategories.length} pharma categories`);
 
-  // ─── Canábico Products ────────────────────────────────────
-  const canabicoProducts = [
+  // ─── Pharma Products ────────────────────────────────────
+  const pharmaProducts = [
     { name: "Aceite CBD Full Spectrum 1000mg", slug: "aceite-cbd-full-spectrum-1000mg", shortDesc: "Aceite sublingual de espectro completo. 30ml con gotero dosificador.", price: 189000, icon: "spa", badge: "Bestseller", stock: 50, isFeatured: true, categorySlug: "aceites" },
     { name: "Aceite CBD Broad Spectrum 500mg", slug: "aceite-cbd-broad-spectrum-500mg", shortDesc: "Sin THC. Ideal para quienes inician su experiencia con CBD.", price: 129000, icon: "spa", badge: "Suave", stock: 40, isFeatured: false, categorySlug: "aceites" },
     { name: "Flores de Cáñamo – Mango Kush", slug: "flores-canamo-mango-kush", shortDesc: "3.5g de flores secas con perfil aromático tropical. < 0.3% THC.", price: 85000, icon: "local_florist", badge: "Premium", stock: 30, weight: "3.5g", isFeatured: true, categorySlug: "flores" },
@@ -32,14 +32,14 @@ async function main() {
     { name: "Flores de Cáñamo – OG Kush", slug: "flores-canamo-og-kush", shortDesc: "3.5g. Perfil terroso y relajante. Cultivo indoor.", price: 95000, icon: "local_florist", badge: "Clásico", stock: 30, weight: "3.5g", isFeatured: false, categorySlug: "flores" },
   ];
 
-  let cbCount = 0;
-  for (const p of canabicoProducts) {
-    const cat = canabicoCategories.find((c) => c.slug === p.categorySlug)!;
+  let pharmaCount = 0;
+  for (const p of pharmaProducts) {
+    const cat = pharmaCategories.find((c) => c.slug === p.categorySlug)!;
     await prisma.product.upsert({
-      where: { businessLine_slug: { businessLine: "CANABICO", slug: p.slug } },
+      where: { businessLine_slug: { businessLine: "PHARMA", slug: p.slug } },
       update: { price: p.price, stock: p.stock },
       create: {
-        businessLine: "CANABICO",
+        businessLine: "PHARMA",
         categoryId: cat.id,
         name: p.name,
         slug: p.slug,
@@ -52,9 +52,9 @@ async function main() {
         isFeatured: p.isFeatured,
       },
     });
-    cbCount++;
+    pharmaCount++;
   }
-  console.log(`  ✓ ${cbCount} canábico products`);
+  console.log(`  ✓ ${pharmaCount} pharma products`);
 
   // ─── Liofilizados Categories ──────────────────────────────
   const lioCategories = await Promise.all([

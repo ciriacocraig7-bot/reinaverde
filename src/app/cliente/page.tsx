@@ -104,7 +104,7 @@ export default function ClienteDashboard() {
         {[
           { href: "/catering/menu", icon: "restaurant_menu", title: "Hacer Pedido", desc: "Explora nuestro menú y ordena" },
           { href: "/catering/eventos", icon: "event", title: "Crear Evento", desc: "Planifica tu próximo evento" },
-          { href: "/canabico/catalogo", icon: "star", title: "Catálogo Canábico", desc: "Explora nuestros productos CBD" },
+          { href: "/pharma/catalogo", icon: "star", title: "Catálogo Pharma", desc: "Explora nuestros productos de bienestar" },
         ].map((action) => (
           <Link key={action.href} href={action.href}>
             <div className="bg-surface-container-lowest rounded-2xl p-6 flex flex-col items-center text-center gap-3 border border-outline-variant/10 shadow-sm hover:translate-y-[-2px] transition-all duration-300 cursor-pointer h-full">

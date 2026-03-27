@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useCanabicoCart } from "@/stores/shop-cart-store";
+import { usePharmaCart } from "@/stores/shop-cart-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatCurrency } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -37,8 +37,8 @@ interface BoldConfig {
   };
 }
 
-export default function CanabicoCarritoPage() {
-  const { items, removeItem, updateQuantity, subtotal, tax, shippingCost, total, itemCount, shipping, setShipping, clearCart } = useCanabicoCart();
+export default function PharmaCarritoPage() {
+  const { items, removeItem, updateQuantity, subtotal, tax, shippingCost, total, itemCount, shipping, setShipping, clearCart } = usePharmaCart();
   const { isAuthenticated } = useAuthStore();
   const [step, setStep] = useState(0);
   const [processing, setProcessing] = useState(false);
@@ -49,19 +49,19 @@ export default function CanabicoCarritoPage() {
     return (
       <div className="min-h-screen bg-surface flex flex-col">
         <nav className="max-w-7xl mx-auto px-8 py-6 w-full">
-          <Link href="/canabico" className="flex items-center gap-3">
+          <Link href="/pharma" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-lg shadow-violet-900/20">
               <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>spa</span>
             </div>
-            <span className="text-xl font-bold tracking-tighter">Reina Verde <span className="text-violet-600">Canábico</span></span>
+            <span className="text-xl font-bold tracking-tighter">Reina Verde <span className="text-violet-600">Pharma</span></span>
           </Link>
         </nav>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <span className="material-symbols-outlined text-on-surface-variant/30 mb-4" style={{ fontSize: "64px" }}>shopping_cart</span>
             <h2 className="text-xl font-semibold text-on-surface mb-2">Tu carrito está vacío</h2>
-            <p className="text-on-surface-variant mb-6">Explora nuestro catálogo de productos canábicos</p>
-            <Link href="/canabico/catalogo" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-violet-600 to-purple-800 text-white rounded-xl font-semibold shadow-lg shadow-violet-900/10 hover:brightness-110 active:scale-95 transition-all">
+            <p className="text-on-surface-variant mb-6">Explora nuestro catálogo de productos de bienestar</p>
+            <Link href="/pharma/catalogo" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-violet-600 to-purple-800 text-white rounded-xl font-semibold shadow-lg shadow-violet-900/10 hover:brightness-110 active:scale-95 transition-all">
               <span className="material-symbols-outlined text-lg">arrow_back</span> Ir al Catálogo
             </Link>
           </div>
@@ -83,7 +83,7 @@ export default function CanabicoCarritoPage() {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          businessLine: "CANABICO",
+          businessLine: "PHARMA",
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
           shippingName: shipping.name,
           shippingAddress: shipping.address,
@@ -123,16 +123,16 @@ export default function CanabicoCarritoPage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface">
       <nav className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-        <Link href="/canabico" className="flex items-center gap-3">
+        <Link href="/pharma" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-lg shadow-violet-900/20">
             <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>spa</span>
           </div>
-          <span className="text-xl font-bold tracking-tighter">Reina Verde <span className="text-violet-600">Canábico</span></span>
+          <span className="text-xl font-bold tracking-tighter">Reina Verde <span className="text-violet-600">Pharma</span></span>
         </Link>
       </nav>
 
       <div className="max-w-5xl mx-auto px-8 py-8">
-        <Link href="/canabico/catalogo" className="inline-flex items-center text-sm text-on-surface-variant hover:text-on-surface mb-4 gap-1">
+        <Link href="/pharma/catalogo" className="inline-flex items-center text-sm text-on-surface-variant hover:text-on-surface mb-4 gap-1">
           <span className="material-symbols-outlined text-lg">arrow_back</span> Volver al catálogo
         </Link>
         <h1 className="text-4xl font-semibold tracking-tight mb-6">Tu Carrito</h1>

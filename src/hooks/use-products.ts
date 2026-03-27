@@ -29,7 +29,7 @@ export interface CategoryData {
 }
 
 interface UseProductsOptions {
-  businessLine: "CANABICO" | "LIOFILIZADOS";
+  businessLine: "PHARMA" | "LIOFILIZADOS";
   fallbackProducts: ProductData[];
   fallbackCategories: string[];
 }

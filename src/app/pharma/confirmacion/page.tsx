@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 
-export default function CanabicoConfirmacionPage() {
+export default function PharmaConfirmacionPage() {
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       <nav className="max-w-7xl mx-auto px-8 py-6 w-full">
-        <Link href="/canabico" className="flex items-center gap-3">
+        <Link href="/pharma" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-lg shadow-violet-900/20">
             <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>spa</span>
           </div>
-          <span className="text-xl font-bold tracking-tighter">Reina Verde <span className="text-violet-600">Canábico</span></span>
+          <span className="text-xl font-bold tracking-tighter">Reina Verde <span className="text-violet-600">Pharma</span></span>
         </Link>
       </nav>
       <div className="flex-1 flex items-center justify-center px-4">
@@ -32,7 +32,7 @@ export default function CanabicoConfirmacionPage() {
             </ol>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/canabico/catalogo" className="flex-1 py-3 px-6 bg-gradient-to-br from-violet-600 to-purple-800 text-white rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all text-center">
+            <Link href="/pharma/catalogo" className="flex-1 py-3 px-6 bg-gradient-to-br from-violet-600 to-purple-800 text-white rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all text-center">
               Seguir Comprando
             </Link>
             <Link href="/" className="flex-1 py-3 px-6 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors active:scale-[0.98] text-center">

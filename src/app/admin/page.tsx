@@ -9,7 +9,7 @@ import { formatCurrency } from "@/lib/utils";
 const BUSINESS_TABS = [
   { id: "overview", label: "Resumen General", icon: "dashboard", color: "from-emerald-600 to-green-700" },
   { id: "catering", label: "Catering", icon: "restaurant", color: "from-emerald-600 to-green-700" },
-  { id: "canabico", label: "Canábico", icon: "spa", color: "from-violet-600 to-purple-800" },
+  { id: "pharma", label: "Pharma", icon: "spa", color: "from-violet-600 to-purple-800" },
   { id: "liofilizados", label: "Liofilizados", icon: "nutrition", color: "from-amber-500 to-orange-600" },
 ];
 
@@ -25,10 +25,10 @@ const KPI_BY_LINE: Record<string, typeof KPI_OVERVIEW> = {
     { title: "Pedidos Catering", value: "142", change: "18 críticos", icon: "pending_actions", trend: "warning" },
     { title: "Ocupación Staff", value: "88%", icon: "badge", change: "94% cocina", trend: "up" },
   ],
-  canabico: [
-    { title: "Ingresos Canábico", value: "$11,450,000", change: "+22%", icon: "payments", trend: "up" },
-    { title: "Pedidos Canábico", value: "89", change: "8 pendientes envío", icon: "local_shipping", trend: "warning" },
-    { title: "Productos CBD", value: "8", icon: "spa", change: "3 destacados", trend: "up" },
+  pharma: [
+    { title: "Ingresos Pharma", value: "$11,450,000", change: "+22%", icon: "payments", trend: "up" },
+    { title: "Pedidos Pharma", value: "89", change: "8 pendientes envío", icon: "local_shipping", trend: "warning" },
+    { title: "Productos Pharma", value: "8", icon: "spa", change: "3 destacados", trend: "up" },
   ],
   liofilizados: [
     { title: "Ingresos Liofilizados", value: "$6,388,000", change: "+18%", icon: "payments", trend: "up" },
@@ -44,9 +44,9 @@ const CATERING_ORDERS = [
 ];
 
 const SHOP_ORDERS = [
-  { id: "RV-SH001", client: "Carlos Gómez", initials: "CG", desc: "Aceite CBD + Bálsamo", total: 284000, status: "CONFIRMED", line: "canabico" },
-  { id: "RV-SH002", client: "Ana Ruiz", initials: "AR", desc: "Kit Bienestar Starter", total: 159000, status: "SHIPPED", line: "canabico" },
-  { id: "RV-SH003", client: "Pedro Díaz", initials: "PD", desc: "Flores Mango Kush x2", total: 170000, status: "PROCESSING", line: "canabico" },
+  { id: "RV-SH001", client: "Carlos Gómez", initials: "CG", desc: "Aceite CBD + Bálsamo", total: 284000, status: "CONFIRMED", line: "pharma" },
+  { id: "RV-SH002", client: "Ana Ruiz", initials: "AR", desc: "Kit Bienestar Starter", total: 159000, status: "SHIPPED", line: "pharma" },
+  { id: "RV-SH003", client: "Pedro Díaz", initials: "PD", desc: "Flores Mango Kush x2", total: 170000, status: "PROCESSING", line: "pharma" },
   { id: "RV-SH004", client: "Laura Martín", initials: "LM", desc: "Mango + Mix Berries", total: 63000, status: "CONFIRMED", line: "liofilizados" },
   { id: "RV-SH005", client: "Diego Reyes", initials: "DR", desc: "Bulk Mango 1kg", total: 320000, status: "SHIPPED", line: "liofilizados" },
   { id: "RV-SH006", client: "Sofia Torres", initials: "ST", desc: "Kit Repostería Premium", total: 65000, status: "DELIVERED", line: "liofilizados" },
@@ -72,7 +72,7 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "info" | 
 
 const LINE_BADGE: Record<string, { label: string; bg: string; text: string }> = {
   catering: { label: "Catering", bg: "bg-emerald-100", text: "text-emerald-800" },
-  canabico: { label: "Canábico", bg: "bg-violet-100", text: "text-violet-800" },
+  pharma: { label: "Pharma", bg: "bg-violet-100", text: "text-violet-800" },
   liofilizados: { label: "Liofilizados", bg: "bg-amber-100", text: "text-amber-800" },
 };
 

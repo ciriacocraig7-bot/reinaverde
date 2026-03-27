@@ -18,10 +18,10 @@ const BUSINESS_LINES = [
     features: ["Menús personalizados", "Logística automatizada", "Pagos con Wompi", "Dashboard empresarial"],
   },
   {
-    slug: "canabico",
-    name: "Reina Verde Canábico",
+    slug: "pharma",
+    name: "Reina Verde Pharma",
     tagline: "Bienestar Natural & Legal",
-    description: "Productos derivados del cannabis medicinal y de bienestar, 100% legales, con trazabilidad completa y envío seguro.",
+    description: "Productos de bienestar natural de alta calidad, 100% legales, con trazabilidad completa y envío seguro.",
     icon: "spa",
     gradient: "from-violet-600 to-purple-800",
     accentBg: "bg-violet-50",
@@ -90,7 +90,7 @@ export default function HubPage() {
             </span>
           </h1>
           <p className="mt-6 text-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
-            Catering corporativo premium, productos canábicos legales y frutas liofilizadas colombianas.
+            Catering corporativo premium, productos de bienestar de alta calidad y frutas liofilizadas colombianas.
             Elige tu línea de negocio y descubre lo que Reina Verde tiene para ti.
           </p>
         </div>
@@ -195,14 +195,14 @@ export default function HubPage() {
                 <span className="text-lg font-bold text-white">Reina Verde</span>
               </div>
               <p className="text-sm leading-relaxed opacity-70">
-                Franquicia colombiana de catering, bienestar canábico y nutrición liofilizada.
+                Franquicia colombiana de catering, bienestar natural y nutrición liofilizada.
               </p>
             </div>
             <div>
               <h4 className="text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Líneas de Negocio</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/catering" className="hover:text-white transition-colors opacity-70 hover:opacity-100">Catering</Link></li>
-                <li><Link href="/canabico" className="hover:text-white transition-colors opacity-70 hover:opacity-100">Canábico</Link></li>
+                <li><Link href="/pharma" className="hover:text-white transition-colors opacity-70 hover:opacity-100">Pharma</Link></li>
                 <li><Link href="/liofilizados" className="hover:text-white transition-colors opacity-70 hover:opacity-100">Liofilizados</Link></li>
               </ul>
             </div>

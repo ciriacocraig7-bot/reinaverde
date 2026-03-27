@@ -93,7 +93,7 @@ enum SupplierOrderStatus {
 
 enum BusinessLine {
   CATERING
-  CANABICO
+  PHARMA
   LIOFILIZADOS
 }
 
