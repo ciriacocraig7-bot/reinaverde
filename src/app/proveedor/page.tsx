@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 
@@ -18,6 +20,22 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "info" | 
 };
 
 export default function ProveedorDashboard() {
+  const [orders, setOrders] = useState(SUPPLIER_ORDERS);
+
+  const handleConfirm = (id: string) => {
+    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: "CONFIRMED" } : o));
+    toast.success(`Pedido ${id} confirmado`);
+  };
+
+  const handleMarkDelivered = (id: string) => {
+    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: "DELIVERED" } : o));
+    toast.success(`Pedido ${id} marcado como entregado`);
+  };
+
+  const activeCount = orders.filter((o) => o.status !== "DELIVERED").length;
+  const pendingConfirm = orders.filter((o) => o.status === "SENT").length;
+  const deliveredCount = orders.filter((o) => o.status === "DELIVERED").length;
+
   return (
     <div className="space-y-8">
       <header>
@@ -27,10 +45,10 @@ export default function ProveedorDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { title: "Pedidos Activos", value: "3", icon: "receipt_long" },
-          { title: "Por Confirmar", value: "1", icon: "schedule" },
-          { title: "Entregados (Mes)", value: "12", icon: "check_circle" },
-          { title: "Ingresos Mes", value: formatCurrency(2800000), icon: "trending_up" },
+          { title: "Pedidos Activos", value: String(activeCount), icon: "receipt_long" },
+          { title: "Por Confirmar", value: String(pendingConfirm), icon: "schedule" },
+          { title: "Entregados", value: String(deliveredCount), icon: "check_circle" },
+          { title: "Ingresos Mes", value: formatCurrency(orders.filter(o => o.status === "DELIVERED").reduce((s, o) => s + o.total, 0)), icon: "trending_up" },
         ].map((stat) => (
           <div key={stat.title} className="bg-surface-container-lowest rounded-xl p-5 shadow-sm shadow-emerald-900/5 border border-outline-variant/10 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-3">
@@ -48,7 +66,7 @@ export default function ProveedorDashboard() {
           <h4 className="text-lg font-semibold tracking-tight">Pedidos de Insumos</h4>
         </div>
         <div className="divide-y divide-outline-variant/5">
-          {SUPPLIER_ORDERS.map((order) => {
+          {orders.map((order) => {
             const status = STATUS_MAP[order.status] || { label: order.status, variant: "default" as const, dot: "bg-gray-500" };
             return (
               <div key={order.id} className="flex items-center justify-between p-5 hover:bg-surface-container-low/50 transition-colors">
@@ -66,10 +84,10 @@ export default function ProveedorDashboard() {
                 <div className="flex items-center gap-3 shrink-0 ml-4">
                   <span className="font-semibold text-on-surface">{formatCurrency(order.total)}</span>
                   {order.status === "SENT" && (
-                    <button className="px-4 py-2 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all">Confirmar</button>
+                    <button onClick={() => handleConfirm(order.id)} className="px-4 py-2 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all">Confirmar</button>
                   )}
                   {order.status === "CONFIRMED" && (
-                    <button className="px-4 py-2 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-xs hover:bg-surface-container-high transition-colors active:scale-95">Marcar Entregado</button>
+                    <button onClick={() => handleMarkDelivered(order.id)} className="px-4 py-2 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-xs hover:bg-surface-container-high transition-colors active:scale-95">Marcar Entregado</button>
                   )}
                 </div>
               </div>

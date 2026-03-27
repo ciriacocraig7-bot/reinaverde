@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 
@@ -75,15 +77,79 @@ const LINE_BADGE: Record<string, { label: string; bg: string; text: string }> = 
 };
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [openActionId, setOpenActionId] = useState<string | null>(null);
+  const actionRef = useRef<HTMLDivElement>(null);
+  const ITEMS_PER_PAGE = 5;
+
+  // Close action dropdown when clicking outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (actionRef.current && !actionRef.current.contains(e.target as Node)) setOpenActionId(null);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const kpis = activeTab === "overview" ? KPI_OVERVIEW : KPI_BY_LINE[activeTab] || KPI_OVERVIEW;
 
-  const filteredOrders = activeTab === "overview"
+  const allOrders = activeTab === "overview"
     ? [...CATERING_ORDERS, ...SHOP_ORDERS]
     : activeTab === "catering"
       ? CATERING_ORDERS
       : SHOP_ORDERS.filter((o) => o.line === activeTab);
+
+  const filteredOrders = statusFilter
+    ? allOrders.filter((o) => o.status === statusFilter)
+    : allOrders;
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ITEMS_PER_PAGE));
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const handleExportCSV = () => {
+    const headers = ["ID", "Cliente", "Línea", "Detalle", "Monto", "Estado"];
+    const rows = filteredOrders.map((o) => [
+      o.id,
+      o.client,
+      LINE_BADGE[o.line]?.label || o.line,
+      o.desc,
+      o.total.toString(),
+      STATUS_MAP[o.status]?.label || o.status,
+    ]);
+    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `pedidos-${activeTab}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV descargado exitosamente");
+  };
+
+  const handleDownloadReport = () => {
+    handleExportCSV();
+  };
+
+  const handleOrderAction = (orderId: string, action: string) => {
+    setOpenActionId(null);
+    switch (action) {
+      case "view":
+        toast.info(`Viendo detalles del pedido ${orderId}`);
+        break;
+      case "status":
+        toast.info(`Cambiar estado de ${orderId}`);
+        break;
+      case "cancel":
+        toast.warning(`Pedido ${orderId} cancelado`);
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -94,10 +160,10 @@ export default function AdminDashboard() {
           <h1 className="text-4xl font-semibold tracking-tight text-on-surface">Dashboard</h1>
         </div>
         <div className="flex gap-3">
-          <button className="px-6 py-2.5 bg-surface-container-lowest text-on-surface rounded-xl border border-outline-variant/20 shadow-sm font-medium text-sm hover:bg-surface-container-high transition-colors active:scale-95">
+          <button onClick={handleDownloadReport} className="px-6 py-2.5 bg-surface-container-lowest text-on-surface rounded-xl border border-outline-variant/20 shadow-sm font-medium text-sm hover:bg-surface-container-high transition-colors active:scale-95">
             Descargar Reportes
           </button>
-          <button className="px-6 py-2.5 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-sm shadow-lg shadow-primary/10 hover:brightness-110 active:scale-95 transition-all">
+          <button onClick={() => router.push("/catering/orden")} className="px-6 py-2.5 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-sm shadow-lg shadow-primary/10 hover:brightness-110 active:scale-95 transition-all">
             Nuevo Evento
           </button>
         </div>
@@ -177,8 +243,17 @@ export default function AdminDashboard() {
             <p className="text-sm text-on-surface-variant">Feed operacional en tiempo real</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-emerald-900 bg-white border border-outline-variant/20 rounded-lg hover:bg-surface-container-low transition-all">Filtrar</button>
-            <button className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-white bg-primary rounded-lg shadow-sm hover:brightness-110 transition-all">Exportar CSV</button>
+            <select
+              value={statusFilter || ""}
+              onChange={(e) => { setStatusFilter(e.target.value || null); setCurrentPage(1); }}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-emerald-900 bg-white border border-outline-variant/20 rounded-lg hover:bg-surface-container-low transition-all cursor-pointer"
+            >
+              <option value="">Todos</option>
+              {Object.entries(STATUS_MAP).map(([key, val]) => (
+                <option key={key} value={key}>{val.label}</option>
+              ))}
+            </select>
+            <button onClick={handleExportCSV} className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-white bg-primary rounded-lg shadow-sm hover:brightness-110 transition-all">Exportar CSV</button>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -195,7 +270,7 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/5">
-              {filteredOrders.map((order) => {
+              {paginatedOrders.map((order) => {
                 const status = STATUS_MAP[order.status] || { label: order.status, variant: "default" as const, dot: "bg-gray-500" };
                 const lineBadge = LINE_BADGE[order.line];
                 return (
@@ -220,10 +295,24 @@ export default function AdminDashboard() {
                         {status.label}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="text-outline hover:text-primary transition-colors">
+                    <td className="px-6 py-4 text-right relative">
+                      <button onClick={() => setOpenActionId(openActionId === order.id ? null : order.id)} className="text-outline hover:text-primary transition-colors">
                         <span className="material-symbols-outlined text-[20px]">more_horiz</span>
                       </button>
+                      {openActionId === order.id && (
+                        <div ref={actionRef} className="absolute right-6 top-12 z-50 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-xl py-1 w-44">
+                          <button onClick={() => handleOrderAction(order.id, "view")} className="w-full px-4 py-2.5 text-left text-sm hover:bg-surface-container-low flex items-center gap-2 transition-colors">
+                            <span className="material-symbols-outlined text-base">visibility</span> Ver Detalles
+                          </button>
+                          <button onClick={() => handleOrderAction(order.id, "status")} className="w-full px-4 py-2.5 text-left text-sm hover:bg-surface-container-low flex items-center gap-2 transition-colors">
+                            <span className="material-symbols-outlined text-base">sync</span> Cambiar Estado
+                          </button>
+                          <hr className="my-1 border-outline-variant/10" />
+                          <button onClick={() => handleOrderAction(order.id, "cancel")} className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
+                            <span className="material-symbols-outlined text-base">cancel</span> Cancelar Pedido
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
@@ -232,13 +321,15 @@ export default function AdminDashboard() {
           </table>
         </div>
         <div className="p-4 border-t border-outline-variant/10 flex items-center justify-between bg-surface-container-low/20">
-          <p className="text-xs text-on-surface-variant font-medium">Mostrando {filteredOrders.length} pedidos</p>
+          <p className="text-xs text-on-surface-variant font-medium">Mostrando {paginatedOrders.length} de {filteredOrders.length} pedidos</p>
           <div className="flex items-center gap-1">
-            <button className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant">
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant disabled:opacity-30">
               <span className="material-symbols-outlined text-sm">chevron_left</span>
             </button>
-            <button className="w-8 h-8 rounded-lg bg-primary text-white text-xs font-bold">1</button>
-            <button className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-8 h-8 rounded-lg text-xs font-bold ${currentPage === i + 1 ? "bg-primary text-white" : "hover:bg-surface-container-low text-on-surface-variant"}`}>{i + 1}</button>
+            ))}
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant disabled:opacity-30">
               <span className="material-symbols-outlined text-sm">chevron_right</span>
             </button>
           </div>

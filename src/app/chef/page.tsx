@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
 const PRODUCTION_ORDERS = [
@@ -29,6 +31,26 @@ const PRIORITY_BORDER: Record<string, string> = {
 };
 
 export default function ChefDashboard() {
+  const [orders, setOrders] = useState(PRODUCTION_ORDERS);
+
+  const handleStartProduction = (orderId: string) => {
+    setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "IN_PROGRESS" } : o));
+    toast.success(`Producción iniciada para ${orderId}`);
+  };
+
+  const handleCompleteProduction = (orderId: string) => {
+    setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "COMPLETED" } : o));
+    toast.success(`Producción completada para ${orderId}`);
+  };
+
+  const handleRequestRestock = () => {
+    toast.success("Solicitud de reabastecimiento enviada al proveedor");
+  };
+
+  const pendingCount = orders.filter((o) => o.status === "PENDING").length;
+  const inProgressCount = orders.filter((o) => o.status === "IN_PROGRESS").length;
+  const completedCount = orders.filter((o) => o.status === "COMPLETED").length;
+
   return (
     <div className="space-y-8">
       <header>
@@ -39,10 +61,10 @@ export default function ChefDashboard() {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { title: "Pendientes", value: "3", icon: "schedule" },
-          { title: "En Preparación", value: "1", icon: "restaurant_menu" },
-          { title: "Listos Hoy", value: "2", icon: "check_circle" },
-          { title: "Stock Bajo", value: "3", icon: "warning" },
+          { title: "Pendientes", value: String(pendingCount), icon: "schedule" },
+          { title: "En Preparación", value: String(inProgressCount), icon: "restaurant_menu" },
+          { title: "Completados", value: String(completedCount), icon: "check_circle" },
+          { title: "Stock Bajo", value: String(LOW_STOCK.length), icon: "warning" },
         ].map((stat) => (
           <div key={stat.title} className="bg-surface-container-lowest rounded-xl p-5 shadow-sm shadow-emerald-900/5 border border-outline-variant/10 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-3">
@@ -58,7 +80,7 @@ export default function ChefDashboard() {
         {/* Production Queue */}
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-lg font-semibold tracking-tight text-on-surface">Cola de Producción</h2>
-          {PRODUCTION_ORDERS.map((order) => {
+          {orders.map((order) => {
             const st = STATUS_LABELS[order.status] || { label: order.status, dot: "bg-gray-500" };
             return (
               <div key={order.id} className={`bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm border-l-4 ${PRIORITY_BORDER[order.priority]}`}>
@@ -76,11 +98,11 @@ export default function ChefDashboard() {
                     </p>
                   </div>
                   {order.status === "PENDING" ? (
-                    <button className="px-4 py-2 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
+                    <button onClick={() => handleStartProduction(order.id)} className="px-4 py-2 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
                       <span className="material-symbols-outlined text-sm">play_arrow</span> Iniciar
                     </button>
                   ) : order.status === "IN_PROGRESS" ? (
-                    <button className="px-4 py-2 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-xs hover:bg-surface-container-high transition-colors active:scale-95 flex items-center gap-1.5 shrink-0">
+                    <button onClick={() => handleCompleteProduction(order.id)} className="px-4 py-2 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-xs hover:bg-surface-container-high transition-colors active:scale-95 flex items-center gap-1.5 shrink-0">
                       <span className="material-symbols-outlined text-sm">check</span> Completar
                     </button>
                   ) : null}
@@ -112,7 +134,7 @@ export default function ChefDashboard() {
                   <span className="material-symbols-outlined text-red-400">inventory_2</span>
                 </div>
               ))}
-              <button className="w-full px-4 py-2.5 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-sm hover:bg-surface-container-high transition-colors active:scale-95">
+              <button onClick={handleRequestRestock} className="w-full px-4 py-2.5 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-sm hover:bg-surface-container-high transition-colors active:scale-95">
                 Solicitar Reabastecimiento
               </button>
             </div>

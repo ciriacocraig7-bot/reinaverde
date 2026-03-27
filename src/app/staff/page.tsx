@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
 const DELIVERIES = [
@@ -23,6 +25,26 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "info" | 
 };
 
 export default function StaffDashboard() {
+  const [deliveries, setDeliveries] = useState(DELIVERIES);
+
+  const handleStartRoute = (id: string) => {
+    setDeliveries((prev) => prev.map((d) => d.id === id ? { ...d, status: "EN_ROUTE" } : d));
+    toast.success(`Ruta iniciada para ${id}`);
+  };
+
+  const handleMarkArrival = (id: string) => {
+    setDeliveries((prev) => prev.map((d) => d.id === id ? { ...d, status: "ARRIVED" } : d));
+    toast.success(`Llegada marcada para ${id}`);
+  };
+
+  const handleCall = (phone: string, client: string) => {
+    window.open(`tel:${phone.replace(/\s/g, "")}`, "_self");
+    toast.info(`Llamando a ${client}...`);
+  };
+
+  const enRouteCount = deliveries.filter((d) => d.status === "EN_ROUTE").length;
+  const completedCount = deliveries.filter((d) => d.status === "COMPLETED" || d.status === "ARRIVED").length;
+
   return (
     <div className="space-y-8">
       <header>
@@ -33,10 +55,10 @@ export default function StaffDashboard() {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { title: "Entregas Hoy", value: "3", icon: "local_shipping" },
-          { title: "En Ruta", value: "1", icon: "navigation" },
-          { title: "Completadas", value: "5", icon: "check_circle" },
-          { title: "Eventos Semana", value: "3", icon: "event" },
+          { title: "Entregas Hoy", value: String(deliveries.length), icon: "local_shipping" },
+          { title: "En Ruta", value: String(enRouteCount), icon: "navigation" },
+          { title: "Completadas", value: String(completedCount), icon: "check_circle" },
+          { title: "Eventos Semana", value: String(ASSIGNMENTS.length), icon: "event" },
         ].map((stat) => (
           <div key={stat.title} className="bg-surface-container-lowest rounded-xl p-5 shadow-sm shadow-emerald-900/5 border border-outline-variant/10 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-3">
@@ -52,7 +74,7 @@ export default function StaffDashboard() {
         {/* Deliveries */}
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-lg font-semibold tracking-tight text-on-surface">Entregas del Día</h2>
-          {DELIVERIES.map((delivery) => {
+          {deliveries.map((delivery) => {
             const status = STATUS_MAP[delivery.status] || { label: delivery.status, variant: "default" as const, dot: "bg-gray-500" };
             return (
               <div key={delivery.id} className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm">
@@ -78,16 +100,16 @@ export default function StaffDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   {delivery.status === "ASSIGNED" && (
-                    <button className="flex-1 px-4 py-2 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                    <button onClick={() => handleStartRoute(delivery.id)} className="flex-1 px-4 py-2 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5">
                       <span className="material-symbols-outlined text-sm">navigation</span> Iniciar Ruta
                     </button>
                   )}
                   {delivery.status === "EN_ROUTE" && (
-                    <button className="flex-1 px-4 py-2 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                    <button onClick={() => handleMarkArrival(delivery.id)} className="flex-1 px-4 py-2 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5">
                       <span className="material-symbols-outlined text-sm">check_circle</span> Marcar Llegada
                     </button>
                   )}
-                  <button className="px-4 py-2 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-xs hover:bg-surface-container-high transition-colors active:scale-95 flex items-center gap-1.5">
+                  <button onClick={() => handleCall(delivery.phone, delivery.client)} className="px-4 py-2 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-xs hover:bg-surface-container-high transition-colors active:scale-95 flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-sm">call</span> Llamar
                   </button>
                 </div>

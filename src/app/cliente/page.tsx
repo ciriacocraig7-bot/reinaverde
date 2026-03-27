@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatCurrency } from "@/lib/utils";
@@ -24,6 +26,7 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "info" | 
 };
 
 export default function ClienteDashboard() {
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
 
   return (
@@ -69,15 +72,15 @@ export default function ClienteDashboard() {
             <span className="material-symbols-outlined text-on-surface-variant">receipt_long</span>
             <h4 className="text-lg font-semibold tracking-tight">Mis Pedidos Recientes</h4>
           </div>
-          <Link href="/cliente/pedidos" className="text-primary-container font-semibold text-sm flex items-center gap-1 hover:underline">
+          <button onClick={() => toast.info("Módulo de historial de pedidos próximamente")} className="text-primary-container font-semibold text-sm flex items-center gap-1 hover:underline">
             Ver todos <span className="material-symbols-outlined text-sm">arrow_forward</span>
-          </Link>
+          </button>
         </div>
         <div className="divide-y divide-outline-variant/5">
           {MOCK_ORDERS.map((order) => {
             const status = STATUS_MAP[order.status] || { label: order.status, variant: "default" as const, dot: "bg-gray-500" };
             return (
-              <div key={order.id} className="flex items-center justify-between p-5 hover:bg-surface-container-low/50 transition-colors cursor-pointer">
+              <div key={order.id} onClick={() => toast.info(`Detalles del pedido ${order.id}`)} className="flex items-center justify-between p-5 hover:bg-surface-container-low/50 transition-colors cursor-pointer">
                 <div>
                   <p className="font-medium text-on-surface">{order.event}</p>
                   <p className="text-xs text-on-surface-variant mt-0.5">{order.id} · {order.date}</p>
@@ -99,9 +102,9 @@ export default function ClienteDashboard() {
       {/* Quick Actions */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { href: "/menu", icon: "restaurant_menu", title: "Hacer Pedido", desc: "Explora nuestro menú y ordena" },
-          { href: "/cliente/eventos", icon: "event", title: "Crear Evento", desc: "Planifica tu próximo evento" },
-          { href: "/cliente/feedback", icon: "star", title: "Calificar", desc: "Deja tu opinión sobre el servicio" },
+          { href: "/catering/menu", icon: "restaurant_menu", title: "Hacer Pedido", desc: "Explora nuestro menú y ordena" },
+          { href: "/catering/eventos", icon: "event", title: "Crear Evento", desc: "Planifica tu próximo evento" },
+          { href: "/canabico/catalogo", icon: "star", title: "Catálogo Canábico", desc: "Explora nuestros productos CBD" },
         ].map((action) => (
           <Link key={action.href} href={action.href}>
             <div className="bg-surface-container-lowest rounded-2xl p-6 flex flex-col items-center text-center gap-3 border border-outline-variant/10 shadow-sm hover:translate-y-[-2px] transition-all duration-300 cursor-pointer h-full">
