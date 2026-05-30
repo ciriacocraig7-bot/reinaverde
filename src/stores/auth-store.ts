@@ -14,6 +14,11 @@ interface User {
 
 interface AuthState {
   user: User | null;
+  /**
+   * Kept for backward compatibility with callsites that still attach
+   * `Authorization: Bearer ${token}`. Going forward the canonical session is
+   * the httpOnly `rv-session` cookie set by /api/auth/login.
+   */
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -31,8 +36,13 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
       setAuth: (user, token) =>
         set({ user, token, isAuthenticated: true, isLoading: false }),
-      logout: () =>
-        set({ user: null, token: null, isAuthenticated: false, isLoading: false }),
+      logout: () => {
+        // Fire-and-forget call to clear the httpOnly cookie.
+        if (typeof window !== "undefined") {
+          fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
+        }
+        set({ user: null, token: null, isAuthenticated: false, isLoading: false });
+      },
       setLoading: (isLoading) => set({ isLoading }),
     }),
     {
@@ -42,6 +52,6 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );

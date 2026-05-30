@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { verifyToken } from "@/lib/auth/jwt";
+import { readSession } from "@/lib/auth/cookies";
 import { createPaymentLink } from "@/lib/wompi/client";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const payload = verifyToken(token);
-    if (!payload) return NextResponse.json({ error: "Token inválido" }, { status: 401 });
+    const payload = readSession(request);
+    if (!payload) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const { id } = await params;
     const order = await prisma.shopOrder.findUnique({

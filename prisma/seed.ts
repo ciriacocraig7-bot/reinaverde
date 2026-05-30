@@ -1,12 +1,62 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import type { UserRole } from "../src/generated/prisma/enums";
 
 const connectionString = process.env.DATABASE_URL || "";
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
+const DEMO_PASSWORD = process.env.SEED_PASSWORD || "reinaverde123";
+
+const DEMO_USERS: Array<{
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+}> = [
+  { email: "admin@reinaverde.co",     firstName: "Camila",   lastName: "Admin",     role: "ADMIN" },
+  { email: "cliente@reinaverde.co",   firstName: "Andrés",   lastName: "Cliente",   role: "CLIENTE" },
+  { email: "chef@reinaverde.co",      firstName: "Lucía",    lastName: "Chef",      role: "CHEF" },
+  { email: "staff@reinaverde.co",     firstName: "Felipe",   lastName: "Staff",     role: "STAFF" },
+  { email: "proveedor@reinaverde.co", firstName: "Marta",    lastName: "Proveedor", role: "PROVEEDOR" },
+  { email: "finanzas@reinaverde.co",  firstName: "Sebastián", lastName: "Finanzas",  role: "FINANZAS" },
+];
+
+async function seedUsers() {
+  console.log("👤 Seeding demo users...");
+  const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
+  let created = 0, updated = 0;
+  for (const u of DEMO_USERS) {
+    const existing = await prisma.user.findUnique({ where: { email: u.email } });
+    if (existing) {
+      await prisma.user.update({
+        where: { email: u.email },
+        data: { firstName: u.firstName, lastName: u.lastName, role: u.role, isActive: true },
+      });
+      updated++;
+    } else {
+      await prisma.user.create({
+        data: {
+          email: u.email,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          passwordHash: hash,
+          role: u.role,
+          isActive: true,
+          emailVerified: true,
+        },
+      });
+      created++;
+    }
+  }
+  console.log(`  ✓ ${created} usuarios creados, ${updated} actualizados`);
+  console.log(`  ➤ Contraseña común: ${DEMO_PASSWORD}`);
+}
+
 async function main() {
+  await seedUsers();
   console.log("🌱 Seeding e-commerce data...");
 
   // ─── Pharma Categories ──────────────────────────────────

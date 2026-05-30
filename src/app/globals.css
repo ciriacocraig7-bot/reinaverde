@@ -1,88 +1,99 @@
 @import "tailwindcss";
 
+/* ════════════════════════════════════════════════════════════════
+   REINA VERDE · BOTÁNICA EDITORIAL · v1.0
+   ════════════════════════════════════════════════════════════════ */
+
 @theme inline {
-  --font-sans: var(--font-inter);
+  /* ─── Typography ────────────────────────────────────────────── */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 
-  /* Material Design 3 — Primary */
-  --color-primary: #003527;
-  --color-primary-container: #064e3b;
-  --color-on-primary: #ffffff;
-  --color-on-primary-container: #80bea6;
-  --color-primary-fixed: #b0f0d6;
-  --color-primary-fixed-dim: #95d3ba;
-  --color-on-primary-fixed: #002117;
-  --color-on-primary-fixed-variant: #0b513d;
-  --color-inverse-primary: #95d3ba;
+  /* ─── House palette ─────────────────────────────────────────── */
+  --color-ink: #0d1b12;            /* tinta — verde casi negro */
+  --color-ink-soft: #1b2a20;       /* tinta suavizada */
+  --color-cream: #f4efe2;          /* papel principal */
+  --color-cream-warm: #efe7d3;     /* papel sombreado */
+  --color-bone: #e8e0cc;           /* papel envejecido */
+  --color-moss: #233a26;           /* verde fondo profundo */
+  --color-lichen: #738b6e;         /* verde polvo */
+  --color-clay: #7b5640;           /* tierra */
+  --color-rule: rgba(13, 27, 18, 0.12);  /* línea editorial */
 
-  /* Secondary */
-  --color-secondary: #515f74;
-  --color-secondary-container: #d5e3fc;
-  --color-on-secondary: #ffffff;
-  --color-on-secondary-container: #57657a;
-  --color-secondary-fixed: #d5e3fc;
-  --color-secondary-fixed-dim: #b9c7df;
-  --color-on-secondary-fixed: #0d1c2e;
-  --color-on-secondary-fixed-variant: #3a485b;
+  /* ─── Acentos por línea de negocio ──────────────────────────── */
+  --color-marigold: #d89a3e;       /* Catering */
+  --color-marigold-deep: #a87420;
+  --color-iris: #7066a0;           /* Pharma */
+  --color-iris-deep: #4d4476;
+  --color-persimmon: #c76a3a;      /* Liofilizados */
+  --color-persimmon-deep: #944a20;
 
-  /* Tertiary */
-  --color-tertiary: #4f1f19;
-  --color-tertiary-container: #6b342d;
-  --color-on-tertiary: #ffffff;
-  --color-on-tertiary-container: #ea9e93;
-  --color-tertiary-fixed: #ffdad5;
-  --color-tertiary-fixed-dim: #ffb4a9;
-  --color-on-tertiary-fixed: #380d08;
-  --color-on-tertiary-fixed-variant: #6e372f;
+  /* ─── Semantic ──────────────────────────────────────────────── */
+  --color-error: #a4382a;
+  --color-error-soft: #f5e3df;
+  --color-success: #3f6644;
+  --color-warning: #b48028;
 
-  /* Error */
-  --color-error: #ba1a1a;
-  --color-error-container: #ffdad6;
-  --color-on-error: #ffffff;
-  --color-on-error-container: #93000a;
+  /* ─── Shadows · "papel impreso" ─────────────────────────────── */
+  --shadow-paper: 0 1px 0 rgba(13, 27, 18, 0.08), 0 0 0 1px rgba(13, 27, 18, 0.04);
+  --shadow-paper-md: 0 2px 0 rgba(13, 27, 18, 0.1), 0 0 0 1px rgba(13, 27, 18, 0.06);
+  --shadow-paper-lg: 0 6px 0 rgba(13, 27, 18, 0.08), 0 0 0 1px rgba(13, 27, 18, 0.08);
+  --shadow-press: 0 0 0 1px rgba(13, 27, 18, 0.16) inset;
 
-  /* Surface system */
-  --color-surface: #faf8ff;
-  --color-surface-dim: #d2d9f4;
-  --color-surface-bright: #faf8ff;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f2f3ff;
-  --color-surface-container: #eaedff;
-  --color-surface-container-high: #e2e7ff;
-  --color-surface-container-highest: #dae2fd;
-  --color-surface-tint: #2b6954;
-  --color-surface-variant: #dae2fd;
-  --color-on-surface: #131b2e;
-  --color-on-surface-variant: #404944;
-  --color-inverse-surface: #283044;
-  --color-inverse-on-surface: #eef0ff;
-
-  /* Outline */
-  --color-outline: #707974;
-  --color-outline-variant: #bfc9c3;
-
-  /* Background */
-  --color-background: #faf8ff;
-  --color-on-background: #131b2e;
+  /* ─── Animation easings ─────────────────────────────────────── */
+  --ease-paper: cubic-bezier(0.2, 0.7, 0.1, 1);
 }
 
-body {
-  background-color: #faf8ff;
-  color: #131b2e;
+/* ════════════════════════════════════════════════════════════════
+   BASE LAYER
+   ════════════════════════════════════════════════════════════════ */
+
+html, body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-feature-settings: "ss01", "ss02", "cv01", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background-color: #b0f0d6;
-  color: #002117;
+  background-color: var(--color-ink);
+  color: var(--color-cream);
 }
 
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #bfc9c3; border-radius: 10px; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink);
+  border: 2px solid var(--color-cream);
+  border-radius: 0;
+}
 
+/* ─── Display headlines · Fraunces tuned ──────────────────────── */
+.font-display,
+.font-serif {
+  font-feature-settings: "ss01", "ss02", "ss03", "salt", "kern";
+  font-variation-settings: "opsz" 120, "SOFT" 30;
+  letter-spacing: -0.022em;
+}
+h1.font-display,
+h2.font-display {
+  font-variation-settings: "opsz" 144, "SOFT" 20;
+  letter-spacing: -0.03em;
+  line-height: 0.94;
+}
+
+/* ─── Editorial number ticker ─────────────────────────────────── */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "lnum";
+}
+
+/* ─── Material symbols (kept for utility icons) ───────────────── */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' -25, 'opsz' 24;
   display: inline-block;
   line-height: 1;
   text-transform: none;
@@ -90,22 +101,124 @@ body {
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
+  vertical-align: middle;
 }
 
-.glass-nav {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+/* ════════════════════════════════════════════════════════════════
+   GRAIN OVERLAY (svg noise, fixed across the viewport)
+   ════════════════════════════════════════════════════════════════ */
+
+.rv-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.05  0 0 0 0 0.1  0 0 0 0 0.07  0 0 0 1 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-.glass-panel {
-  background: rgba(250, 248, 255, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+/* ════════════════════════════════════════════════════════════════
+   EDITORIAL UTILITIES
+   ════════════════════════════════════════════════════════════════ */
+
+/* "Rule with label" — eyebrow separator used as section headings */
+.rv-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  opacity: 0.65;
+}
+.rv-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-ink);
+  opacity: 0.4;
 }
 
-.editorial-shadow {
-  box-shadow: 0px 12px 32px rgba(19, 27, 46, 0.06);
+/* Editorial dropcap */
+.rv-dropcap::first-letter {
+  font-family: var(--font-display);
+  font-size: 4.2em;
+  font-weight: 600;
+  float: left;
+  line-height: 0.85;
+  margin: 0.05em 0.08em 0 -0.04em;
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+  color: var(--color-ink);
 }
+
+/* Animated underline — center origin, paper-press feel */
+.rv-link {
+  position: relative;
+  display: inline-block;
+}
+.rv-link::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 360ms var(--ease-paper);
+}
+.rv-link:hover::after { transform: scaleX(1); }
+
+/* Letterpress button — hard shadow, no rounding by default */
+.rv-press {
+  box-shadow: 0 2px 0 rgba(13, 27, 18, 0.85), inset 0 0 0 1px rgba(244, 239, 226, 0.05);
+  transition: transform 120ms var(--ease-paper), box-shadow 120ms var(--ease-paper);
+}
+.rv-press:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 rgba(13, 27, 18, 0.85), inset 0 0 0 1px rgba(244, 239, 226, 0.05);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PAGE-LOAD STAGGER REVEAL
+   ════════════════════════════════════════════════════════════════ */
+
+@keyframes rv-rise {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes rv-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes rv-rule-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.rv-rise   { animation: rv-rise 720ms var(--ease-paper) both; }
+.rv-fade   { animation: rv-fade 900ms var(--ease-paper) both; }
+.rv-rule-anim::after { animation: rv-rule-grow 1100ms var(--ease-paper) both; transform-origin: left; }
+
+.rv-delay-0  { animation-delay: 0ms; }
+.rv-delay-1  { animation-delay: 60ms; }
+.rv-delay-2  { animation-delay: 120ms; }
+.rv-delay-3  { animation-delay: 180ms; }
+.rv-delay-4  { animation-delay: 240ms; }
+.rv-delay-5  { animation-delay: 320ms; }
+.rv-delay-6  { animation-delay: 420ms; }
+.rv-delay-7  { animation-delay: 540ms; }
+.rv-delay-8  { animation-delay: 700ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-rise, .rv-fade, .rv-rule-anim::after { animation: none; opacity: 1; transform: none; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   FORMS
+   ════════════════════════════════════════════════════════════════ */
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
@@ -115,3 +228,37 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ════════════════════════════════════════════════════════════════
+   BACK-COMPAT SHIMS (legacy color names while pages migrate)
+   ════════════════════════════════════════════════════════════════ */
+
+@theme inline {
+  --color-surface: #f4efe2;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #efe7d3;
+  --color-surface-container: #e8e0cc;
+  --color-surface-container-high: #e0d7bf;
+  --color-surface-container-highest: #d6cdb3;
+  --color-on-surface: #0d1b12;
+  --color-on-surface-variant: #4a5440;
+  --color-outline: #5a624e;
+  --color-outline-variant: #b9b39e;
+  --color-primary: #233a26;
+  --color-primary-container: #233a26;
+  --color-on-primary: #f4efe2;
+  --color-on-primary-container: #b8c8b3;
+  --color-primary-fixed: #d8e0c8;
+  --color-primary-fixed-dim: #b8c8b3;
+  --color-on-primary-fixed: #0d1b12;
+  --color-on-primary-fixed-variant: #233a26;
+  --color-error-container: #f5e3df;
+  --color-on-error: #f4efe2;
+  --color-on-error-container: #6a1a10;
+  --color-inverse-surface: #0d1b12;
+  --color-inverse-on-surface: #f4efe2;
+  --color-secondary: #7b5640;
+  --color-secondary-container: #efe7d3;
+  --color-on-secondary: #f4efe2;
+  --color-on-secondary-container: #4a3625;
+}

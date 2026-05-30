@@ -11,24 +11,36 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label
+            htmlFor={id}
+            className="block font-mono text-[10.5px] uppercase tracking-[0.18em] text-ink/65 mb-2"
+          >
             {label}
           </label>
         )}
         <textarea
           id={id}
-          className={cn(
-            "flex min-h-[80px] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 resize-y",
-            error && "border-red-500 focus:ring-red-500",
-            className
-          )}
           ref={ref}
+          className={cn(
+            "block w-full bg-transparent border-0 border-b border-ink/30",
+            "font-sans text-base text-ink placeholder:text-ink/30",
+            "px-0 py-2.5 resize-y min-h-[88px]",
+            "focus:outline-none focus:border-ink focus:ring-0",
+            "disabled:opacity-50 disabled:cursor-not-allowed",
+            "transition-colors duration-150",
+            error && "border-error focus:border-error",
+            className,
+          )}
           {...props}
         />
-        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+        {error && (
+          <p className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-error">
+            ✕ {error}
+          </p>
+        )}
       </div>
     );
-  }
+  },
 );
 Textarea.displayName = "Textarea";
 

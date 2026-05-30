@@ -1,176 +1,163 @@
-"use client";
-
 import Link from "next/link";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { EditorialRule, NumberedRow } from "@/components/marketing/editorial";
 
-const CATEGORIES = [
-  { icon: "nutrition", name: "Frutas Tropicales", description: "Mango, piña, maracuyá y guanábana liofilizados, conservando su sabor intenso.", tag: "Popular" },
-  { icon: "energy_savings_leaf", name: "Berries & Exóticos", description: "Arándanos, fresas, uchuvas y gulupa en presentaciones premium.", tag: "Antioxidantes" },
-  { icon: "blender", name: "Mix & Snacks", description: "Mezclas curadas de frutas liofilizadas listas para consumir como snack.", tag: "Ready-to-eat" },
-  { icon: "bakery_dining", name: "Para Repostería", description: "Polvo y trozos de frutas ideales para decoración y sabor en pastelería.", tag: "Chef Grade" },
-  { icon: "local_shipping", name: "Mayorista / Bulk", description: "Presentaciones a granel para negocios, restaurantes y exportación.", tag: "B2B" },
-  { icon: "redeem", name: "Regalos Corporativos", description: "Kits personalizados con marca para regalos empresariales.", tag: "Personalizable" },
-];
+const FRUITS = [
+  { code: "MGO", name: "Mango",        region: "Tolima",          note: "Rodajas premium" },
+  { code: "PIA", name: "Piña Golden",  region: "Santander",       note: "Trozos hidratados" },
+  { code: "MRC", name: "Maracuyá",     region: "Huila",           note: "Polvo natural" },
+  { code: "UCH", name: "Uchuva",       region: "Cundinamarca",    note: "Entera crujiente" },
+  { code: "MIX", name: "Mix berries",  region: "Boyacá",          note: "Cuatro frutas" },
+  { code: "GNB", name: "Guanábana",    region: "Magdalena",       note: "Edición limitada" },
+] as const;
 
-const STATS = [
-  { value: "100%", label: "Natural", icon: "eco" },
-  { value: "2 años", label: "Shelf life", icon: "calendar_month" },
-  { value: "95%", label: "Nutrientes", icon: "vital_signs" },
-  { value: "0", label: "Conservantes", icon: "block" },
+const PROCESS = [
+  { ord: 1, title: "Cosecha en punto óptimo", body: "Trabajamos con asociaciones de pequeños productores que cosechan la fruta a su punto exacto de madurez. Sin acelerar, sin retrasar." },
+  { ord: 2, title: "Congelación rápida", body: "La fruta entra al congelador a -40°C en menos de cuatro horas desde la cosecha. La célula no se rompe, el sabor queda intacto." },
+  { ord: 3, title: "Sublimación al vacío", body: "Liofilización industrial: el agua pasa de hielo a vapor sin pasar por líquido. El resultado conserva 95% de los nutrientes originales." },
+  { ord: 4, title: "Empaque hermético + sello inerte", body: "Bolsas con barrera de oxígeno y nitrógeno modificado. Shelf life de 24 meses sin refrigerar, sin conservantes." },
 ];
 
 export default function LiofilizadosHomePage() {
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
-      {/* Nav */}
-      <nav className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-900/20">
-            <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>nutrition</span>
-          </div>
-          <span className="text-xl font-bold tracking-tighter text-on-surface">Reina Verde <span className="text-amber-600">Liofilizados</span></span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/" className="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1">
-            <span className="material-symbols-outlined text-lg">home</span> Hub
-          </Link>
-          <Link href="/login" className="px-5 py-2 text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors">Iniciar Sesión</Link>
-          <Link href="/registro" className="px-5 py-2.5 text-sm font-semibold bg-amber-600 text-white rounded-xl hover:bg-amber-500 transition-colors">Crear Cuenta</Link>
-        </div>
-      </nav>
+    <>
+      <SiteHeader line="liofilizados" />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-amber-200/30 blur-3xl" />
-          <div className="absolute bottom-[-30%] right-[-10%] w-[400px] h-[400px] rounded-full bg-orange-200/20 blur-3xl" />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-8 py-20 md:py-28">
-          <div className="flex flex-col md:flex-row items-center gap-12">
-            <div className="w-full md:w-1/2">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 mb-4 block">Frutas Liofilizadas Premium</span>
-              <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
-                Sabor Colombiano,<br />
-                <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">Nutrición Intacta</span>
-              </h1>
-              <p className="text-lg text-on-surface-variant mb-10 max-w-lg leading-relaxed">
-                Frutas colombianas liofilizadas que conservan el 95% de sus nutrientes y todo su sabor. Sin conservantes, sin azúcar añadida, sin compromisos.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/liofilizados/catalogo" className="px-8 py-4 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl font-semibold shadow-lg shadow-amber-900/20 hover:scale-[1.02] transition-transform active:scale-95 flex items-center gap-2">
-                  Ver Catálogo <span className="material-symbols-outlined text-xl">arrow_forward</span>
-                </Link>
-                <a href="#categorias" className="px-8 py-4 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors active:scale-95">
-                  Explorar Categorías
-                </a>
-              </div>
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 pt-12 sm:pt-16">
+        <div className="grid grid-cols-12 gap-x-6">
+          <div className="col-span-12 lg:col-span-3 mb-6 lg:mb-0">
+            <div className="rv-rise rv-delay-0 font-mono text-[11px] uppercase tracking-[0.22em] text-persimmon leading-relaxed">
+              <p>División 03</p>
+              <p>Fruta liofilizada</p>
+              <p>Origen Colombia</p>
             </div>
-            <div className="w-full md:w-1/2 relative flex justify-center">
-              <div className="aspect-square w-full max-w-md rounded-[3rem] bg-gradient-to-br from-amber-500/80 to-orange-600 flex items-center justify-center editorial-shadow">
-                <span className="material-symbols-outlined text-white/20" style={{ fontSize: "160px", fontVariationSettings: "'FILL' 1" }}>nutrition</span>
-              </div>
+          </div>
+
+          <div className="col-span-12 lg:col-span-9">
+            <h1 className="rv-rise rv-delay-1 font-display font-light tracking-[-0.035em] leading-[0.9] text-ink text-6xl sm:text-8xl lg:text-[136px]">
+              Fruta colombiana,
+              <br />
+              <span className="italic">frío seco</span>
+              <span className="text-persimmon">.</span>
+            </h1>
+            <p className="rv-rise rv-delay-3 mt-10 font-serif italic text-xl sm:text-2xl leading-snug text-ink/75 max-w-3xl">
+              Mango, piña, maracuyá, uchuva. Liofilización industrial que conserva 95% del valor
+              nutricional y todo el sabor — sin azúcar añadida, sin conservantes, sin sulfitos.
+            </p>
+
+            <div className="rv-rise rv-delay-4 mt-12 flex flex-wrap gap-4">
+              <Link
+                href="/liofilizados/catalogo"
+                className="inline-flex items-center h-14 px-9 bg-persimmon text-cream font-sans text-[14px] tracking-tight rv-press hover:bg-persimmon-deep"
+              >
+                Ver catálogo →
+              </Link>
+              <Link
+                href="/liofilizados/catalogo?filter=mayorista"
+                className="inline-flex items-center h-14 px-9 border border-ink/40 text-ink font-sans text-[14px] tracking-tight hover:border-ink hover:bg-ink hover:text-cream transition-colors"
+              >
+                Mayorista B2B
+              </Link>
             </div>
           </div>
         </div>
+
+        <dl className="rv-fade rv-delay-5 mt-20 grid grid-cols-2 sm:grid-cols-4 border-y border-ink/15 divide-x divide-ink/15">
+          {[
+            { k: "Origen", v: "Colombia" },
+            { k: "Nutrientes", v: "95%" },
+            { k: "Shelf life", v: "24m" },
+            { k: "Conservantes", v: "0" },
+          ].map((s) => (
+            <div key={s.k} className="px-6 py-7">
+              <dt className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55 mb-2">
+                {s.k}
+              </dt>
+              <dd className="font-display text-3xl sm:text-5xl tracking-[-0.025em] tabular text-ink">
+                {s.v}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
-      {/* Stats */}
-      <section className="bg-gradient-to-br from-amber-500 to-orange-600 py-12">
-        <div className="max-w-7xl mx-auto px-8 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {STATS.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <span className="material-symbols-outlined text-white/80 text-3xl mb-2">{stat.icon}</span>
-              <p className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</p>
-              <p className="mt-1 text-amber-100 text-sm">{stat.label}</p>
-            </div>
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
+        <div className="grid grid-cols-12 gap-x-6 mb-12">
+          <div className="col-span-12 lg:col-span-5">
+            <EditorialRule index="01" label="Inventario por origen" />
+            <h2 className="mt-6 font-display font-light text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.025em] text-ink">
+              Seis frutas,
+              <br />
+              <span className="italic">seis</span>
+              <br />
+              microclimas.
+            </h2>
+          </div>
+          <div className="col-span-12 lg:col-span-6 lg:col-start-7 lg:pt-2">
+            <p className="font-serif italic text-xl leading-snug text-ink/75 max-w-2xl">
+              El mango del Tolima es distinto al del Magdalena. La piña del Quindío no sabe
+              como la de Santander. Trabajamos con la región que mejor expresa cada fruta —
+              no con la más barata.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-ink/15">
+          {FRUITS.map((f) => (
+            <Link
+              key={f.code}
+              href={`/liofilizados/catalogo`}
+              className="group p-7 border-r border-b border-ink/15 hover:bg-persimmon/[0.05] transition-colors"
+            >
+              <div className="flex items-baseline justify-between mb-6">
+                <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-persimmon">
+                  {f.code}
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-ink/40">
+                  {f.region}
+                </span>
+              </div>
+              <h3 className="font-display text-4xl tracking-tight text-ink leading-none mb-3">
+                {f.name}
+              </h3>
+              <p className="font-serif italic text-[15px] leading-snug text-ink/70 mb-6">
+                {f.note}
+              </p>
+              <div className="flex items-center justify-between font-sans text-[13px] text-ink">
+                <span className="rv-link">Ver presentaciones</span>
+                <span className="font-display text-2xl group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* Categories */}
-      <section id="categorias" className="py-20 bg-surface-container-low">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 mb-2 block">Productos</span>
-            <h2 className="text-3xl font-semibold tracking-tight text-on-surface">Nuestras Categorías</h2>
-            <p className="mt-3 text-on-surface-variant">Frutas colombianas liofilizadas para cada necesidad</p>
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
+        <EditorialRule index="02" label="Proceso · de árbol a paquete" className="mb-12" />
+        <div className="grid grid-cols-12 gap-x-6">
+          <div className="col-span-12 lg:col-span-4 mb-10 lg:mb-0">
+            <h2 className="font-display font-light text-5xl sm:text-6xl leading-[0.95] tracking-[-0.025em] text-ink">
+              Cuatro
+              <br />
+              pasos.
+              <br />
+              <span className="italic">Ningún</span>
+              <br />
+              atajo.
+            </h2>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {CATEGORIES.map((cat) => (
-              <Link href="/liofilizados/catalogo" key={cat.name}>
-                <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm hover:translate-y-[-4px] transition-all duration-300 group relative overflow-hidden">
-                  <div className="absolute top-4 right-4">
-                    <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-full">{cat.tag}</span>
-                  </div>
-                  <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mb-4">
-                    <span className="material-symbols-outlined text-amber-600 text-2xl">{cat.icon}</span>
-                  </div>
-                  <h3 className="font-bold text-on-surface mb-2">{cat.name}</h3>
-                  <p className="text-sm text-on-surface-variant leading-relaxed">{cat.description}</p>
-                  <div className="mt-4 flex items-center gap-1 text-amber-600 font-bold text-xs uppercase tracking-widest">
-                    Ver productos <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">chevron_right</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process */}
-      <section className="py-20 bg-surface">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 mb-2 block">Proceso</span>
-            <h2 className="text-3xl font-semibold tracking-tight text-on-surface">¿Qué es la Liofilización?</h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { step: "1", title: "Selección", desc: "Frutas colombianas frescas seleccionadas en su punto óptimo de madurez", icon: "search" },
-              { step: "2", title: "Congelación", desc: "Congelación rápida a -40°C para preservar la estructura celular", icon: "ac_unit" },
-              { step: "3", title: "Sublimación", desc: "El agua se elimina por vacío sin pasar por estado líquido", icon: "science" },
-              { step: "4", title: "Empaque", desc: "Sellado al vacío para conservar frescura por hasta 2 años", icon: "package_2" },
-            ].map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center mb-4 shadow-lg shadow-amber-900/20">
-                  <span className="material-symbols-outlined text-2xl">{item.icon}</span>
-                </div>
-                <h3 className="font-bold text-on-surface mb-2">{item.title}</h3>
-                <p className="text-sm text-on-surface-variant">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-8 py-20 bg-surface">
-        <div className="max-w-5xl mx-auto bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-3xl p-12 shadow-xl shadow-amber-900/20 relative overflow-hidden">
-          <div className="relative z-10 text-center">
-            <span className="bg-white/10 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Nutrición Premium</span>
-            <h2 className="text-3xl sm:text-4xl font-bold mt-6 tracking-tight">¿Listo para probar la diferencia?</h2>
-            <p className="text-amber-100 text-lg mt-4 max-w-2xl mx-auto">Frutas colombianas 100% naturales, sin conservantes, con envío a toda Colombia.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-              <Link href="/liofilizados/catalogo" className="bg-white text-amber-700 font-bold px-8 py-4 rounded-xl hover:bg-amber-50 transition-colors active:scale-95 duration-150">
-                Explorar Catálogo
-              </Link>
+          <div className="col-span-12 lg:col-span-7 lg:col-start-6">
+            <div className="border-b border-ink/15">
+              {PROCESS.map((d) => (
+                <NumberedRow key={d.ord} ordinal={d.ord} title={d.title}>{d.body}</NumberedRow>
+              ))}
             </div>
           </div>
-          <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-white/5 rounded-full pointer-events-none"></div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-inverse-surface text-inverse-on-surface py-8">
-        <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>nutrition</span>
-            </div>
-            <span className="text-lg font-bold text-white">Reina Verde Liofilizados</span>
-          </div>
-          <p className="text-sm opacity-50">&copy; {new Date().getFullYear()} Reina Verde</p>
-        </div>
-      </footer>
-    </div>
+      <SiteFooter />
+    </>
   );
 }

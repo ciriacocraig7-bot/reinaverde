@@ -1,150 +1,163 @@
-"use client";
-
 import Link from "next/link";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { EditorialRule, NumberedRow } from "@/components/marketing/editorial";
 
 const CATEGORIES = [
-  { icon: "spa", name: "Aceites CBD", description: "Aceites sublinguales de espectro completo para bienestar diario.", tag: "Bestseller" },
-  { icon: "local_florist", name: "Flores Secas", description: "Flores de cáñamo industrial con perfiles aromáticos únicos.", tag: "Premium" },
-  { icon: "science", name: "Tinturas", description: "Extractos concentrados con dosificación precisa para uso terapéutico.", tag: "Lab Tested" },
-  { icon: "self_improvement", name: "Tópicos", description: "Cremas, bálsamos y ungüentos para alivio localizado.", tag: "Natural" },
-  { icon: "inventory_2", name: "Kits de Bienestar", description: "Paquetes curados con productos complementarios para rutinas de bienestar.", tag: "Nuevo" },
-  { icon: "pets", name: "Línea Pet", description: "Productos formulados especialmente para el bienestar de mascotas.", tag: "Vet Approved" },
-];
+  { code: "ACE", name: "Aceites",   description: "Full y broad-spectrum, 500–2000mg.", note: "Sublingual" },
+  { code: "FLR", name: "Flores",     description: "Cáñamo industrial, < 0.3% THC.",      note: "Premium" },
+  { code: "TIN", name: "Tinturas",   description: "Extractos concentrados, dosificador.", note: "Terapéutico" },
+  { code: "TOP", name: "Tópicos",    description: "Bálsamos, cremas, ungüentos.",         note: "Localizado" },
+  { code: "KIT", name: "Kits",       description: "Rutinas curadas para nuevos usuarios.", note: "Curado" },
+  { code: "PET", name: "Línea pet",  description: "Formulación veterinaria, sabor salmón.", note: "Mascotas" },
+] as const;
 
-const TRUST_POINTS = [
-  { icon: "verified", title: "100% Legal", desc: "Todos nuestros productos cumplen con la regulación colombiana vigente." },
-  { icon: "biotech", title: "Lab Certificado", desc: "Certificados de análisis de laboratorios independientes en cada producto." },
-  { icon: "local_shipping", title: "Envío Discreto", desc: "Empaque neutro y envío seguro a todo Colombia." },
-  { icon: "support_agent", title: "Asesoría Experta", desc: "Equipo de profesionales para guiar tu experiencia de bienestar." },
+const PILLARS = [
+  { ord: 1, title: "Todo lleva certificado de análisis", body: "Cada lote pasa por laboratorio independiente. El COA es público — busca el código del frasco y lo abrirás. Nada que decir que no podamos probar en papel." },
+  { ord: 2, title: "Trazabilidad por código de lote", body: "El frasco tiene un código. Ese código te lleva al cultivo, al método de extracción, a la fecha de envasado, al lote de la prueba. Auditable, repetible." },
+  { ord: 3, title: "Envío neutro a todo el país", body: "Empaque sin marca exterior. Recogida por mensajería con tracking. Si quieres factura electrónica con NIT empresarial, también." },
+  { ord: 4, title: "Asesoría que no es venta", body: "Si no sabes qué necesitas, pregunta. Nuestro equipo recomienda según el caso — y a veces eso significa que no compres nada todavía." },
 ];
 
 export default function PharmaHomePage() {
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
-      {/* Nav */}
-      <nav className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-lg shadow-violet-900/20">
-            <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>spa</span>
-          </div>
-          <span className="text-xl font-bold tracking-tighter text-on-surface">Reina Verde <span className="text-violet-600">Pharma</span></span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/" className="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1">
-            <span className="material-symbols-outlined text-lg">home</span> Hub
-          </Link>
-          <Link href="/login" className="px-5 py-2 text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors">Iniciar Sesión</Link>
-          <Link href="/registro" className="px-5 py-2.5 text-sm font-semibold bg-violet-700 text-white rounded-xl hover:bg-violet-600 transition-colors">Crear Cuenta</Link>
-        </div>
-      </nav>
+    <>
+      <SiteHeader line="pharma" />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-violet-200/30 blur-3xl" />
-          <div className="absolute bottom-[-30%] right-[-10%] w-[400px] h-[400px] rounded-full bg-purple-200/20 blur-3xl" />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-8 py-20 md:py-28">
-          <div className="flex flex-col md:flex-row items-center gap-12">
-            <div className="w-full md:w-1/2">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-violet-500 mb-4 block">Bienestar Natural & Legal</span>
-              <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
-                Tu Bienestar,<br />
-                <span className="bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">Nuestra Ciencia</span>
-              </h1>
-              <p className="text-lg text-on-surface-variant mb-10 max-w-lg leading-relaxed">
-                Productos de bienestar de grado premium, respaldados por ciencia, certificados por laboratorios independientes y 100% legales en Colombia.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/pharma/catalogo" className="px-8 py-4 bg-gradient-to-br from-violet-600 to-purple-800 text-white rounded-xl font-semibold shadow-lg shadow-violet-900/20 hover:scale-[1.02] transition-transform active:scale-95 flex items-center gap-2">
-                  Ver Catálogo <span className="material-symbols-outlined text-xl">arrow_forward</span>
-                </Link>
-                <a href="#categorias" className="px-8 py-4 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors active:scale-95">
-                  Explorar Categorías
-                </a>
-              </div>
+      {/* ════════════════ HERO ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 pt-12 sm:pt-16">
+        <div className="grid grid-cols-12 gap-x-6">
+          <div className="col-span-12 lg:col-span-3 mb-6 lg:mb-0">
+            <div className="rv-rise rv-delay-0 font-mono text-[11px] uppercase tracking-[0.22em] text-iris leading-relaxed">
+              <p>División 02</p>
+              <p>Fito-bienestar legal</p>
+              <p>Reg. Invima</p>
             </div>
-            <div className="w-full md:w-1/2 relative flex justify-center">
-              <div className="aspect-square w-full max-w-md rounded-[3rem] bg-gradient-to-br from-violet-600/80 to-purple-800 flex items-center justify-center editorial-shadow">
-                <span className="material-symbols-outlined text-white/20" style={{ fontSize: "160px", fontVariationSettings: "'FILL' 1" }}>spa</span>
-              </div>
+          </div>
+
+          <div className="col-span-12 lg:col-span-9">
+            <h1 className="rv-rise rv-delay-1 font-display font-light tracking-[-0.035em] leading-[0.9] text-ink text-6xl sm:text-8xl lg:text-[136px]">
+              Fito-bienestar
+              <br />
+              con <span className="italic">papel</span>
+              <span className="text-iris">.</span>
+            </h1>
+            <p className="rv-rise rv-delay-3 mt-10 font-serif italic text-xl sm:text-2xl leading-snug text-ink/75 max-w-3xl">
+              Cannabis medicinal y derivados de cáñamo, formulados bajo regulación colombiana
+              y respaldados por análisis de laboratorio público. Sin promesas de marketing.
+            </p>
+
+            <div className="rv-rise rv-delay-4 mt-12 flex flex-wrap gap-4">
+              <Link
+                href="/pharma/catalogo"
+                className="inline-flex items-center h-14 px-9 bg-iris text-cream font-sans text-[14px] tracking-tight rv-press hover:bg-iris-deep"
+              >
+                Ver catálogo →
+              </Link>
+              <Link
+                href="/pharma/catalogo?filter=lab"
+                className="inline-flex items-center h-14 px-9 border border-ink/40 text-ink font-sans text-[14px] tracking-tight hover:border-ink hover:bg-ink hover:text-cream transition-colors"
+              >
+                COA por lote
+              </Link>
             </div>
           </div>
         </div>
+
+        {/* KPI band */}
+        <dl className="rv-fade rv-delay-5 mt-20 grid grid-cols-2 sm:grid-cols-4 border-y border-ink/15 divide-x divide-ink/15">
+          {[
+            { k: "Lotes únicos", v: "62" },
+            { k: "Análisis lab", v: "100%" },
+            { k: "Cumplimiento", v: "Invima" },
+            { k: "Cobertura", v: "Nacional" },
+          ].map((s) => (
+            <div key={s.k} className="px-6 py-7">
+              <dt className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55 mb-2">
+                {s.k}
+              </dt>
+              <dd className="font-display text-4xl sm:text-5xl tracking-[-0.025em] tabular text-ink">
+                {s.v}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
-      {/* Trust Points */}
-      <section className="bg-gradient-to-br from-violet-700 to-purple-900 py-12">
-        <div className="max-w-7xl mx-auto px-8 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {TRUST_POINTS.map((tp) => (
-            <div key={tp.title} className="text-center">
-              <span className="material-symbols-outlined text-white/80 text-3xl mb-2">{tp.icon}</span>
-              <p className="text-white font-bold text-sm">{tp.title}</p>
-              <p className="text-violet-200 text-xs mt-1">{tp.desc}</p>
-            </div>
+      {/* ════════════════ CATEGORIES ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
+        <div className="grid grid-cols-12 gap-x-6 mb-12">
+          <div className="col-span-12 lg:col-span-5">
+            <EditorialRule index="01" label="Catálogo por familia" />
+            <h2 className="mt-6 font-display font-light text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.025em] text-ink">
+              Seis
+              <br />
+              familias,
+              <br />
+              <span className="italic">una</span> ética.
+            </h2>
+          </div>
+          <div className="col-span-12 lg:col-span-6 lg:col-start-7 lg:pt-2">
+            <p className="font-serif italic text-xl leading-snug text-ink/75 max-w-2xl">
+              Empezamos por aceites y crecimos a flores, tinturas, tópicos y kits. Cada
+              familia se evalúa con la misma disciplina: ¿tenemos el COA? ¿tenemos el caso de uso?
+              ¿tenemos la asesoría? Si la respuesta a las tres es sí, entra al catálogo.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-ink/15">
+          {CATEGORIES.map((c) => (
+            <Link
+              key={c.code}
+              href={`/pharma/catalogo?cat=${c.name.toLowerCase()}`}
+              className="group p-7 border-r border-b border-ink/15 hover:bg-iris/[0.04] transition-colors"
+            >
+              <div className="flex items-baseline justify-between mb-6">
+                <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-iris">
+                  {c.code}
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-ink/40">
+                  {c.note}
+                </span>
+              </div>
+              <h3 className="font-display text-4xl tracking-tight text-ink leading-none mb-3">
+                {c.name}
+              </h3>
+              <p className="text-[14px] leading-relaxed text-ink/70 mb-6">{c.description}</p>
+              <div className="flex items-center justify-between font-sans text-[13px] text-ink">
+                <span className="rv-link">Ver familia</span>
+                <span className="font-display text-2xl group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* Categories */}
-      <section id="categorias" className="py-20 bg-surface-container-low">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-violet-500 mb-2 block">Catálogo</span>
-            <h2 className="text-3xl font-semibold tracking-tight text-on-surface">Nuestras Categorías</h2>
-            <p className="mt-3 text-on-surface-variant">Productos premium para cada necesidad de bienestar</p>
+      {/* ════════════════ PILLARS ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
+        <EditorialRule index="02" label="Cómo se diferencia" className="mb-12" />
+        <div className="grid grid-cols-12 gap-x-6">
+          <div className="col-span-12 lg:col-span-4 mb-10 lg:mb-0">
+            <h2 className="font-display font-light text-5xl sm:text-6xl leading-[0.95] tracking-[-0.025em] text-ink">
+              Cuatro
+              <br />
+              <span className="italic">disciplinas</span>
+              <br />
+              de la casa.
+            </h2>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {CATEGORIES.map((cat) => (
-              <Link href="/pharma/catalogo" key={cat.name}>
-                <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm hover:translate-y-[-4px] transition-all duration-300 group relative overflow-hidden">
-                  <div className="absolute top-4 right-4">
-                    <span className="bg-violet-50 text-violet-700 text-[10px] font-bold px-2.5 py-1 rounded-full">{cat.tag}</span>
-                  </div>
-                  <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center mb-4">
-                    <span className="material-symbols-outlined text-violet-600 text-2xl">{cat.icon}</span>
-                  </div>
-                  <h3 className="font-bold text-on-surface mb-2">{cat.name}</h3>
-                  <p className="text-sm text-on-surface-variant leading-relaxed">{cat.description}</p>
-                  <div className="mt-4 flex items-center gap-1 text-violet-600 font-bold text-xs uppercase tracking-widest">
-                    Ver productos <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">chevron_right</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
+          <div className="col-span-12 lg:col-span-7 lg:col-start-6">
+            <div className="border-b border-ink/15">
+              {PILLARS.map((d) => (
+                <NumberedRow key={d.ord} ordinal={d.ord} title={d.title}>{d.body}</NumberedRow>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="px-8 py-20 bg-surface">
-        <div className="max-w-5xl mx-auto bg-gradient-to-br from-violet-700 to-purple-900 text-white rounded-3xl p-12 shadow-xl shadow-violet-900/20 relative overflow-hidden">
-          <div className="relative z-10 text-center">
-            <span className="bg-white/10 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">Bienestar Certificado</span>
-            <h2 className="text-3xl sm:text-4xl font-bold mt-6 tracking-tight">¿Listo para tu experiencia de bienestar?</h2>
-            <p className="text-violet-200 text-lg mt-4 max-w-2xl mx-auto">Productos certificados, envío discreto a toda Colombia y asesoría personalizada.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-              <Link href="/pharma/catalogo" className="bg-white text-violet-700 font-bold px-8 py-4 rounded-xl hover:bg-violet-50 transition-colors active:scale-95 duration-150">
-                Explorar Catálogo
-              </Link>
-            </div>
-          </div>
-          <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-white/5 rounded-full pointer-events-none"></div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-inverse-surface text-inverse-on-surface py-8">
-        <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>spa</span>
-            </div>
-            <span className="text-lg font-bold text-white">Reina Verde Pharma</span>
-          </div>
-          <p className="text-sm opacity-50">&copy; {new Date().getFullYear()} Reina Verde</p>
-        </div>
-      </footer>
-    </div>
+      <SiteFooter />
+    </>
   );
 }

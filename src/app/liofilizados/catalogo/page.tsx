@@ -4,8 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLiofilizadosCart } from "@/stores/shop-cart-store";
-import { formatCurrency } from "@/lib/utils";
 import { useProducts, type ProductData } from "@/hooks/use-products";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { EditorialRule, PriceTag } from "@/components/marketing/editorial";
+import { cn } from "@/lib/utils";
 
 const FALLBACK_PRODUCTS: ProductData[] = [
   { id: "lf-1", name: "Mango Liofilizado Premium", slug: "mango-liofilizado-premium", price: 28000, badge: "Popular", icon: "nutrition", shortDesc: "Rodajas de mango colombiano. Crujientes y dulces. 50g.", weight: "50g", tags: [], stock: 100, isFeatured: true, category: { id: "fl-1", name: "Tropicales", slug: "tropicales" } },
@@ -24,88 +27,140 @@ const FALLBACK_CATEGORIES = ["Todos", "Tropicales", "Berries", "Snacks", "Repost
 export default function LiofilizadosCatalogoPage() {
   const [filter, setFilter] = useState("Todos");
   const addItem = useLiofilizadosCart((s) => s.addItem);
-  const cartCount = useLiofilizadosCart((s) => s.itemCount);
-  const { products, categories, loading } = useProducts({
+  const cartCount = useLiofilizadosCart((s) => s.itemCount());
+  const { products, categories } = useProducts({
     businessLine: "LIOFILIZADOS",
     fallbackProducts: FALLBACK_PRODUCTS,
     fallbackCategories: FALLBACK_CATEGORIES,
   });
-  const filtered = filter === "Todos" ? products : products.filter((p) => p.category.name === filter);
+  const filtered =
+    filter === "Todos" ? products : products.filter((p) => p.category.name === filter);
 
   const handleAdd = (p: ProductData) => {
-    addItem({ productId: p.id, name: p.name, icon: p.icon || "nutrition", unitPrice: p.price, quantity: 1, weight: p.weight || undefined });
-    toast.success(`${p.name} agregado al carrito`);
+    addItem({
+      productId: p.id,
+      name: p.name,
+      icon: p.icon || "nutrition",
+      unitPrice: p.price,
+      quantity: 1,
+      weight: p.weight || undefined,
+    });
+    toast.success(`${p.name} agregado`);
   };
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
-      <nav className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-        <Link href="/liofilizados" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-900/20">
-            <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>nutrition</span>
+    <>
+      <SiteHeader line="liofilizados" />
+
+      {/* Catalog header */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 pt-12">
+        <div className="grid grid-cols-12 gap-x-6 mb-12">
+          <div className="col-span-12 lg:col-span-3 mb-4 lg:mb-0">
+            <EditorialRule index="03" label="Catálogo" />
           </div>
-          <span className="text-xl font-bold tracking-tighter">Reina Verde <span className="text-amber-600">Liofilizados</span></span>
+          <div className="col-span-12 lg:col-span-9">
+            <h1 className="font-display font-light tracking-[-0.03em] leading-[0.92] text-ink text-6xl sm:text-7xl lg:text-8xl">
+              Inventario,
+              <br />
+              <span className="italic">por familia</span>
+              <span className="text-persimmon">.</span>
+            </h1>
+          </div>
+        </div>
+
+        {/* Filter row — editorial nav, not pills */}
+        <div className="border-y border-ink/15 py-4 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-8 whitespace-nowrap">
+            {categories.map((cat: string) => (
+              <button
+                key={cat}
+                onClick={() => setFilter(cat)}
+                className={cn(
+                  "relative font-mono text-[11.5px] uppercase tracking-[0.22em] py-1 transition-colors",
+                  filter === cat ? "text-ink" : "text-ink/45 hover:text-ink/75",
+                )}
+              >
+                {cat}
+                <span className="ml-2 font-mono text-[10px] text-ink/35">
+                  {cat === "Todos"
+                    ? products.length
+                    : products.filter((p) => p.category.name === cat).length}
+                </span>
+                {filter === cat && (
+                  <span
+                    className="absolute -bottom-[18px] left-0 right-0 h-px bg-persimmon"
+                    aria-hidden
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Product grid — editorial cards */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-12">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 border-t border-l border-ink/15">
+          {filtered.map((p, i) => (
+            <article
+              key={p.id}
+              className="group p-7 border-r border-b border-ink/15 flex flex-col bg-cream hover:bg-persimmon/[0.04] transition-colors"
+            >
+              <div className="flex items-baseline justify-between mb-5">
+                <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-persimmon">
+                  N° {String(i + 1).padStart(3, "0")}
+                </span>
+                {p.weight && (
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-ink/50">
+                    {p.weight}
+                  </span>
+                )}
+              </div>
+
+              {/* visual emblem — large material icon as ornament */}
+              <div className="h-32 flex items-center justify-center mb-6 bg-cream-warm border border-ink/10">
+                <span
+                  className="material-symbols-outlined text-ink/30 group-hover:scale-110 transition-transform duration-500"
+                  style={{ fontSize: "56px", fontVariationSettings: "'FILL' 1" }}
+                >
+                  {p.icon || "nutrition"}
+                </span>
+              </div>
+
+              <h3 className="font-display text-2xl tracking-tight text-ink leading-tight mb-2 min-h-[64px]">
+                {p.name}
+              </h3>
+              <p className="font-serif italic text-[14px] leading-snug text-ink/65 mb-6 line-clamp-2">
+                {p.shortDesc || p.description}
+              </p>
+
+              <div className="mt-auto pt-5 border-t border-ink/10 flex items-end justify-between">
+                <PriceTag amount={p.price} className="text-3xl" />
+                <button
+                  onClick={() => handleAdd(p)}
+                  aria-label={`Agregar ${p.name}`}
+                  className="h-10 w-10 bg-ink text-cream flex items-center justify-center rv-press hover:bg-persimmon hover:text-cream transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px]">add</span>
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Floating cart pill */}
+      {cartCount > 0 && (
+        <Link
+          href="/liofilizados/carrito"
+          className="fixed bottom-6 right-6 inline-flex items-center gap-3 h-12 px-6 bg-persimmon text-cream font-sans text-[13px] tracking-tight rv-press z-40"
+        >
+          <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
+          Ver carrito · {cartCount}
         </Link>
-        <div className="flex items-center gap-3">
-          <Link href="/" className="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1">
-            <span className="material-symbols-outlined text-lg">home</span> Hub
-          </Link>
-          <Link href="/liofilizados/carrito" className="relative p-2 text-on-surface-variant hover:text-on-surface transition-colors">
-            <span className="material-symbols-outlined text-xl">shopping_cart</span>
-            {cartCount() > 0 && <span className="absolute -top-0.5 -right-0.5 h-5 w-5 flex items-center justify-center rounded-full bg-amber-600 text-white text-[10px] font-bold">{cartCount()}</span>}
-          </Link>
-          <Link href="/login" className="px-5 py-2.5 text-sm font-semibold bg-amber-600 text-white rounded-xl hover:bg-amber-500 transition-colors">
-            Iniciar Sesión
-          </Link>
-        </div>
-      </nav>
+      )}
 
-      <div className="max-w-7xl mx-auto px-8 py-8">
-        <div className="mb-8">
-          <Link href="/liofilizados" className="inline-flex items-center text-sm text-on-surface-variant hover:text-on-surface mb-4 gap-1">
-            <span className="material-symbols-outlined text-lg">arrow_back</span> Volver
-          </Link>
-          <h1 className="text-4xl font-semibold tracking-tight">Catálogo</h1>
-          <p className="text-on-surface-variant mt-2">Frutas colombianas liofilizadas — 100% naturales</p>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mb-8">
-          {categories.map((cat: string) => (
-            <button key={cat} onClick={() => setFilter(cat)} className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${filter === cat ? "bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-sm" : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high"}`}>
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filtered.map((product) => (
-            <div key={product.id} className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden group hover:translate-y-[-4px] transition-all duration-300">
-              <div className="h-40 bg-gradient-to-br from-amber-100 to-orange-50 flex items-center justify-center relative">
-                <span className="material-symbols-outlined text-amber-300 group-hover:scale-110 transition-transform duration-500" style={{ fontSize: "64px" }}>{product.icon}</span>
-                {product.badge && <span className="absolute top-3 right-3 bg-amber-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">{product.badge}</span>}
-                {product.weight && <span className="absolute top-3 left-3 bg-white/80 backdrop-blur-sm text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full">{product.weight}</span>}
-              </div>
-              <div className="p-5">
-                <h3 className="font-bold text-on-surface text-sm mb-1 leading-tight">{product.name}</h3>
-                <p className="text-xs text-on-surface-variant mb-3 line-clamp-2">{product.shortDesc || product.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-amber-700">{formatCurrency(product.price)}</span>
-                  <button onClick={() => handleAdd(product)} className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-sm">
-                    <span className="material-symbols-outlined text-lg">add_shopping_cart</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {cartCount() > 0 && (
-          <Link href="/liofilizados/carrito" className="fixed bottom-6 right-6 bg-gradient-to-br from-amber-500 to-orange-600 text-white px-6 py-3.5 rounded-full shadow-xl shadow-amber-900/30 hover:brightness-110 transition-all flex items-center gap-2 z-40 active:scale-95">
-            <span className="material-symbols-outlined">shopping_cart</span>
-            <span className="font-bold">Ver Carrito ({cartCount()})</span>
-          </Link>
-        )}
-      </div>
-    </div>
+      <SiteFooter />
+    </>
   );
 }

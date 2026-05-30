@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { verifyToken } from "@/lib/auth/jwt";
+import { readSession } from "@/lib/auth/cookies";
 import { updateShopOrderStatusSchema } from "@/lib/validators/shop";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const payload = verifyToken(token);
-    if (!payload) return NextResponse.json({ error: "Token inválido" }, { status: 401 });
+    const payload = readSession(request);
+    if (!payload) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const { id } = await params;
     const order = await prisma.shopOrder.findUnique({
@@ -35,11 +32,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const payload = verifyToken(token);
-    if (!payload || payload.role !== "ADMIN") {
+    const payload = readSession(request);
+    if (!payload) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    if (payload.role !== "ADMIN") {
       return NextResponse.json({ error: "Solo administradores pueden actualizar pedidos" }, { status: 403 });
     }
 

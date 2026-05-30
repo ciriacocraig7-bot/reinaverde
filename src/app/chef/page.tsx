@@ -2,145 +2,176 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  DashHeader,
+  StatBlock,
+  Panel,
+  StatusPill,
+  ActionBtn,
+} from "@/components/dashboard/primitives";
 
 const PRODUCTION_ORDERS = [
-  { id: "RV-ABC123", event: "Almuerzo TechCorp", items: ["15x Bandeja Paisa", "10x Salmón Maracuyá", "5x Bowl Vegano", "25x Tres Leches"], guests: 30, deliveryTime: "12:00 PM", deliveryDate: "2026-03-28", status: "IN_PROGRESS", priority: "high" },
-  { id: "RV-DEF456", event: "Desayuno Directivos", items: ["20x Empanadas", "15x Ensalada Caesar", "20x Café Premium"], guests: 20, deliveryTime: "8:00 AM", deliveryDate: "2026-03-29", status: "PENDING", priority: "high" },
-  { id: "RV-GHI789", event: "Coffee Break Innovatech", items: ["30x Tabla de Quesos", "30x Jugo Natural", "30x Mousse Chocolate"], guests: 30, deliveryTime: "3:00 PM", deliveryDate: "2026-03-29", status: "PENDING", priority: "medium" },
-  { id: "RV-JKL012", event: "Boda López-García", items: ["60x Salmón Maracuyá", "40x Pollo Champiñones", "20x Bowl Vegano", "120x Tres Leches"], guests: 120, deliveryTime: "6:00 PM", deliveryDate: "2026-04-05", status: "PENDING", priority: "low" },
+  { id: "RV-ABC123", event: "Almuerzo TechCorp",         items: ["15× Bandeja paisa", "10× Salmón maracuyá", "5× Bowl vegano", "25× Tres leches"], guests: 30,  deliveryTime: "12:00", deliveryDate: "28 mar", status: "IN_PROGRESS", priority: "high" },
+  { id: "RV-DEF456", event: "Desayuno directivos",       items: ["20× Empanadas", "15× Ensalada Caesar", "20× Café premium"],                       guests: 20,  deliveryTime: "08:00", deliveryDate: "29 mar", status: "PENDING",     priority: "high" },
+  { id: "RV-GHI789", event: "Coffee break Innovatech",   items: ["30× Tabla de quesos", "30× Jugo natural", "30× Mousse chocolate"],                 guests: 30,  deliveryTime: "15:00", deliveryDate: "29 mar", status: "PENDING",     priority: "medium" },
+  { id: "RV-JKL012", event: "Boda López-García",         items: ["60× Salmón maracuyá", "40× Pollo champiñones", "20× Bowl vegano", "120× Tres leches"], guests: 120, deliveryTime: "18:00", deliveryDate: "05 abr", status: "PENDING",     priority: "low" },
 ];
 
 const LOW_STOCK = [
-  { name: "Salmón fresco", stock: "2 kg", min: "5 kg" },
-  { name: "Maracuyá", stock: "1 kg", min: "3 kg" },
-  { name: "Chocolate 70%", stock: "500 g", min: "2 kg" },
+  { name: "Salmón fresco",  stock: "2 kg",  min: "5 kg" },
+  { name: "Maracuyá",       stock: "1 kg",  min: "3 kg" },
+  { name: "Chocolate 70%",  stock: "500 g", min: "2 kg" },
 ];
 
-const STATUS_LABELS: Record<string, { label: string; dot: string }> = {
-  PENDING: { label: "Pendiente", dot: "bg-amber-500" },
-  IN_PROGRESS: { label: "En Preparación", dot: "bg-blue-500 animate-pulse" },
-  QUALITY_CHECK: { label: "Control Calidad", dot: "bg-purple-500" },
-  COMPLETED: { label: "Completado", dot: "bg-emerald-500" },
+const STATUS_MAP: Record<string, { label: string; tone: "neutral" | "info" | "warn" | "success" | "muted" }> = {
+  PENDING:       { label: "Pendiente",     tone: "warn" },
+  IN_PROGRESS:   { label: "En cocina",     tone: "info" },
+  QUALITY_CHECK: { label: "QA",            tone: "info" },
+  COMPLETED:     { label: "Completado",    tone: "success" },
 };
 
-const PRIORITY_BORDER: Record<string, string> = {
-  high: "border-l-red-500",
-  medium: "border-l-amber-500",
-  low: "border-l-blue-500",
+const PRIORITY_TAG: Record<string, { label: string; tone: "danger" | "warn" | "info" }> = {
+  high:   { label: "P0 · Alta",   tone: "danger" },
+  medium: { label: "P1 · Media",  tone: "warn"   },
+  low:    { label: "P2 · Baja",   tone: "info"   },
 };
 
 export default function ChefDashboard() {
   const [orders, setOrders] = useState(PRODUCTION_ORDERS);
 
-  const handleStartProduction = (orderId: string) => {
-    setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "IN_PROGRESS" } : o));
-    toast.success(`Producción iniciada para ${orderId}`);
+  const handleStart = (id: string) => {
+    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: "IN_PROGRESS" } : o));
+    toast.success(`Producción iniciada · ${id}`);
   };
 
-  const handleCompleteProduction = (orderId: string) => {
-    setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "COMPLETED" } : o));
-    toast.success(`Producción completada para ${orderId}`);
+  const handleComplete = (id: string) => {
+    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: "COMPLETED" } : o));
+    toast.success(`Producción completada · ${id}`);
   };
 
-  const handleRequestRestock = () => {
-    toast.success("Solicitud de reabastecimiento enviada al proveedor");
-  };
+  const pending  = orders.filter((o) => o.status === "PENDING").length;
+  const inProg   = orders.filter((o) => o.status === "IN_PROGRESS").length;
+  const done     = orders.filter((o) => o.status === "COMPLETED").length;
 
-  const pendingCount = orders.filter((o) => o.status === "PENDING").length;
-  const inProgressCount = orders.filter((o) => o.status === "IN_PROGRESS").length;
-  const completedCount = orders.filter((o) => o.status === "COMPLETED").length;
+  const today = new Intl.DateTimeFormat("es-CO", {
+    day: "2-digit", month: "short", year: "numeric",
+  }).format(new Date()).toLowerCase();
 
   return (
-    <div className="space-y-8">
-      <header>
-        <p className="text-on-surface-variant text-xs uppercase tracking-[0.2em] mb-2">Gestión de Producción</p>
-        <h1 className="text-4xl font-semibold tracking-tight text-on-surface">Panel de Cocina</h1>
-      </header>
+    <>
+      <DashHeader
+        eyebrow="§ Cocina · Producción"
+        title={<>Cola de <span className="italic">producción</span><span className="text-marigold">.</span></>}
+        date={today}
+      />
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { title: "Pendientes", value: String(pendingCount), icon: "schedule" },
-          { title: "En Preparación", value: String(inProgressCount), icon: "restaurant_menu" },
-          { title: "Completados", value: String(completedCount), icon: "check_circle" },
-          { title: "Stock Bajo", value: String(LOW_STOCK.length), icon: "warning" },
-        ].map((stat) => (
-          <div key={stat.title} className="bg-surface-container-lowest rounded-xl p-5 shadow-sm shadow-emerald-900/5 border border-outline-variant/10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-3">
-              <span className="material-symbols-outlined text-primary-fixed-dim text-3xl opacity-20">{stat.icon}</span>
-            </div>
-            <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">{stat.title}</p>
-            <p className="text-2xl font-semibold text-on-surface mt-1">{stat.value}</p>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-ink/15">
+        <div className="border-r border-b border-ink/15">
+          <StatBlock label="Pendientes"     value={String(pending)}         meta="por iniciar"   trend="warn" accent="marigold" />
+        </div>
+        <div className="border-r border-b border-ink/15">
+          <StatBlock label="En cocina"      value={String(inProg)}          meta="activos ahora" trend="up" />
+        </div>
+        <div className="border-r border-b border-ink/15">
+          <StatBlock label="Completados"    value={String(done)}            meta="hoy"           trend="up" accent="ink" />
+        </div>
+        <div className="border-r border-b border-ink/15">
+          <StatBlock label="Stock crítico"  value={String(LOW_STOCK.length)} meta="ingredientes"  trend="warn" accent="persimmon" />
+        </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Production Queue */}
-        <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-lg font-semibold tracking-tight text-on-surface">Cola de Producción</h2>
-          {orders.map((order) => {
-            const st = STATUS_LABELS[order.status] || { label: order.status, dot: "bg-gray-500" };
-            return (
-              <div key={order.id} className={`bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm border-l-4 ${PRIORITY_BORDER[order.priority]}`}>
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-on-surface">{order.event}</h3>
-                      <Badge variant="secondary">
-                        <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`}></span>
-                        {st.label}
-                      </Badge>
+      <div className="grid lg:grid-cols-[1.6fr_1fr] gap-6">
+        {/* Production queue */}
+        <Panel index="01" title="Cola de producción" meta={`${orders.length} órdenes`}>
+          <ul className="divide-y divide-ink/10">
+            {orders.map((o, i) => {
+              const status = STATUS_MAP[o.status] || { label: o.status, tone: "muted" as const };
+              const prio   = PRIORITY_TAG[o.priority] || { label: "—", tone: "muted" as const };
+              return (
+                <li key={o.id} className="px-6 py-5 hover:bg-cream-warm transition-colors">
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div className="flex items-start gap-5">
+                      <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-ink/45 tabular pt-1.5">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div>
+                        <p className="font-display text-2xl tracking-tight text-ink leading-tight">
+                          {o.event}
+                        </p>
+                        <p className="font-mono text-[11px] uppercase tracking-wider text-ink/55 mt-1">
+                          {o.id} · {o.guests} pax · {o.deliveryDate} · {o.deliveryTime}
+                        </p>
+                        <div className="flex items-center gap-2 mt-3">
+                          <StatusPill tone={prio.tone}    label={prio.label} />
+                          <StatusPill tone={status.tone}  label={status.label} />
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-on-surface-variant mt-0.5">
-                      {order.id} · {order.guests} personas · {order.deliveryDate} {order.deliveryTime}
-                    </p>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      {o.status === "PENDING" && (
+                        <ActionBtn variant="marigold" onClick={() => handleStart(o.id)} className="h-9 px-4">
+                          ▶ Iniciar
+                        </ActionBtn>
+                      )}
+                      {o.status === "IN_PROGRESS" && (
+                        <ActionBtn variant="ink" onClick={() => handleComplete(o.id)} className="h-9 px-4">
+                          ✓ Completar
+                        </ActionBtn>
+                      )}
+                    </div>
                   </div>
-                  {order.status === "PENDING" ? (
-                    <button onClick={() => handleStartProduction(order.id)} className="px-4 py-2 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
-                      <span className="material-symbols-outlined text-sm">play_arrow</span> Iniciar
-                    </button>
-                  ) : order.status === "IN_PROGRESS" ? (
-                    <button onClick={() => handleCompleteProduction(order.id)} className="px-4 py-2 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-xs hover:bg-surface-container-high transition-colors active:scale-95 flex items-center gap-1.5 shrink-0">
-                      <span className="material-symbols-outlined text-sm">check</span> Completar
-                    </button>
-                  ) : null}
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {order.items.map((item) => (
-                    <Badge key={item} variant="secondary">{item}</Badge>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                  <ul className="flex flex-wrap gap-1.5 pl-12">
+                    {o.items.map((item) => (
+                      <li
+                        key={item}
+                        className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-ink/65 border border-ink/15 bg-cream px-2 py-[3px]"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
 
-        {/* Sidebar */}
+        {/* Low stock sidebar */}
         <div className="space-y-6">
-          <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-outline-variant/5 flex items-center gap-2">
-              <span className="material-symbols-outlined text-error">warning</span>
-              <h4 className="font-semibold tracking-tight">Ingredientes Stock Bajo</h4>
-            </div>
-            <div className="p-5 space-y-3">
-              {LOW_STOCK.map((item) => (
-                <div key={item.name} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-red-900">{item.name}</p>
-                    <p className="text-xs text-red-600">Stock: {item.stock} / Mín: {item.min}</p>
+          <Panel index="02" title="Stock crítico" meta="reordenar">
+            <ul className="divide-y divide-ink/10">
+              {LOW_STOCK.map((item, i) => (
+                <li key={item.name} className="px-6 py-4 flex items-baseline justify-between">
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-persimmon tabular">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <p className="font-display text-lg text-ink tracking-tight leading-none">
+                        {item.name}
+                      </p>
+                      <p className="font-mono text-[10.5px] uppercase tracking-wider text-ink/55 mt-1">
+                        {item.stock} / mín {item.min}
+                      </p>
+                    </div>
                   </div>
-                  <span className="material-symbols-outlined text-red-400">inventory_2</span>
-                </div>
+                  <StatusPill tone="danger" label="Bajo" />
+                </li>
               ))}
-              <button onClick={handleRequestRestock} className="w-full px-4 py-2.5 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold text-sm hover:bg-surface-container-high transition-colors active:scale-95">
-                Solicitar Reabastecimiento
-              </button>
+            </ul>
+            <div className="px-6 py-4 border-t border-ink/15">
+              <ActionBtn
+                variant="persimmon"
+                className="w-full"
+                onClick={() => toast.success("Solicitud enviada al proveedor")}
+              >
+                Solicitar reabastecimiento
+              </ActionBtn>
             </div>
-          </div>
+          </Panel>
         </div>
       </div>
-    </div>
+    </>
   );
 }

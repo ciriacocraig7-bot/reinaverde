@@ -139,6 +139,7 @@ model User {
   feedbacks       Feedback[]
   sessions        Session[]
   shopOrders      ShopOrder[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -153,6 +154,20 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -360,8 +375,11 @@ model EventTimeline {
 model Payment {
   id                String        @id @default(uuid())
   orderId           String
+  provider          PaymentProvider @default(BOLD)
   wompiTransactionId String?      @unique
   wompiReference    String?       @unique
+  boldTransactionId String?       @unique
+  boldReference     String?       @unique
   amount            Decimal       @db.Decimal(12, 2)
   currency          String        @default("COP")
   method            PaymentMethod?

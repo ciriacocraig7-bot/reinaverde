@@ -3,466 +3,416 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
+import {
+  DashHeader,
+  StatBlock,
+  Panel,
+  DataTable,
+  StatusPill,
+  ProgressMeter,
+  Avatar,
+  ActionBtn,
+} from "@/components/dashboard/primitives";
+
+/* ─── Mock data (mismo perfil que el original) ──────────────────── */
 
 const BUSINESS_TABS = [
-  { id: "overview", label: "Resumen General", icon: "dashboard", color: "from-emerald-600 to-green-700" },
-  { id: "catering", label: "Catering", icon: "restaurant", color: "from-emerald-600 to-green-700" },
-  { id: "pharma", label: "Pharma", icon: "spa", color: "from-violet-600 to-purple-800" },
-  { id: "liofilizados", label: "Liofilizados", icon: "nutrition", color: "from-amber-500 to-orange-600" },
-];
+  { id: "overview",     code: "ALL", label: "Todo",         accent: "" },
+  { id: "catering",     code: "CRP", label: "Catering",     accent: "text-marigold border-marigold" },
+  { id: "pharma",       code: "PHM", label: "Pharma",       accent: "text-iris border-iris" },
+  { id: "liofilizados", code: "LIO", label: "Liofilizados", accent: "text-persimmon border-persimmon" },
+] as const;
 
-const KPI_OVERVIEW = [
-  { title: "Ingresos Totales", value: "$42,680,000", change: "+12%", icon: "payments", trend: "up" },
-  { title: "Pedidos Activos", value: "287", change: "32 urgentes", icon: "pending_actions", trend: "warning" },
-  { title: "Productos Activos", value: "17", icon: "inventory_2", change: "3 líneas", trend: "up" },
-];
+type TabId = (typeof BUSINESS_TABS)[number]["id"];
 
-const KPI_BY_LINE: Record<string, typeof KPI_OVERVIEW> = {
+const KPIS: Record<TabId, { label: string; value: string; meta: string; trend: "up" | "warn"; accent?: "marigold" | "iris" | "persimmon" | "ink" }[]> = {
+  overview: [
+    { label: "Ingresos · mes", value: "$42,68M", meta: "+12% vs anterior", trend: "up" },
+    { label: "Pedidos activos", value: "287",    meta: "32 urgentes",       trend: "warn", accent: "marigold" },
+    { label: "Productos activos", value: "17",    meta: "tres líneas",      trend: "up" },
+  ],
   catering: [
-    { title: "Ingresos Catering", value: "$24,842,000", change: "+8%", icon: "payments", trend: "up" },
-    { title: "Pedidos Catering", value: "142", change: "18 críticos", icon: "pending_actions", trend: "warning" },
-    { title: "Ocupación Staff", value: "88%", icon: "badge", change: "94% cocina", trend: "up" },
+    { label: "Ingresos Catering",  value: "$24,84M", meta: "+8%",                trend: "up",   accent: "marigold" },
+    { label: "Pedidos en cola",    value: "142",    meta: "18 críticos",        trend: "warn", accent: "marigold" },
+    { label: "Ocupación staff",    value: "88%",     meta: "cocina al 94%",      trend: "up",   accent: "marigold" },
   ],
   pharma: [
-    { title: "Ingresos Pharma", value: "$11,450,000", change: "+22%", icon: "payments", trend: "up" },
-    { title: "Pedidos Pharma", value: "89", change: "8 pendientes envío", icon: "local_shipping", trend: "warning" },
-    { title: "Productos Pharma", value: "8", icon: "spa", change: "3 destacados", trend: "up" },
+    { label: "Ingresos Pharma",    value: "$11,45M", meta: "+22%",               trend: "up",  accent: "iris" },
+    { label: "Pedidos Pharma",     value: "89",      meta: "8 por enviar",       trend: "warn", accent: "iris" },
+    { label: "SKU activos",        value: "8",       meta: "3 destacados",       trend: "up",  accent: "iris" },
   ],
   liofilizados: [
-    { title: "Ingresos Liofilizados", value: "$6,388,000", change: "+18%", icon: "payments", trend: "up" },
-    { title: "Pedidos Liofilizados", value: "56", change: "6 pendientes envío", icon: "local_shipping", trend: "warning" },
-    { title: "Productos Frutas", value: "9", icon: "nutrition", change: "4 destacados", trend: "up" },
+    { label: "Ingresos Liofilizados", value: "$6,38M", meta: "+18%",               trend: "up",  accent: "persimmon" },
+    { label: "Pedidos por enviar",     value: "56",     meta: "6 retrasados",      trend: "warn", accent: "persimmon" },
+    { label: "Frutas en catálogo",     value: "9",      meta: "4 destacadas",      trend: "up",  accent: "persimmon" },
   ],
 };
 
 const CATERING_ORDERS = [
-  { id: "RV-ABC123", client: "TechCorp S.A.S", initials: "TC", desc: "Almuerzo Ejecutivo", total: 2850000, status: "IN_PRODUCTION", line: "catering" },
-  { id: "RV-DEF456", client: "María López", initials: "ML", desc: "Boda", total: 8500000, status: "PAID", line: "catering" },
-  { id: "RV-GHI789", client: "Innovatech", initials: "IN", desc: "Corporativo", total: 1200000, status: "READY", line: "catering" },
+  { id: "RV-ABC123", client: "TechCorp S.A.S",  initials: "TC", desc: "Almuerzo ejecutivo",         total: 2850000, status: "IN_PRODUCTION", line: "catering" },
+  { id: "RV-DEF456", client: "María López",      initials: "ML", desc: "Boda",                        total: 8500000, status: "PAID",          line: "catering" },
+  { id: "RV-GHI789", client: "Innovatech",       initials: "IN", desc: "Corporativo",                 total: 1200000, status: "READY",         line: "catering" },
 ];
 
 const SHOP_ORDERS = [
-  { id: "RV-SH001", client: "Carlos Gómez", initials: "CG", desc: "Aceite CBD + Bálsamo", total: 284000, status: "CONFIRMED", line: "pharma" },
-  { id: "RV-SH002", client: "Ana Ruiz", initials: "AR", desc: "Kit Bienestar Starter", total: 159000, status: "SHIPPED", line: "pharma" },
-  { id: "RV-SH003", client: "Pedro Díaz", initials: "PD", desc: "Flores Mango Kush x2", total: 170000, status: "PROCESSING", line: "pharma" },
-  { id: "RV-SH004", client: "Laura Martín", initials: "LM", desc: "Mango + Mix Berries", total: 63000, status: "CONFIRMED", line: "liofilizados" },
-  { id: "RV-SH005", client: "Diego Reyes", initials: "DR", desc: "Bulk Mango 1kg", total: 320000, status: "SHIPPED", line: "liofilizados" },
-  { id: "RV-SH006", client: "Sofia Torres", initials: "ST", desc: "Kit Repostería Premium", total: 65000, status: "DELIVERED", line: "liofilizados" },
+  { id: "RV-SH001", client: "Carlos Gómez",  initials: "CG", desc: "Aceite CBD + Bálsamo",    total: 284000, status: "CONFIRMED", line: "pharma" },
+  { id: "RV-SH002", client: "Ana Ruiz",      initials: "AR", desc: "Kit Bienestar Starter",   total: 159000, status: "SHIPPED",   line: "pharma" },
+  { id: "RV-SH003", client: "Pedro Díaz",    initials: "PD", desc: "Flores Mango Kush x2",    total: 170000, status: "PROCESSING", line: "pharma" },
+  { id: "RV-SH004", client: "Laura Martín",  initials: "LM", desc: "Mango + Mix Berries",     total: 63000,  status: "CONFIRMED",  line: "liofilizados" },
+  { id: "RV-SH005", client: "Diego Reyes",   initials: "DR", desc: "Bulk Mango 1kg",           total: 320000, status: "SHIPPED",    line: "liofilizados" },
+  { id: "RV-SH006", client: "Sofia Torres",  initials: "ST", desc: "Kit Repostería Premium",   total: 65000,  status: "DELIVERED",  line: "liofilizados" },
 ];
 
-const STATUS_MAP: Record<string, { label: string; variant: "default" | "info" | "warning" | "success" | "destructive"; dot: string }> = {
-  DRAFT: { label: "Borrador", variant: "default", dot: "bg-gray-500" },
-  QUOTED: { label: "Cotizado", variant: "info", dot: "bg-blue-500" },
-  PAYMENT_PENDING: { label: "Pendiente Pago", variant: "warning", dot: "bg-amber-500" },
-  PAID: { label: "Pagado", variant: "success", dot: "bg-emerald-500" },
-  IN_PRODUCTION: { label: "En Producción", variant: "info", dot: "bg-blue-500 animate-pulse" },
-  READY: { label: "Listo", variant: "success", dot: "bg-emerald-500" },
-  IN_TRANSIT: { label: "En Tránsito", variant: "warning", dot: "bg-indigo-500" },
-  DELIVERED: { label: "Entregado", variant: "success", dot: "bg-emerald-500" },
-  COMPLETED: { label: "Completado", variant: "success", dot: "bg-emerald-500" },
-  CANCELLED: { label: "Cancelado", variant: "destructive", dot: "bg-red-500" },
-  PENDING: { label: "Pendiente", variant: "warning", dot: "bg-amber-500" },
-  CONFIRMED: { label: "Confirmado", variant: "info", dot: "bg-blue-500" },
-  PROCESSING: { label: "Procesando", variant: "info", dot: "bg-blue-500 animate-pulse" },
-  SHIPPED: { label: "Enviado", variant: "warning", dot: "bg-indigo-500" },
-  REFUNDED: { label: "Reembolsado", variant: "destructive", dot: "bg-red-500" },
+const STATUS_MAP: Record<string, { label: string; tone: "neutral" | "info" | "warn" | "success" | "danger" | "muted" }> = {
+  DRAFT:           { label: "Borrador",      tone: "muted" },
+  QUOTED:          { label: "Cotizado",      tone: "info" },
+  PAYMENT_PENDING: { label: "Pend. pago",    tone: "warn" },
+  PAID:            { label: "Pagado",        tone: "success" },
+  IN_PRODUCTION:   { label: "Producción",    tone: "info" },
+  READY:           { label: "Listo",         tone: "success" },
+  IN_TRANSIT:      { label: "En tránsito",   tone: "warn" },
+  DELIVERED:       { label: "Entregado",     tone: "success" },
+  COMPLETED:       { label: "Completado",    tone: "success" },
+  CANCELLED:       { label: "Cancelado",     tone: "danger" },
+  PENDING:         { label: "Pendiente",     tone: "warn" },
+  CONFIRMED:       { label: "Confirmado",    tone: "info" },
+  PROCESSING:      { label: "Procesando",    tone: "info" },
+  SHIPPED:         { label: "Enviado",       tone: "warn" },
+  REFUNDED:        { label: "Reembolsado",   tone: "danger" },
 };
 
-const LINE_BADGE: Record<string, { label: string; bg: string; text: string }> = {
-  catering: { label: "Catering", bg: "bg-emerald-100", text: "text-emerald-800" },
-  pharma: { label: "Pharma", bg: "bg-violet-100", text: "text-violet-800" },
-  liofilizados: { label: "Liofilizados", bg: "bg-amber-100", text: "text-amber-800" },
+const LINE_TAG: Record<string, { code: string; tone: "warn" | "info" | "danger" }> = {
+  catering:     { code: "CRP", tone: "warn" },
+  pharma:       { code: "PHM", tone: "info" },
+  liofilizados: { code: "LIO", tone: "danger" },
 };
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [tab, setTab] = useState<TabId>("overview");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const [openActionId, setOpenActionId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 5;
   const actionRef = useRef<HTMLDivElement>(null);
-  const ITEMS_PER_PAGE = 5;
 
-  // Close action dropdown when clicking outside
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
+    const onClick = (e: MouseEvent) => {
       if (actionRef.current && !actionRef.current.contains(e.target as Node)) setOpenActionId(null);
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const kpis = activeTab === "overview" ? KPI_OVERVIEW : KPI_BY_LINE[activeTab] || KPI_OVERVIEW;
+  const kpis = KPIS[tab];
 
-  const allOrders = activeTab === "overview"
+  const allOrders = tab === "overview"
     ? [...CATERING_ORDERS, ...SHOP_ORDERS]
-    : activeTab === "catering"
+    : tab === "catering"
       ? CATERING_ORDERS
-      : SHOP_ORDERS.filter((o) => o.line === activeTab);
+      : SHOP_ORDERS.filter((o) => o.line === tab);
 
-  const filteredOrders = statusFilter
-    ? allOrders.filter((o) => o.status === statusFilter)
-    : allOrders;
-
-  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ITEMS_PER_PAGE));
-  const paginatedOrders = filteredOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const filtered = statusFilter ? allOrders.filter((o) => o.status === statusFilter) : allOrders;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const slice = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const handleExportCSV = () => {
     const headers = ["ID", "Cliente", "Línea", "Detalle", "Monto", "Estado"];
-    const rows = filteredOrders.map((o) => [
-      o.id,
-      o.client,
-      LINE_BADGE[o.line]?.label || o.line,
-      o.desc,
-      o.total.toString(),
+    const rows = filtered.map((o) => [
+      o.id, o.client, LINE_TAG[o.line]?.code || o.line, o.desc, o.total.toString(),
       STATUS_MAP[o.status]?.label || o.status,
     ]);
     const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `pedidos-${activeTab}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.href = URL.createObjectURL(blob);
+    a.download = `pedidos-${tab}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
-    URL.revokeObjectURL(url);
-    toast.success("CSV descargado exitosamente");
+    URL.revokeObjectURL(a.href);
+    toast.success("CSV descargado");
   };
 
-  const handleDownloadReport = () => {
-    handleExportCSV();
-  };
-
-  const handleOrderAction = (orderId: string, action: string) => {
-    setOpenActionId(null);
-    switch (action) {
-      case "view":
-        toast.info(`Viendo detalles del pedido ${orderId}`);
-        break;
-      case "status":
-        toast.info(`Cambiar estado de ${orderId}`);
-        break;
-      case "cancel":
-        toast.warning(`Pedido ${orderId} cancelado`);
-        break;
-      default:
-        break;
-    }
-  };
+  const today = new Intl.DateTimeFormat("es-CO", {
+    day: "2-digit", month: "short", year: "numeric",
+  }).format(new Date()).toLowerCase();
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <p className="text-on-surface-variant text-xs uppercase tracking-[0.2em] mb-2">Bienvenido, Admin</p>
-          <h1 className="text-4xl font-semibold tracking-tight text-on-surface">Dashboard</h1>
-        </div>
-        <div className="flex gap-3">
-          <button onClick={handleDownloadReport} className="px-6 py-2.5 bg-surface-container-lowest text-on-surface rounded-xl border border-outline-variant/20 shadow-sm font-medium text-sm hover:bg-surface-container-high transition-colors active:scale-95">
-            Descargar Reportes
-          </button>
-          <button onClick={() => router.push("/catering/orden")} className="px-6 py-2.5 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-sm shadow-lg shadow-primary/10 hover:brightness-110 active:scale-95 transition-all">
-            Nuevo Evento
-          </button>
-        </div>
-      </header>
+    <>
+      <DashHeader
+        eyebrow="§ Operations · Tablero"
+        title={<>Estado <span className="italic">de la casa</span><span className="text-ink/40">.</span></>}
+        date={today}
+      >
+        <ActionBtn variant="outline" onClick={handleExportCSV}>
+          Descargar reportes
+        </ActionBtn>
+        <ActionBtn variant="ink" onClick={() => router.push("/catering/orden")}>
+          + Nuevo pedido
+        </ActionBtn>
+      </DashHeader>
 
-      {/* Business Line Tabs */}
-      <div className="flex flex-wrap gap-2">
-        {BUSINESS_TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all active:scale-95 ${
-              activeTab === tab.id
-                ? `bg-gradient-to-br ${tab.color} text-white shadow-md`
-                : "bg-surface-container-lowest text-on-surface-variant border border-outline-variant/10 hover:bg-surface-container-high"
-            }`}
-          >
-            <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>{tab.icon}</span>
-            {tab.label}
-          </button>
-        ))}
+      {/* Tabs */}
+      <div className="border-b border-ink/15 flex items-center gap-8 overflow-x-auto no-scrollbar">
+        {BUSINESS_TABS.map((t) => {
+          const active = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => { setTab(t.id); setPage(1); }}
+              className={cn(
+                "relative pb-3 font-mono text-[11px] uppercase tracking-[0.22em] transition-colors flex items-baseline gap-2 whitespace-nowrap",
+                active ? "text-ink" : "text-ink/45 hover:text-ink/75",
+              )}
+            >
+              <span className={cn(active ? t.accent.split(" ")[0] || "" : "")}>{t.code}</span>
+              <span>{t.label}</span>
+              {active && (
+                <span
+                  className={cn(
+                    "absolute -bottom-px left-0 right-0 h-px",
+                    t.accent.split(" ")[1] || "bg-ink",
+                  )}
+                  aria-hidden
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* KPI Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {kpis.map((kpi) => (
-          <div key={kpi.title} className="bg-surface-container-lowest rounded-xl p-6 shadow-sm shadow-emerald-900/5 flex flex-col justify-between border border-outline-variant/10 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4">
-              <span className="material-symbols-outlined text-primary-fixed-dim text-4xl opacity-20">{kpi.icon}</span>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">{kpi.title}</p>
-              <h3 className="text-3xl font-semibold mt-2">{kpi.value}</h3>
-            </div>
-            <div className="mt-4 flex items-center gap-2">
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${kpi.trend === "up" ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"}`}>
-                <span className="material-symbols-outlined text-[12px]">{kpi.trend === "up" ? "trending_up" : "schedule"}</span> {kpi.change}
-              </span>
-            </div>
+      {/* KPIs */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-0 border-t border-l border-ink/15">
+        {kpis.map((k) => (
+          <div key={k.label} className="border-r border-b border-ink/15">
+            <StatBlock {...k} />
           </div>
         ))}
       </div>
 
-      {/* Business Line Quick Stats (overview only) */}
-      {activeTab === "overview" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { label: "Catering", icon: "restaurant", revenue: "$24.8M", orders: 142, color: "emerald", gradient: "from-emerald-600 to-green-700" },
-            { label: "Canábico", icon: "spa", revenue: "$11.5M", orders: 89, color: "violet", gradient: "from-violet-600 to-purple-800" },
-            { label: "Liofilizados", icon: "nutrition", revenue: "$6.4M", orders: 56, color: "amber", gradient: "from-amber-500 to-orange-600" },
-          ].map((line) => (
-            <button key={line.label} onClick={() => setActiveTab(line.label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))} className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm text-left hover:shadow-md transition-all group active:scale-[0.98]">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${line.gradient} flex items-center justify-center shadow-sm`}>
-                  <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>{line.icon}</span>
+      {/* Line summary — only on overview */}
+      {tab === "overview" && (
+        <Panel index="01" title="Por división" meta="3 líneas activas">
+          <div className="divide-y divide-ink/15">
+            {[
+              { code: "CRP", name: "Catering",     metric: "$24,8M", count: "142 pedidos", tab: "catering"     as TabId, accent: "marigold"  as const },
+              { code: "PHM", name: "Pharma",       metric: "$11,5M", count: "89 pedidos",  tab: "pharma"       as TabId, accent: "iris"      as const },
+              { code: "LIO", name: "Liofilizados", metric: "$6,4M",  count: "56 pedidos",  tab: "liofilizados" as TabId, accent: "persimmon" as const },
+            ].map((line) => (
+              <button
+                key={line.code}
+                onClick={() => { setTab(line.tab); setPage(1); }}
+                className="w-full flex items-baseline justify-between px-6 py-5 hover:bg-cream-warm transition-colors group text-left"
+              >
+                <div className="flex items-baseline gap-4">
+                  <span className={cn(
+                    "font-mono text-[10.5px] uppercase tracking-[0.22em]",
+                    line.accent === "marigold"  && "text-marigold",
+                    line.accent === "iris"      && "text-iris",
+                    line.accent === "persimmon" && "text-persimmon",
+                  )}>
+                    {line.code}
+                  </span>
+                  <span className="font-display text-2xl tracking-tight text-ink">{line.name}</span>
                 </div>
-                <span className="material-symbols-outlined text-on-surface-variant/30 group-hover:text-on-surface-variant transition-colors">arrow_forward</span>
-              </div>
-              <h4 className="font-bold text-on-surface">{line.label}</h4>
-              <div className="flex items-center gap-3 mt-1 text-sm text-on-surface-variant">
-                <span className="font-semibold">{line.revenue}</span>
-                <span>•</span>
-                <span>{line.orders} pedidos</span>
-              </div>
-            </button>
-          ))}
-        </div>
+                <div className="flex items-baseline gap-8">
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-ink/55">
+                    {line.count}
+                  </span>
+                  <span className="font-display text-2xl tabular text-ink">{line.metric}</span>
+                  <span className="font-display text-2xl text-ink/40 group-hover:translate-x-1 transition-transform">
+                    →
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </Panel>
       )}
 
-      {/* Orders Table */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden">
-        <div className="p-6 border-b border-outline-variant/5 flex justify-between items-center bg-surface-container-low/30">
-          <div>
-            <h4 className="text-lg font-semibold tracking-tight">
-              {activeTab === "overview" ? "Todos los Pedidos" : `Pedidos ${BUSINESS_TABS.find((t) => t.id === activeTab)?.label}`}
-            </h4>
-            <p className="text-sm text-on-surface-variant">Feed operacional en tiempo real</p>
-          </div>
-          <div className="flex items-center gap-2">
+      {/* Orders table */}
+      <Panel
+        index="02"
+        title={tab === "overview" ? "Pedidos" : `Pedidos · ${BUSINESS_TABS.find((t) => t.id === tab)?.label}`}
+        meta={`${filtered.length} totales`}
+        actions={
+          <>
             <select
               value={statusFilter || ""}
-              onChange={(e) => { setStatusFilter(e.target.value || null); setCurrentPage(1); }}
-              className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-emerald-900 bg-white border border-outline-variant/20 rounded-lg hover:bg-surface-container-low transition-all cursor-pointer"
+              onChange={(e) => { setStatusFilter(e.target.value || null); setPage(1); }}
+              className="bg-cream border border-ink/30 px-3 h-9 font-mono text-[11px] uppercase tracking-[0.18em] text-ink focus:outline-none focus:border-ink"
             >
-              <option value="">Todos</option>
-              {Object.entries(STATUS_MAP).map(([key, val]) => (
-                <option key={key} value={key}>{val.label}</option>
+              <option value="">Todos los estados</option>
+              {Object.entries(STATUS_MAP).map(([k, v]) => (
+                <option key={k} value={k}>{v.label}</option>
               ))}
             </select>
-            <button onClick={handleExportCSV} className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-white bg-primary rounded-lg shadow-sm hover:brightness-110 transition-all">Exportar CSV</button>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/10">
-                <th className="px-6 py-4">ID Orden</th>
-                <th className="px-6 py-4">Cliente</th>
-                {activeTab === "overview" && <th className="px-6 py-4">Línea</th>}
-                <th className="px-6 py-4">Detalle</th>
-                <th className="px-6 py-4">Monto</th>
-                <th className="px-6 py-4">Estado</th>
-                <th className="px-6 py-4 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/5">
-              {paginatedOrders.map((order) => {
-                const status = STATUS_MAP[order.status] || { label: order.status, variant: "default" as const, dot: "bg-gray-500" };
-                const lineBadge = LINE_BADGE[order.line];
-                return (
-                  <tr key={order.id} className="hover:bg-surface-container-low/50 transition-colors group">
-                    <td className="px-6 py-4 font-medium text-primary-container">#{order.id}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-900 font-bold text-xs">{order.initials}</div>
-                        <span className="text-sm">{order.client}</span>
-                      </div>
-                    </td>
-                    {activeTab === "overview" && (
-                      <td className="px-6 py-4">
-                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${lineBadge.bg} ${lineBadge.text}`}>{lineBadge.label}</span>
-                      </td>
-                    )}
-                    <td className="px-6 py-4 text-sm">{order.desc}</td>
-                    <td className="px-6 py-4 text-sm font-semibold">{formatCurrency(order.total)}</td>
-                    <td className="px-6 py-4">
-                      <Badge variant={status.variant}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`}></span>
-                        {status.label}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 text-right relative">
-                      <button onClick={() => setOpenActionId(openActionId === order.id ? null : order.id)} className="text-outline hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[20px]">more_horiz</span>
+            <ActionBtn variant="outline" onClick={handleExportCSV} className="h-9 px-4">
+              Exportar CSV
+            </ActionBtn>
+          </>
+        }
+      >
+        <DataTable
+          columns={[
+            { key: "id",     label: "ID" },
+            { key: "client", label: "Cliente" },
+            ...(tab === "overview" ? [{ key: "line", label: "Línea" }] : []),
+            { key: "desc",   label: "Detalle" },
+            { key: "total",  label: "Monto", align: "right" as const },
+            { key: "status", label: "Estado" },
+            { key: "act",    label: "", align: "right" as const },
+          ]}
+        >
+          {slice.map((o) => {
+            const status = STATUS_MAP[o.status] || { label: o.status, tone: "muted" as const };
+            const line = LINE_TAG[o.line];
+            return (
+              <tr key={o.id} className="hover:bg-cream-warm transition-colors">
+                <td className="px-6 py-4 font-mono text-[12px] text-ink tabular">{o.id}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar initials={o.initials} size="sm" />
+                    <span className="font-sans text-[14px] text-ink">{o.client}</span>
+                  </div>
+                </td>
+                {tab === "overview" && (
+                  <td className="px-6 py-4">
+                    <StatusPill tone={line.tone} label={line.code} />
+                  </td>
+                )}
+                <td className="px-6 py-4 font-sans text-[14px] text-ink/85">{o.desc}</td>
+                <td className="px-6 py-4 font-display text-[16px] text-ink tabular text-right">
+                  {formatCurrency(o.total)}
+                </td>
+                <td className="px-6 py-4">
+                  <StatusPill tone={status.tone} label={status.label} />
+                </td>
+                <td className="px-6 py-4 text-right relative">
+                  <button
+                    onClick={() => setOpenActionId(openActionId === o.id ? null : o.id)}
+                    className="text-ink/40 hover:text-ink transition-colors"
+                    aria-label="Acciones"
+                  >
+                    <span className="material-symbols-outlined">more_horiz</span>
+                  </button>
+                  {openActionId === o.id && (
+                    <div
+                      ref={actionRef}
+                      className="absolute right-6 top-12 z-30 w-48 bg-cream border border-ink/30 shadow-paper-md"
+                    >
+                      <button
+                        onClick={() => { toast.info(`Ver ${o.id}`); setOpenActionId(null); }}
+                        className="w-full text-left px-4 py-2.5 font-sans text-[13px] text-ink hover:bg-cream-warm"
+                      >
+                        Ver detalles
                       </button>
-                      {openActionId === order.id && (
-                        <div ref={actionRef} className="absolute right-6 top-12 z-50 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-xl py-1 w-44">
-                          <button onClick={() => handleOrderAction(order.id, "view")} className="w-full px-4 py-2.5 text-left text-sm hover:bg-surface-container-low flex items-center gap-2 transition-colors">
-                            <span className="material-symbols-outlined text-base">visibility</span> Ver Detalles
-                          </button>
-                          <button onClick={() => handleOrderAction(order.id, "status")} className="w-full px-4 py-2.5 text-left text-sm hover:bg-surface-container-low flex items-center gap-2 transition-colors">
-                            <span className="material-symbols-outlined text-base">sync</span> Cambiar Estado
-                          </button>
-                          <hr className="my-1 border-outline-variant/10" />
-                          <button onClick={() => handleOrderAction(order.id, "cancel")} className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
-                            <span className="material-symbols-outlined text-base">cancel</span> Cancelar Pedido
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <div className="p-4 border-t border-outline-variant/10 flex items-center justify-between bg-surface-container-low/20">
-          <p className="text-xs text-on-surface-variant font-medium">Mostrando {paginatedOrders.length} de {filteredOrders.length} pedidos</p>
+                      <button
+                        onClick={() => { toast.info(`Cambiar estado ${o.id}`); setOpenActionId(null); }}
+                        className="w-full text-left px-4 py-2.5 font-sans text-[13px] text-ink hover:bg-cream-warm border-t border-ink/15"
+                      >
+                        Cambiar estado
+                      </button>
+                      <button
+                        onClick={() => { toast.warning(`Cancelar ${o.id}`); setOpenActionId(null); }}
+                        className="w-full text-left px-4 py-2.5 font-sans text-[13px] text-error hover:bg-error-soft border-t border-ink/15"
+                      >
+                        Cancelar pedido
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </DataTable>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-ink/15">
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-ink/55">
+            Mostrando {slice.length} de {filtered.length}
+          </p>
           <div className="flex items-center gap-1">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant disabled:opacity-30">
-              <span className="material-symbols-outlined text-sm">chevron_left</span>
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="h-9 w-9 flex items-center justify-center font-mono text-sm text-ink/55 hover:bg-ink hover:text-cream disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink/55 transition-colors"
+            >
+              ←
             </button>
             {Array.from({ length: totalPages }, (_, i) => (
-              <button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-8 h-8 rounded-lg text-xs font-bold ${currentPage === i + 1 ? "bg-primary text-white" : "hover:bg-surface-container-low text-on-surface-variant"}`}>{i + 1}</button>
+              <button
+                key={i}
+                onClick={() => setPage(i + 1)}
+                className={cn(
+                  "h-9 w-9 flex items-center justify-center font-mono text-sm tabular transition-colors",
+                  page === i + 1
+                    ? "bg-ink text-cream"
+                    : "text-ink/55 hover:bg-ink hover:text-cream",
+                )}
+              >
+                {i + 1}
+              </button>
             ))}
-            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-1.5 rounded-lg hover:bg-surface-container-low text-on-surface-variant disabled:opacity-30">
-              <span className="material-symbols-outlined text-sm">chevron_right</span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="h-9 w-9 flex items-center justify-center font-mono text-sm text-ink/55 hover:bg-ink hover:text-cream disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink/55 transition-colors"
+            >
+              →
             </button>
           </div>
         </div>
+      </Panel>
+
+      {/* Lower grid: capacity + payment status */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <Panel index="03" title="Capacidad operativa" meta="tiempo real">
+          <div className="p-6 space-y-6">
+            <p className="font-serif italic text-[15px] text-ink/70 leading-snug">
+              La cocina opera cerca de su capacidad máxima. Rotación sugerida en las próximas dos horas.
+            </p>
+            <div className="space-y-5">
+              <ProgressMeter label="Cocina principal · Sector A" value={94} accent="ink" />
+              <ProgressMeter label="Prep station · Sector B"      value={62} accent="ink" />
+              <ProgressMeter label="Empaque e-commerce"           value={45} accent="iris" />
+            </div>
+          </div>
+        </Panel>
+
+        <Panel index="04" title="Pasarela de pagos" meta="Bold · activo">
+          <div className="p-6 space-y-5">
+            <div className="border border-ink/15 p-5 bg-cream-warm">
+              <div className="flex items-baseline justify-between mb-2">
+                <span className="font-display text-2xl text-ink tracking-tight leading-none">Bold</span>
+                <StatusPill tone="success" label="Activo" />
+              </div>
+              <p className="font-serif italic text-[14px] text-ink/70 leading-snug">
+                Botón embebido con firma de integridad — Tarjeta, PSE, Nequi, Daviplata.
+              </p>
+            </div>
+            <div className="border border-ink/15 p-5 opacity-60">
+              <div className="flex items-baseline justify-between mb-2">
+                <span className="font-display text-2xl text-ink tracking-tight leading-none">Wompi</span>
+                <StatusPill tone="muted" label="Inactivo" />
+              </div>
+              <p className="font-serif italic text-[14px] text-ink/55 leading-snug">
+                Deshabilitado en esta edición.
+              </p>
+            </div>
+            <ul className="space-y-3 pt-3 border-t border-ink/15">
+              <li className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em]">
+                <span className="text-ink/65">Bold · Webhook</span>
+                <StatusPill tone="success" label="Idempotente" />
+              </li>
+              <li className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em]">
+                <span className="text-ink/65">Verificación HMAC</span>
+                <StatusPill tone="warn" label="Pendiente" />
+              </li>
+            </ul>
+          </div>
+        </Panel>
       </div>
-
-      {/* Payment Gateway Settings */}
-      <div className="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/10 shadow-sm">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center">
-            <span className="material-symbols-outlined text-white">payment</span>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-on-surface">Pasarelas de Pago</h3>
-            <p className="text-sm text-on-surface-variant">Configura las opciones de pago para e-commerce</p>
-          </div>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Default Gateway */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-on-surface">Pasarela Activa</label>
-            <div className="flex gap-3">
-              <div className="flex-1 p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-left">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-emerald-900">Bold.co</span>
-                  <span className="text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">Activo</span>
-                </div>
-                <p className="text-xs text-emerald-700">Botón de pagos embebido — Tarjeta, PSE, Nequi, Daviplata</p>
-              </div>
-              <div className="flex-1 p-4 rounded-xl border border-outline-variant/20 bg-surface-container-low text-left opacity-50">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-on-surface-variant">Wompi</span>
-                  <span className="text-xs bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full">Inactivo</span>
-                </div>
-                <p className="text-xs text-on-surface-variant">Deshabilitado</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Gateway Status */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-on-surface">Estado de Integraciones</label>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  <span className="text-sm">Bold.co Botón de Pagos</span>
-                </div>
-                <span className="text-xs text-emerald-600 font-medium">Conectado</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  <span className="text-sm">Bold.co Webhook</span>
-                </div>
-                <span className="text-xs text-emerald-600 font-medium">Configurado</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 pt-6 border-t border-outline-variant/10">
-          <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-            <span className="material-symbols-outlined text-base">verified</span>
-            <p>Todos los pagos se procesan de forma segura a través de Bold.co con checkout embebido.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Operational Insight Block */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/10 shadow-sm relative overflow-hidden">
-          <div className="relative z-10">
-            <h4 className="text-lg font-bold tracking-tight text-emerald-900 mb-2">Capacidad de Producción</h4>
-            <p className="text-sm text-on-surface-variant max-w-md mb-6">La cocina opera cerca de su capacidad máxima. Se sugiere rotación de personal en las próximas 2 horas.</p>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1.5">
-                  <span>Cocina Principal (Sector A)</span>
-                  <span>94%</span>
-                </div>
-                <div className="w-full bg-surface-container-low h-2 rounded-full">
-                  <div className="bg-primary h-full rounded-full" style={{ width: "94%" }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1.5">
-                  <span>Prep Station (Sector B)</span>
-                  <span>62%</span>
-                </div>
-                <div className="w-full bg-surface-container-low h-2 rounded-full">
-                  <div className="bg-primary-fixed-dim h-full rounded-full" style={{ width: "62%" }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1.5">
-                  <span>Empaque E-commerce</span>
-                  <span>45%</span>
-                </div>
-                <div className="w-full bg-surface-container-low h-2 rounded-full">
-                  <div className="bg-violet-500 h-full rounded-full" style={{ width: "45%" }}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="absolute bottom-[-20%] right-[-10%] w-64 h-64 rounded-full bg-emerald-50/50 -z-0"></div>
-        </div>
-
-        <div className="bg-primary-container text-white rounded-2xl p-8 shadow-xl shadow-primary/20 relative overflow-hidden">
-          <div className="relative z-10 h-full flex flex-col justify-between">
-            <div>
-              <span className="bg-white/10 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Franquicia Intelligence</span>
-              <h4 className="text-2xl font-bold mt-4 tracking-tight leading-tight">Control Tower</h4>
-              <p className="text-on-primary-container text-sm mt-2 max-w-xs">3 líneas de negocio activas. 287 pedidos en pipeline. Tasa de conversión e-commerce: 3.8%.</p>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <div className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Catering: 142
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-violet-400"></span> Canábico: 89
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-400"></span> Liofilizados: 56
-              </div>
-            </div>
-          </div>
-          <div className="absolute top-0 right-0 h-full w-1/2 opacity-10 pointer-events-none flex items-center justify-center">
-            <span className="material-symbols-outlined" style={{ fontSize: "200px", fontVariationSettings: "'FILL' 1" }}>hub</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

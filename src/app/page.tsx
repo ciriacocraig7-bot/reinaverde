@@ -1,232 +1,278 @@
 import Link from "next/link";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { EditorialRule, Marquee, NumberedRow } from "@/components/marketing/editorial";
 
-const BUSINESS_LINES = [
+const DIVISIONS = [
   {
     slug: "catering",
-    name: "Reina Verde Catering",
-    tagline: "Premium Catering Corporativo",
-    description: "Eventos corporativos, bodas y celebraciones con menús personalizados, logística automatizada y pagos seguros.",
-    icon: "restaurant_menu",
-    gradient: "from-emerald-600 to-emerald-800",
-    accentBg: "bg-emerald-50",
-    accentText: "text-emerald-700",
-    accentBorder: "border-emerald-200",
-    stats: [
-      { value: "500+", label: "Eventos" },
-      { value: "98%", label: "Satisfacción" },
+    index: "01",
+    name: "Catering",
+    tagline: "El reverso impecable de una buena mesa",
+    description:
+      "Comida corporativa con producción, logística y facturación cohabitando en un solo flujo. De la cotización al servicio del último canapé.",
+    accent: "text-marigold",
+    accentBg: "bg-marigold",
+    accentRing: "ring-marigold/30",
+    capabilities: ["Menú a la carta", "Eventos y bodas", "Facturación B2B", "Logística propia"],
+    proofPoints: [
+      { k: "Servicios", v: "500+" },
+      { k: "Comensales", v: "32k" },
+      { k: "Satisfacción", v: "98%" },
     ],
-    features: ["Menús personalizados", "Logística automatizada", "Pagos con Wompi", "Dashboard empresarial"],
   },
   {
     slug: "pharma",
-    name: "Reina Verde Pharma",
-    tagline: "Bienestar Natural & Legal",
-    description: "Productos de bienestar natural de alta calidad, 100% legales, con trazabilidad completa y envío seguro.",
-    icon: "spa",
-    gradient: "from-violet-600 to-purple-800",
-    accentBg: "bg-violet-50",
-    accentText: "text-violet-700",
-    accentBorder: "border-violet-200",
-    stats: [
-      { value: "100%", label: "Legal" },
-      { value: "Lab", label: "Certificado" },
+    index: "02",
+    name: "Pharma",
+    tagline: "Fito-bienestar legal, formulado con disciplina",
+    description:
+      "Aceites, tinturas y tópicos de cannabis medicinal con trazabilidad de lote, sello de calidad y envío discreto. Sin promesas, con evidencia.",
+    accent: "text-iris",
+    accentBg: "bg-iris",
+    accentRing: "ring-iris/30",
+    capabilities: ["Full-spectrum", "Broad-spectrum", "Tópicos", "Línea pet"],
+    proofPoints: [
+      { k: "Lotes únicos", v: "62" },
+      { k: "Análisis lab", v: "100%" },
+      { k: "Cumplimiento", v: "Invima" },
     ],
-    features: ["Productos certificados", "Trazabilidad blockchain", "Envío discreto", "Asesoría personalizada"],
   },
   {
     slug: "liofilizados",
-    name: "Reina Verde Liofilizados",
-    tagline: "Frutas Liofilizadas Premium",
-    description: "Frutas colombianas liofilizadas que conservan nutrientes y sabor. Snacks saludables para retail y mayoristas.",
-    icon: "nutrition",
-    gradient: "from-amber-500 to-orange-600",
-    accentBg: "bg-amber-50",
-    accentText: "text-amber-700",
-    accentBorder: "border-amber-200",
-    stats: [
-      { value: "100%", label: "Natural" },
-      { value: "2yr", label: "Shelf life" },
+    index: "03",
+    name: "Liofilizados",
+    tagline: "Fruta colombiana, conservada en frío seco",
+    description:
+      "Mango, piña, uchuva, maracuyá. Liofilización industrial que conserva 95% del valor nutricional. Snack, repostería, mayorista.",
+    accent: "text-persimmon",
+    accentBg: "bg-persimmon",
+    accentRing: "ring-persimmon/30",
+    capabilities: ["Tropicales", "Berries", "Mayorista", "Repostería"],
+    proofPoints: [
+      { k: "Origen", v: "Colombia" },
+      { k: "Shelf life", v: "24m" },
+      { k: "Nutrición", v: "95%" },
     ],
-    features: ["Sin conservantes", "Retención nutricional", "Empaque sustentable", "Venta al por mayor"],
   },
-];
+] as const;
 
 export default function HubPage() {
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
-      {/* Hero */}
-      <header className="relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-30%] left-[-15%] w-[500px] h-[500px] rounded-full bg-emerald-200/30 blur-3xl" />
-          <div className="absolute top-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full bg-violet-200/20 blur-3xl" />
-          <div className="absolute bottom-[-20%] right-[20%] w-[350px] h-[350px] rounded-full bg-amber-200/20 blur-3xl" />
-        </div>
+    <>
+      <SiteHeader line="hub" />
 
-        <nav className="relative z-10 max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center shadow-lg shadow-emerald-900/20">
-              <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>eco</span>
+      {/* ════════════════ HERO ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 pt-12 sm:pt-16">
+        <div className="grid grid-cols-12 gap-x-6">
+          {/* Left: editorial dateline */}
+          <div className="col-span-12 lg:col-span-3 lg:pt-2 mb-8 lg:mb-0">
+            <div className="rv-rise rv-delay-0 font-mono text-[11px] uppercase tracking-[0.22em] text-ink/55 leading-relaxed">
+              <p>Edición 02 — MMXXVI</p>
+              <p>Casa Reina Verde</p>
+              <p>Bogotá / Sabana</p>
             </div>
-            <span className="text-xl font-bold tracking-tighter text-on-surface">Reina Verde</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="px-5 py-2 text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors">
-              Iniciar Sesión
-            </Link>
-            <Link href="/registro" className="px-5 py-2.5 text-sm font-semibold bg-on-surface text-surface rounded-xl hover:bg-on-surface/90 transition-colors">
-              Crear Cuenta
-            </Link>
-          </div>
-        </nav>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-8 pt-16 pb-24 text-center">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant bg-surface-container-low px-4 py-1.5 rounded-full mb-6">
-            Franquicia de Bienestar & Gastronomía
-          </span>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] max-w-4xl mx-auto">
-            Tres Mundos,<br />
-            <span className="bg-gradient-to-r from-emerald-600 via-violet-600 to-amber-500 bg-clip-text text-transparent">
-              Una Experiencia
-            </span>
-          </h1>
-          <p className="mt-6 text-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
-            Catering corporativo premium, productos de bienestar de alta calidad y frutas liofilizadas colombianas.
-            Elige tu línea de negocio y descubre lo que Reina Verde tiene para ti.
-          </p>
-        </div>
-      </header>
-
-      {/* Business Line Cards */}
-      <section className="max-w-7xl mx-auto px-8 -mt-8 pb-24 relative z-20">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {BUSINESS_LINES.map((line) => (
-            <Link href={`/${line.slug}`} key={line.slug} className="group">
-              <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/10 shadow-sm overflow-hidden hover:translate-y-[-6px] hover:shadow-xl transition-all duration-500">
-                {/* Card Hero */}
-                <div className={`relative h-48 bg-gradient-to-br ${line.gradient} flex items-center justify-center overflow-hidden`}>
-                  <span
-                    className="material-symbols-outlined text-white/15 group-hover:scale-110 transition-transform duration-700"
-                    style={{ fontSize: "120px", fontVariationSettings: "'FILL' 1" }}
-                  >
-                    {line.icon}
-                  </span>
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
-                      {line.tagline}
-                    </span>
-                  </div>
-                  {/* Stats overlay */}
-                  <div className="absolute bottom-4 right-4 flex gap-3">
-                    {line.stats.map((stat) => (
-                      <div key={stat.label} className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 text-center">
-                        <p className="text-white text-sm font-bold leading-tight">{stat.value}</p>
-                        <p className="text-white/70 text-[9px] font-medium uppercase tracking-wider">{stat.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Card Body */}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold tracking-tight text-on-surface mb-2">{line.name}</h3>
-                  <p className="text-sm text-on-surface-variant leading-relaxed mb-5">{line.description}</p>
-
-                  {/* Features */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {line.features.map((f) => (
-                      <span key={f} className={`${line.accentBg} ${line.accentText} text-[10px] font-bold px-2.5 py-1 rounded-full`}>
-                        {f}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* CTA */}
-                  <div className={`flex items-center justify-between pt-4 border-t ${line.accentBorder}`}>
-                    <span className={`text-sm font-bold ${line.accentText}`}>Explorar</span>
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${line.gradient} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <span className="material-symbols-outlined text-white text-lg">arrow_forward</span>
-                    </div>
-                  </div>
-                </div>
+          {/* Headline */}
+          <div className="col-span-12 lg:col-span-9">
+            <h1 className="rv-rise rv-delay-1 font-display font-light tracking-[-0.035em] leading-[0.92] text-ink text-[64px] sm:text-[112px] lg:text-[160px]">
+              Una sola casa,
+              <br />
+              <span className="italic font-medium">tres oficios</span>.
+            </h1>
+            <div className="rv-rise rv-delay-3 mt-12 grid sm:grid-cols-[1fr_auto] items-end gap-6">
+              <p className="font-serif text-xl sm:text-2xl leading-snug text-ink/75 max-w-2xl italic">
+                Catering corporativo, fito-bienestar legal y frutas liofilizadas — producidos
+                bajo el mismo techo y la misma curaduría desde Colombia.
+              </p>
+              <div className="flex items-center gap-3 shrink-0">
+                <Link
+                  href="/registro"
+                  className="inline-flex items-center h-12 px-7 bg-ink text-cream font-sans text-[14px] tracking-tight rv-press hover:bg-ink-soft"
+                >
+                  Abrir cuenta →
+                </Link>
+                <Link
+                  href="#divisiones"
+                  className="inline-flex items-center h-12 px-7 border border-ink/40 text-ink font-sans text-[14px] tracking-tight hover:border-ink hover:bg-ink hover:text-cream transition-colors"
+                >
+                  Explorar índice
+                </Link>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Marquee */}
+        <div className="rv-fade rv-delay-5 mt-20 border-y border-ink/15 py-4 overflow-hidden">
+          <Marquee
+            items={[
+              "Pagos por Bold",
+              "Producción in-house",
+              "Trazabilidad por lote",
+              "Logística propia",
+              "Cumplimiento Invima",
+              "Origen Colombia",
+            ]}
+          />
+        </div>
+      </section>
+
+      {/* ════════════════ DIVISIONS INDEX ════════════════ */}
+      <section id="divisiones" className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-24 sm:mt-32">
+        <EditorialRule index="01" label="Las divisiones" className="mb-12" />
+
+        <div className="grid lg:grid-cols-3 gap-10 lg:gap-8">
+          {DIVISIONS.map((d, i) => (
+            <Link
+              key={d.slug}
+              href={`/${d.slug}`}
+              className={`group block rv-rise rv-delay-${i + 4}`}
+            >
+              <article className="bg-cream-warm border border-ink/10 p-7 sm:p-8 h-full flex flex-col transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-paper-lg">
+                {/* Top row */}
+                <div className="flex items-start justify-between mb-8">
+                  <span className={`font-mono text-[11px] uppercase tracking-[0.22em] ${d.accent}`}>
+                    § {d.index}
+                  </span>
+                  <span
+                    className={`inline-block h-2 w-2 rounded-full ${d.accentBg} ring-4 ${d.accentRing} transition-transform group-hover:scale-110`}
+                    aria-hidden
+                  />
+                </div>
+
+                {/* Display name */}
+                <h3 className="font-display font-medium text-[56px] sm:text-[64px] tracking-[-0.03em] leading-[0.9] mb-3 text-ink">
+                  {d.name}
+                </h3>
+                <p className="font-serif italic text-[18px] leading-snug text-ink/70 mb-7">
+                  {d.tagline}
+                </p>
+
+                {/* Body */}
+                <p className="text-[15px] leading-relaxed text-ink/75 mb-7">
+                  {d.description}
+                </p>
+
+                {/* Capabilities */}
+                <ul className="space-y-1 mb-8 text-[13px] text-ink/80">
+                  {d.capabilities.map((c) => (
+                    <li key={c} className="flex gap-3 items-baseline">
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-ink/40">
+                        ◇
+                      </span>
+                      <span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Proof points */}
+                <dl className="mt-auto grid grid-cols-3 gap-4 pt-6 border-t border-ink/15">
+                  {d.proofPoints.map((p) => (
+                    <div key={p.k}>
+                      <dt className="font-mono text-[9.5px] uppercase tracking-[0.2em] text-ink/50">
+                        {p.k}
+                      </dt>
+                      <dd className="font-display text-2xl tracking-tight text-ink mt-1 tabular">
+                        {p.v}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+
+                {/* CTA */}
+                <div className="mt-8 flex items-center justify-between">
+                  <span className="font-sans text-[14px] tracking-tight text-ink">
+                    Entrar a {d.name}
+                  </span>
+                  <span className="font-display text-3xl text-ink transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
+                </div>
+              </article>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* About Strip */}
-      <section className="bg-surface-container-low py-20">
-        <div className="max-w-7xl mx-auto px-8 text-center">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant mb-4 block">Sobre Nosotros</span>
-          <h2 className="text-3xl font-semibold tracking-tight text-on-surface max-w-3xl mx-auto mb-6">
-            Un ecosistema de bienestar, sabor y sostenibilidad nacido en Colombia
-          </h2>
-          <p className="text-on-surface-variant max-w-2xl mx-auto leading-relaxed mb-10">
-            Reina Verde es una franquicia que conecta tres industrias con propósito: gastronomía premium, bienestar natural y nutrición funcional.
-            Cada línea opera de forma independiente pero comparte valores de calidad, sostenibilidad e innovación tecnológica.
-          </p>
-          <div className="grid sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
-            {[
-              { icon: "eco", title: "Sostenibilidad", desc: "Cadena de suministro responsable" },
-              { icon: "verified", title: "Calidad", desc: "Estándares certificados en cada línea" },
-              { icon: "rocket_launch", title: "Innovación", desc: "Tecnología al servicio del cliente" },
-            ].map((v) => (
-              <div key={v.title} className="text-center">
-                <div className="mx-auto w-14 h-14 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 flex items-center justify-center mb-3 shadow-sm">
-                  <span className="material-symbols-outlined text-on-surface-variant text-2xl">{v.icon}</span>
-                </div>
-                <h4 className="font-bold text-on-surface text-sm">{v.title}</h4>
-                <p className="text-xs text-on-surface-variant mt-1">{v.desc}</p>
-              </div>
-            ))}
+      {/* ════════════════ MANIFESTO ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32 sm:mt-40">
+        <EditorialRule index="02" label="Manifiesto de la casa" className="mb-16" />
+
+        <div className="grid lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-4">
+            <h2 className="font-display font-light tracking-[-0.025em] text-5xl sm:text-6xl lg:text-7xl leading-[0.95] text-ink">
+              No vendemos
+              <br />
+              <span className="italic">categorías</span>.
+              <br />
+              Vendemos
+              <br />
+              <span className="italic">criterio</span>.
+            </h2>
+          </div>
+
+          <div className="lg:col-span-7 lg:col-start-6">
+            <div>
+              <NumberedRow ordinal={1} title="Producción bajo el mismo techo">
+                Cocinamos, formulamos y empacamos en Bogotá. Nada subcontratado en lo que toca
+                materia prima — solo en lo que toca distribución. Tres divisiones, una cadena.
+              </NumberedRow>
+              <NumberedRow ordinal={2} title="Trazabilidad por lote">
+                Cada lote — un menú de evento, un frasco de aceite, una bolsa de mango — lleva
+                ID propio. Si algo se devuelve, sabemos exactamente qué, cuándo y por qué.
+              </NumberedRow>
+              <NumberedRow ordinal={3} title="Pagos que cierran el ciclo">
+                Bold conecta el checkout con la contabilidad. El cliente paga, la cocina arranca,
+                el sistema factura. Sin doble digitación, sin conciliación dolorosa.
+              </NumberedRow>
+              <NumberedRow ordinal={4} title="Sin promesas que no podamos certificar">
+                Si decimos "100% legal" es porque tenemos el papel del Invima. Si decimos "95% de
+                nutrientes" es porque hay análisis. El criterio cuesta tiempo, no marketing.
+              </NumberedRow>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-inverse-surface text-inverse-on-surface py-12">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-white text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>eco</span>
-                </div>
-                <span className="text-lg font-bold text-white">Reina Verde</span>
-              </div>
-              <p className="text-sm leading-relaxed opacity-70">
-                Franquicia colombiana de catering, bienestar natural y nutrición liofilizada.
-              </p>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Líneas de Negocio</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/catering" className="hover:text-white transition-colors opacity-70 hover:opacity-100">Catering</Link></li>
-                <li><Link href="/pharma" className="hover:text-white transition-colors opacity-70 hover:opacity-100">Pharma</Link></li>
-                <li><Link href="/liofilizados" className="hover:text-white transition-colors opacity-70 hover:opacity-100">Liofilizados</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors opacity-70 hover:opacity-100">Términos</a></li>
-                <li><a href="#" className="hover:text-white transition-colors opacity-70 hover:opacity-100">Privacidad</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Contacto</h4>
-              <ul className="space-y-2 text-sm opacity-70">
-                <li>info@reinaverde.co</li>
-                <li>+57 300 123 4567</li>
-                <li>Bogotá, Colombia</li>
-              </ul>
-            </div>
+      {/* ════════════════ CTA STRIP ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32 sm:mt-40">
+        <div className="bg-ink text-cream p-10 sm:p-16 lg:p-20 relative overflow-hidden">
+          <div className="absolute top-4 right-6 font-mono text-[10.5px] uppercase tracking-[0.22em] text-cream/50">
+            § 03 — Abrir cuenta
           </div>
-          <div className="border-t border-white/10 mt-8 pt-8 text-center text-sm opacity-50">
-            <p>&copy; {new Date().getFullYear()} Reina Verde. Todos los derechos reservados.</p>
+          <div className="grid lg:grid-cols-2 gap-10 items-end">
+            <h2 className="font-display font-light text-5xl sm:text-7xl lg:text-[96px] tracking-[-0.035em] leading-[0.92]">
+              ¿Empezamos
+              <br />
+              <span className="italic">por algún lado</span>?
+            </h2>
+            <div className="flex flex-col gap-4 lg:items-end">
+              <p className="font-serif italic text-xl leading-snug max-w-md text-cream/80">
+                Una cuenta sirve para las tres líneas. Sus pedidos, eventos, facturas y
+                seguimientos viven en un solo panel.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/registro"
+                  className="inline-flex items-center h-12 px-7 bg-marigold text-ink font-sans text-[14px] tracking-tight rv-press hover:bg-cream"
+                >
+                  Crear cuenta gratis
+                </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center h-12 px-7 border border-cream/40 text-cream font-sans text-[14px] tracking-tight hover:border-cream hover:bg-cream hover:text-ink transition-colors"
+                >
+                  Ya tengo cuenta
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </section>
+
+      <SiteFooter />
+    </>
   );
 }

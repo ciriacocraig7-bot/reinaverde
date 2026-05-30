@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Navbar } from "@/components/layout/navbar";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { EditorialRule, PriceTag } from "@/components/marketing/editorial";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
@@ -11,6 +13,7 @@ import { useCartStore } from "@/stores/cart-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatCurrency } from "@/lib/utils";
 import { BoldPaymentButton } from "@/components/payment/bold-button";
+import { cn } from "@/lib/utils";
 
 interface BoldConfig {
   apiKey: string;
@@ -21,20 +24,11 @@ interface BoldConfig {
   description?: string;
   tax?: string;
   redirectionUrl?: string;
-  customerData?: {
-    email?: string;
-    fullName?: string;
-    phone?: string;
-    dialCode?: string;
-  };
-  billingAddress?: {
-    address?: string;
-    city?: string;
-    country?: string;
-  };
+  customerData?: { email?: string; fullName?: string; phone?: string; dialCode?: string };
+  billingAddress?: { address?: string; city?: string; country?: string };
 }
 
-const STEPS = ["Resumen", "Detalles", "Pago"];
+const STEPS = ["Items", "Evento", "Pago"] as const;
 
 const EVENT_TYPE_OPTIONS = [
   { value: "CORPORATIVO", label: "Corporativo" },
@@ -44,323 +38,311 @@ const EVENT_TYPE_OPTIONS = [
   { value: "PRIVADO", label: "Privado" },
 ];
 
-export default function OrderPage() {
-  const [step, setStep] = useState(0);
+export default function CateringOrdenPage() {
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   const [loading, setLoading] = useState(false);
   const [boldConfig, setBoldConfig] = useState<BoldConfig | null>(null);
   const { isAuthenticated } = useAuthStore();
   const {
-    items,
-    guestCount,
-    eventType,
-    deliveryDate,
-    deliveryTime,
-    deliveryAddress,
-    deliveryCity,
-    notes,
-    dietaryNotes,
-    removeItem,
-    updateQuantity,
-    setGuestCount,
-    setEventType,
-    setDeliveryInfo,
-    setNotes,
-    setDietaryNotes,
-    subtotal,
-    tax,
-    total,
-    clearCart,
+    items, guestCount, eventType, deliveryDate, deliveryTime, deliveryAddress,
+    deliveryCity, notes, dietaryNotes, removeItem, updateQuantity, setGuestCount,
+    setEventType, setDeliveryInfo, setNotes, setDietaryNotes, subtotal, tax, total, clearCart,
   } = useCartStore();
+
+  if (items.length === 0) {
+    return (
+      <>
+        <SiteHeader line="catering" />
+        <section className="max-w-[1400px] mx-auto px-6 sm:px-10 py-24 sm:py-32 grid place-items-center min-h-[60vh]">
+          <div className="max-w-md text-center">
+            <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink/50">
+              Sin items
+            </span>
+            <h2 className="mt-4 font-display font-light text-5xl sm:text-6xl tracking-[-0.025em] leading-[0.95] text-ink">
+              Su orden
+              <br />
+              <span className="italic">está vacía</span>.
+            </h2>
+            <Link
+              href="/catering/menu"
+              className="inline-flex items-center h-12 px-7 mt-10 bg-ink text-cream font-sans text-[14px] rv-press hover:bg-ink-soft"
+            >
+              Ir a la carta →
+            </Link>
+          </div>
+        </section>
+        <SiteFooter />
+      </>
+    );
+  }
 
   const handlePay = async () => {
     if (!isAuthenticated) {
-      toast.error("Debes iniciar sesión para realizar un pedido");
+      toast.error("Inicia sesión para realizar el pedido");
       return;
     }
-
     if (!deliveryDate || !deliveryTime || !deliveryAddress) {
-      toast.error("Completa todos los datos de entrega");
+      toast.error("Completa fecha, hora y dirección");
       setStep(1);
       return;
     }
-
     setLoading(true);
-
     try {
-      const reference = `${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      const amount = Math.round(total());
-
       const itemsSummary = items.map((i) => `${i.quantity}x ${i.name}`).join(", ");
-
+      const token = typeof window !== "undefined" ? localStorage.getItem("rv-token") : null;
       const res = await fetch("/api/catering/pay/bold", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
-          amount,
-          reference,
-          description: `Catering: ${itemsSummary}`.slice(0, 100),
-          customerName: "",
-          customerEmail: "",
-          customerPhone: "",
+          items: items.map((i) => ({ menuItemId: i.menuItemId, quantity: i.quantity })),
+          guestCount,
+          eventType,
+          deliveryDate,
+          deliveryTime,
           deliveryAddress,
           deliveryCity,
+          notes,
+          dietaryNotes,
+          description: `Catering: ${itemsSummary}`.slice(0, 100),
         }),
       });
-
       if (!res.ok) {
-        throw new Error("Error al configurar pago");
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Error al configurar pago");
       }
-
-      const boldData = await res.json();
-      setBoldConfig(boldData);
+      const data = await res.json();
+      setBoldConfig(data);
       setStep(3);
-    } catch {
-      toast.error("Error al procesar el pago");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al procesar el pago");
     } finally {
       setLoading(false);
     }
   };
 
-  if (items.length === 0) {
-    return (
-      <div className="flex flex-col min-h-screen bg-surface">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center pt-16">
-          <div className="text-center">
-            <span className="material-symbols-outlined text-on-surface-variant/30 mb-4" style={{ fontSize: "64px" }}>shopping_cart</span>
-            <h2 className="text-xl font-semibold text-on-surface mb-2">Tu carrito está vacío</h2>
-            <p className="text-on-surface-variant mb-6">Agrega platos desde nuestro menú</p>
-            <Link href="/catering/menu" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold shadow-lg shadow-primary/10 hover:brightness-110 active:scale-95 transition-all">
-              <span className="material-symbols-outlined text-lg">arrow_back</span>
-              Ir al Menú
-            </Link>
+  return (
+    <>
+      <SiteHeader line="catering" />
+
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 pt-12">
+        <div className="grid grid-cols-12 gap-x-6 mb-10">
+          <div className="col-span-12 lg:col-span-3 mb-4 lg:mb-0">
+            <EditorialRule index="04" label="Cotización" />
+          </div>
+          <div className="col-span-12 lg:col-span-9">
+            <h1 className="font-display font-light tracking-[-0.03em] leading-[0.92] text-ink text-5xl sm:text-6xl lg:text-7xl">
+              Su orden,
+              <br />
+              <span className="italic">en tres pasos</span>
+              <span className="text-marigold">.</span>
+            </h1>
           </div>
         </div>
-      </div>
-    );
-  }
 
-  const STEP_ICONS = ["shopping_cart", "edit_note", "credit_card"];
+        <ol className="flex items-center gap-6 sm:gap-12 border-y border-ink/15 py-5 mb-12 overflow-x-auto no-scrollbar">
+          {STEPS.map((s, i) => {
+            const idx = i; // 0..2 maps to logical step (3 is Bold widget displayed under "Pago")
+            const active = step >= 3 ? idx === 2 : idx === step;
+            const past = step >= 3 ? idx < 2 : idx < step;
+            return (
+              <li key={s} className="flex items-center gap-3 whitespace-nowrap">
+                <button
+                  onClick={() => past && setStep(idx as 0 | 1 | 2)}
+                  disabled={!past}
+                  className={cn(
+                    "font-display tabular text-3xl leading-none transition-colors",
+                    past ? "text-ink cursor-pointer" : "",
+                    active ? "text-marigold" : "",
+                    !active && !past ? "text-ink/30" : "",
+                  )}
+                >
+                  {String(idx + 1).padStart(2, "0")}
+                </button>
+                <span
+                  className={cn(
+                    "font-mono text-[11px] uppercase tracking-[0.22em]",
+                    active ? "text-ink" : "text-ink/50",
+                  )}
+                >
+                  {s}
+                </span>
+                {i < STEPS.length - 1 && <span className="text-ink/30">/</span>}
+              </li>
+            );
+          })}
+        </ol>
 
-  return (
-    <div className="flex flex-col min-h-screen bg-surface">
-      <Navbar />
-
-      <div className="max-w-5xl mx-auto px-8 py-8 w-full pt-24">
-        {/* Header */}
-        <div className="mb-8">
-          <Link href="/catering/menu" className="inline-flex items-center text-sm text-on-surface-variant hover:text-on-surface mb-4 gap-1">
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
-            Volver al menú
-          </Link>
-          <h1 className="text-4xl font-semibold tracking-tight text-on-surface">Tu Pedido</h1>
-        </div>
-
-        {/* Step Indicator */}
-        <div className="flex items-center justify-center mb-8">
-          {STEPS.map((s, i) => (
-            <div key={s} className="flex items-center">
-              <button
-                onClick={() => setStep(i)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                  step === i
-                    ? "bg-gradient-to-br from-primary-container to-primary text-on-primary shadow-sm"
-                    : step > i
-                    ? "bg-primary-fixed text-primary"
-                    : "bg-surface-container-low text-on-surface-variant"
-                }`}
-              >
-                <span className="material-symbols-outlined text-lg">{STEP_ICONS[i]}</span>
-                <span className="hidden sm:inline">{s}</span>
-              </button>
-              {i < STEPS.length - 1 && (
-                <div className={`w-8 sm:w-16 h-0.5 mx-1 ${step > i ? "bg-primary" : "bg-outline-variant/20"}`} />
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid lg:grid-cols-[1.6fr_1fr] gap-10 lg:gap-16">
+          <div>
+            {/* STEP 0 — Items */}
             {step === 0 && (
-              <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-outline-variant/5 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-on-surface-variant">shopping_cart</span>
-                  <h4 className="text-lg font-semibold tracking-tight">Items del Pedido</h4>
-                </div>
-                <div className="p-6 space-y-4">
-                  {items.map((item) => (
-                    <div key={item.menuItemId} className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl">
-                      <div className="h-14 w-14 rounded-xl bg-primary-fixed flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-primary text-2xl">restaurant</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-on-surface truncate">{item.name}</h4>
-                        <p className="text-sm text-on-surface-variant">{formatCurrency(item.unitPrice)} c/u</p>
-                      </div>
-                      <div className="flex items-center border border-outline-variant/20 rounded-xl overflow-hidden bg-surface-container-lowest">
-                        <button onClick={() => updateQuantity(item.menuItemId, item.quantity - 1)} className="p-1.5 hover:bg-surface-container-low transition-colors">
-                          <span className="material-symbols-outlined text-lg">remove</span>
-                        </button>
-                        <span className="px-3 text-sm font-bold">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.menuItemId, item.quantity + 1)} className="p-1.5 hover:bg-surface-container-low transition-colors">
-                          <span className="material-symbols-outlined text-lg">add</span>
-                        </button>
-                      </div>
-                      <span className="font-semibold text-on-surface w-24 text-right">{formatCurrency(item.unitPrice * item.quantity)}</span>
-                      <button onClick={() => removeItem(item.menuItemId)} className="p-1.5 text-error/60 hover:text-error hover:bg-red-50 rounded-lg transition-colors">
-                        <span className="material-symbols-outlined text-lg">delete</span>
+              <div className="border-t border-ink/15">
+                {items.map((item, i) => (
+                  <div key={item.menuItemId} className="flex items-center gap-5 py-6 border-b border-ink/15">
+                    <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-ink/50 w-10">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div className="h-16 w-16 bg-cream-warm border border-ink/10 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-ink/40 text-2xl">restaurant</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-display text-xl text-ink leading-tight truncate">{item.name}</h3>
+                      <p className="font-mono text-[11px] uppercase tracking-wider text-ink/55 mt-1">
+                        {formatCurrency(item.unitPrice)} c/u
+                      </p>
+                    </div>
+                    <div className="flex items-center border border-ink/30">
+                      <button
+                        onClick={() => updateQuantity(item.menuItemId, item.quantity - 1)}
+                        className="h-9 w-9 hover:bg-ink hover:text-cream transition-colors"
+                      >
+                        −
+                      </button>
+                      <span className="w-9 text-center font-mono text-sm tabular">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.menuItemId, item.quantity + 1)}
+                        className="h-9 w-9 hover:bg-ink hover:text-cream transition-colors"
+                      >
+                        +
                       </button>
                     </div>
-                  ))}
-                  <div className="pt-4">
-                    <button onClick={() => setStep(1)} className="w-full py-3 px-6 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all">
-                      Continuar
+                    <span className="hidden sm:inline w-28 text-right">
+                      <PriceTag amount={item.unitPrice * item.quantity} className="text-xl" />
+                    </span>
+                    <button
+                      onClick={() => removeItem(item.menuItemId)}
+                      aria-label="Quitar"
+                      className="text-ink/40 hover:text-error transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-lg">close</span>
                     </button>
                   </div>
-                </div>
+                ))}
               </div>
             )}
 
+            {/* STEP 1 — Event details */}
             {step === 1 && (
-              <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-outline-variant/5 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-on-surface-variant">edit_note</span>
-                  <h4 className="text-lg font-semibold tracking-tight">Detalles del Evento</h4>
-                </div>
-                <div className="p-6 space-y-5">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Select
-                      id="eventType"
-                      label="Tipo de Evento"
-                      options={EVENT_TYPE_OPTIONS}
-                      placeholder="Seleccionar..."
-                      value={eventType || ""}
-                      onChange={(e) => setEventType(e.target.value || null)}
-                    />
-                    <Input
-                      id="guests"
-                      label="Número de Invitados"
-                      type="number"
-                      min={1}
-                      value={guestCount}
-                      onChange={(e) => setGuestCount(parseInt(e.target.value) || 1)}
-                    />
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Input
-                      id="date"
-                      label="Fecha de Entrega"
-                      type="date"
-                      value={deliveryDate}
-                      onChange={(e) => setDeliveryInfo({ date: e.target.value })}
-                      min={new Date().toISOString().split("T")[0]}
-                      required
-                    />
-                    <Input
-                      id="time"
-                      label="Hora de Entrega"
-                      type="time"
-                      value={deliveryTime}
-                      onChange={(e) => setDeliveryInfo({ time: e.target.value })}
-                      required
-                    />
-                  </div>
+              <div className="space-y-6 max-w-2xl">
+                <p className="font-serif italic text-lg text-ink/70 leading-snug">
+                  La precisión del evento determina la precisión de la cocina. Estos campos viajan
+                  directo a la ficha de producción y a la coordinación logística.
+                </p>
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <Select
+                    id="eventType"
+                    label="Tipo de evento"
+                    options={EVENT_TYPE_OPTIONS}
+                    placeholder="Seleccionar..."
+                    value={eventType || ""}
+                    onChange={(e) => setEventType(e.target.value || null)}
+                  />
                   <Input
-                    id="address"
-                    label="Dirección de Entrega"
-                    placeholder="Calle 100 #15-20, Oficina 501"
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryInfo({ address: e.target.value })}
+                    id="guests"
+                    label="Comensales"
+                    type="number"
+                    min={1}
+                    value={guestCount}
+                    onChange={(e) => setGuestCount(parseInt(e.target.value) || 1)}
+                  />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <Input
+                    id="date"
+                    label="Fecha de entrega"
+                    type="date"
+                    value={deliveryDate}
+                    onChange={(e) => setDeliveryInfo({ date: e.target.value })}
+                    min={new Date().toISOString().split("T")[0]}
                     required
                   />
                   <Input
-                    id="city"
-                    label="Ciudad"
-                    placeholder="Bogotá"
-                    value={deliveryCity}
-                    onChange={(e) => setDeliveryInfo({ city: e.target.value })}
+                    id="time"
+                    label="Hora de entrega"
+                    type="time"
+                    value={deliveryTime}
+                    onChange={(e) => setDeliveryInfo({ time: e.target.value })}
+                    required
                   />
-                  <Textarea
-                    id="notes"
-                    label="Notas adicionales (opcional)"
-                    placeholder="Instrucciones especiales, acceso al edificio, etc."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                  />
-                  <Textarea
-                    id="dietary"
-                    label="Restricciones alimenticias (opcional)"
-                    placeholder="Alergias, intolerancias, preferencias..."
-                    value={dietaryNotes}
-                    onChange={(e) => setDietaryNotes(e.target.value)}
-                  />
-                  <div className="flex gap-3 pt-2">
-                    <button onClick={() => setStep(0)} className="flex-1 py-3 px-6 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors active:scale-[0.98]">Atrás</button>
-                    <button onClick={() => setStep(2)} className="flex-1 py-3 px-6 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all">Continuar al Pago</button>
-                  </div>
                 </div>
+                <Input
+                  id="address"
+                  label="Dirección de entrega"
+                  placeholder="Calle 100 #15-20, Oficina 501"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryInfo({ address: e.target.value })}
+                  required
+                />
+                <Input
+                  id="city"
+                  label="Ciudad"
+                  placeholder="Bogotá"
+                  value={deliveryCity}
+                  onChange={(e) => setDeliveryInfo({ city: e.target.value })}
+                />
+                <Textarea
+                  id="notes"
+                  label="Notas operativas (opcional)"
+                  placeholder="Acceso al edificio, parqueadero, contacto en sitio..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+                <Textarea
+                  id="dietary"
+                  label="Restricciones alimenticias (opcional)"
+                  placeholder="Alergias, intolerancias, preferencias por comensal..."
+                  value={dietaryNotes}
+                  onChange={(e) => setDietaryNotes(e.target.value)}
+                />
               </div>
             )}
 
+            {/* STEP 2 — Review before Bold */}
             {step === 2 && (
-              <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-outline-variant/5 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-on-surface-variant">credit_card</span>
-                  <h4 className="text-lg font-semibold tracking-tight">Método de Pago</h4>
+              <div className="space-y-8 max-w-2xl">
+                <div className="border border-ink/15 p-7">
+                  <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-marigold">
+                    Resumen del evento
+                  </span>
+                  <dl className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8 text-[15px]">
+                    <dt className="font-mono text-[10.5px] uppercase tracking-wider text-ink/55">Tipo</dt>
+                    <dd className="font-serif text-ink">{eventType || "—"}</dd>
+                    <dt className="font-mono text-[10.5px] uppercase tracking-wider text-ink/55">Comensales</dt>
+                    <dd className="font-serif text-ink tabular">{guestCount}</dd>
+                    <dt className="font-mono text-[10.5px] uppercase tracking-wider text-ink/55">Fecha</dt>
+                    <dd className="font-serif text-ink">{deliveryDate || "—"}</dd>
+                    <dt className="font-mono text-[10.5px] uppercase tracking-wider text-ink/55">Hora</dt>
+                    <dd className="font-serif text-ink">{deliveryTime || "—"}</dd>
+                    <dt className="font-mono text-[10.5px] uppercase tracking-wider text-ink/55">Dirección</dt>
+                    <dd className="font-serif text-ink">{deliveryAddress || "—"}, {deliveryCity}</dd>
+                  </dl>
                 </div>
-                <div className="p-6 space-y-6">
-                  <div className="bg-primary-fixed/30 border border-outline-variant/10 rounded-xl p-4 flex items-start gap-3">
-                    <span className="material-symbols-outlined text-primary mt-0.5">verified_user</span>
-                    <div>
-                      <h4 className="font-bold text-on-surface mb-1">Pago seguro con Bold</h4>
-                      <p className="text-sm text-on-surface-variant">Aceptamos tarjetas de crédito/débito, PSE, Nequi, Daviplata y otros medios de pago.</p>
-                    </div>
-                  </div>
-                  <div className="bg-surface-container-low rounded-xl p-5 space-y-2">
-                    <h4 className="font-bold text-on-surface mb-3 text-sm uppercase tracking-widest">Resumen del Evento</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <span className="text-on-surface-variant">Tipo:</span>
-                      <span className="font-medium">{eventType || "No especificado"}</span>
-                      <span className="text-on-surface-variant">Invitados:</span>
-                      <span className="font-medium">{guestCount}</span>
-                      <span className="text-on-surface-variant">Fecha:</span>
-                      <span className="font-medium">{deliveryDate || "No especificada"}</span>
-                      <span className="text-on-surface-variant">Hora:</span>
-                      <span className="font-medium">{deliveryTime || "No especificada"}</span>
-                      <span className="text-on-surface-variant">Dirección:</span>
-                      <span className="font-medium">{deliveryAddress || "No especificada"}</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <button onClick={() => setStep(1)} className="flex-1 py-3 px-6 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors active:scale-[0.98]">Atrás</button>
-                    <button onClick={handlePay} disabled={loading} className="flex-1 py-3 px-6 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                      {loading ? (
-                        <><span className="material-symbols-outlined text-lg animate-spin">progress_activity</span> Preparando pago...</>
-                      ) : (
-                        <><span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span> Pagar con Bold {formatCurrency(total())}</>
-                      )}
-                    </button>
-                  </div>
-                </div>
+                <p className="font-serif italic text-[15px] text-ink/65 leading-snug">
+                  Al confirmar pasamos al ambiente seguro de Bold. La transacción incluye
+                  firma de integridad y un webhook actualiza el estado de la orden sin demora.
+                </p>
               </div>
             )}
 
+            {/* STEP 3 — Bold widget */}
             {step === 3 && boldConfig && (
-              <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-outline-variant/5 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-on-surface-variant">lock</span>
-                  <h4 className="text-lg font-semibold tracking-tight">Pago Seguro con Bold</h4>
-                </div>
-                <div className="p-6 space-y-6">
-                  <div className="p-4 bg-primary-fixed/30 rounded-xl border border-outline-variant/10 text-center">
-                    <p className="text-sm text-on-surface-variant mb-2">Total a pagar</p>
-                    <p className="text-3xl font-bold text-on-surface">{formatCurrency(total())}</p>
-                  </div>
-
-                  <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant/10">
-                    <p className="text-sm text-on-surface-variant mb-4">Haz clic en el botón de abajo para completar tu pago de forma segura:</p>
+              <div className="space-y-8 max-w-2xl">
+                <div className="border border-ink/15 p-8 bg-cream-warm">
+                  <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-marigold">
+                    Bold · Procesador autorizado
+                  </span>
+                  <h3 className="mt-3 font-display text-3xl tracking-tight text-ink leading-tight">
+                    Pagar <PriceTag amount={total()} className="text-3xl" />
+                  </h3>
+                  <p className="mt-3 font-serif italic text-[15px] text-ink/65 leading-snug">
+                    Tarjeta crédito/débito, PSE, Nequi, Daviplata. Firma SHA-256 y
+                    redirección automática al confirmar el pago.
+                  </p>
+                  <div className="mt-6">
                     <BoldPaymentButton
                       apiKey={boldConfig.apiKey}
                       amount={boldConfig.amount}
@@ -379,57 +361,105 @@ export default function OrderPage() {
                       }}
                     />
                   </div>
-
-                  <div className="flex items-center gap-2 p-3 bg-primary-fixed/20 rounded-lg">
-                    <span className="material-symbols-outlined text-primary text-lg">verified</span>
-                    <p className="text-xs text-on-surface-variant">Pago procesado de forma segura por Bold.co — Tarjeta, PSE, Nequi, Daviplata</p>
-                  </div>
-
-                  <button 
-                    onClick={() => setStep(2)} 
-                    className="w-full py-3 px-6 bg-surface-container-lowest border border-outline-variant/20 text-on-surface rounded-xl font-semibold hover:bg-surface-container-high transition-colors"
-                  >
-                    Volver
-                  </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Order Summary Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
-              <div className="p-5 border-b border-outline-variant/5">
-                <h4 className="font-semibold tracking-tight">Resumen</h4>
-              </div>
-              <div className="p-5 space-y-4">
-                {items.map((item) => (
-                  <div key={item.menuItemId} className="flex justify-between text-sm">
-                    <span className="text-on-surface-variant truncate mr-2">{item.quantity}x {item.name}</span>
-                    <span className="font-medium whitespace-nowrap">{formatCurrency(item.unitPrice * item.quantity)}</span>
-                  </div>
-                ))}
-                <hr className="border-outline-variant/10" />
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-on-surface-variant">Subtotal</span>
-                    <span>{formatCurrency(subtotal())}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-on-surface-variant">IVA (19%)</span>
-                    <span>{formatCurrency(tax())}</span>
-                  </div>
-                  <hr className="border-outline-variant/10" />
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
-                    <span className="text-primary-container">{formatCurrency(total())}</span>
-                  </div>
-                </div>
-              </div>
+          {/* Sidebar */}
+          <aside className="lg:sticky lg:top-24 self-start border border-ink/15 bg-cream-warm">
+            <div className="px-7 py-6 border-b border-ink/15 flex items-baseline justify-between">
+              <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink/55">
+                Cotización
+              </span>
+              <span className="font-mono text-[10.5px] uppercase tracking-wider text-ink/50">
+                {items.length} item{items.length === 1 ? "" : "s"}
+              </span>
             </div>
-          </div>
+            <ul className="px-7 py-5 space-y-3 text-[14px] max-h-64 overflow-y-auto">
+              {items.map((i) => (
+                <li key={i.menuItemId} className="flex justify-between gap-3">
+                  <span className="text-ink/75 truncate">
+                    <span className="text-ink/45">{i.quantity}×</span> {i.name}
+                  </span>
+                  <span className="tabular text-ink">
+                    {formatCurrency(i.unitPrice * i.quantity)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <dl className="px-7 py-5 border-t border-ink/15 space-y-3 text-[14px]">
+              <div className="flex justify-between">
+                <dt className="text-ink/70">Sub-total</dt>
+                <dd className="tabular text-ink">{formatCurrency(subtotal())}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-ink/70">IVA 19%</dt>
+                <dd className="tabular text-ink">{formatCurrency(tax())}</dd>
+              </div>
+            </dl>
+            <div className="px-7 py-5 border-t border-ink/15 flex items-end justify-between">
+              <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink/55">
+                Total
+              </span>
+              <PriceTag amount={total()} className="text-3xl sm:text-4xl" />
+            </div>
+            <div className="px-7 py-5 border-t border-ink/15 space-y-3">
+              {step === 0 && (
+                <button
+                  onClick={() => setStep(1)}
+                  className="block w-full h-12 bg-ink text-cream font-sans text-[14px] tracking-tight rv-press hover:bg-ink-soft"
+                >
+                  Detalles del evento →
+                </button>
+              )}
+              {step === 1 && (
+                <>
+                  <button
+                    onClick={() => setStep(2)}
+                    className="block w-full h-12 bg-ink text-cream font-sans text-[14px] tracking-tight rv-press hover:bg-ink-soft"
+                  >
+                    Revisar →
+                  </button>
+                  <button
+                    onClick={() => setStep(0)}
+                    className="block w-full h-12 border border-ink/30 font-sans text-[13px] text-ink hover:border-ink hover:bg-ink hover:text-cream transition-colors"
+                  >
+                    ← Volver
+                  </button>
+                </>
+              )}
+              {step === 2 && (
+                <>
+                  <button
+                    onClick={handlePay}
+                    disabled={loading}
+                    className="block w-full h-12 bg-marigold text-ink font-sans text-[14px] tracking-tight rv-press hover:bg-marigold-deep hover:text-cream disabled:opacity-50"
+                  >
+                    {loading ? "Preparando pago…" : "Pagar con Bold →"}
+                  </button>
+                  <button
+                    onClick={() => setStep(1)}
+                    className="block w-full h-12 border border-ink/30 font-sans text-[13px] text-ink hover:border-ink hover:bg-ink hover:text-cream transition-colors"
+                  >
+                    ← Editar detalles
+                  </button>
+                </>
+              )}
+              {step === 3 && (
+                <button
+                  onClick={() => setStep(2)}
+                  className="block w-full h-12 border border-ink/30 font-sans text-[13px] text-ink hover:border-ink hover:bg-ink hover:text-cream transition-colors"
+                >
+                  ← Editar resumen
+                </button>
+              )}
+            </div>
+          </aside>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <SiteFooter />
+    </>
   );
 }

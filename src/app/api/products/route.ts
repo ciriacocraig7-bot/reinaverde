@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { verifyToken } from "@/lib/auth/jwt";
+import { readSession } from "@/lib/auth/cookies";
 import { createProductSchema } from "@/lib/validators/shop";
 import { slugify } from "@/lib/utils";
 
@@ -48,11 +48,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const payload = verifyToken(token);
-    if (!payload || payload.role !== "ADMIN") {
+    const payload = readSession(request);
+    if (!payload) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    if (payload.role !== "ADMIN") {
       return NextResponse.json({ error: "Solo administradores pueden crear productos" }, { status: 403 });
     }
 

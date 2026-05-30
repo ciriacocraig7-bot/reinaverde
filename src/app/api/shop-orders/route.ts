@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { verifyToken } from "@/lib/auth/jwt";
+import { readSession } from "@/lib/auth/cookies";
 import { createShopOrderSchema } from "@/lib/validators/shop";
 import { generateOrderNumber, calculateTax } from "@/lib/utils";
 
@@ -9,11 +9,8 @@ const SHIPPING_COST = 12000;
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const payload = verifyToken(token);
-    if (!payload) return NextResponse.json({ error: "Token inválido" }, { status: 401 });
+    const payload = readSession(request);
+    if (!payload) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
     const businessLine = searchParams.get("businessLine");
@@ -41,11 +38,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const payload = verifyToken(token);
-    if (!payload) return NextResponse.json({ error: "Token inválido" }, { status: 401 });
+    const payload = readSession(request);
+    if (!payload) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const body = await request.json();
     const validation = createShopOrderSchema.safeParse(body);

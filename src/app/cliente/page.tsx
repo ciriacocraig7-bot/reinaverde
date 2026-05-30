@@ -1,122 +1,158 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/auth-store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
+import {
+  DashHeader,
+  StatBlock,
+  Panel,
+  StatusPill,
+  ActionBtn,
+} from "@/components/dashboard/primitives";
 
 const MOCK_ORDERS = [
-  { id: "RV-ABC123", event: "Almuerzo Equipo", total: 850000, status: "IN_PRODUCTION", date: "2026-03-28" },
-  { id: "RV-DEF456", event: "Desayuno Directivos", total: 420000, status: "DELIVERED", date: "2026-03-20" },
-  { id: "RV-GHI789", event: "Team Building", total: 1200000, status: "COMPLETED", date: "2026-03-15" },
+  { id: "RV-ABC123", event: "Almuerzo equipo",      total: 850000,  status: "IN_PRODUCTION", date: "28 mar 2026" },
+  { id: "RV-DEF456", event: "Desayuno directivos",  total: 420000,  status: "DELIVERED",     date: "20 mar 2026" },
+  { id: "RV-GHI789", event: "Team building",        total: 1200000, status: "COMPLETED",     date: "15 mar 2026" },
 ];
 
-const STATUS_MAP: Record<string, { label: string; variant: "default" | "info" | "warning" | "success"; dot: string }> = {
-  DRAFT: { label: "Borrador", variant: "default", dot: "bg-gray-500" },
-  QUOTED: { label: "Cotizado", variant: "info", dot: "bg-blue-500" },
-  PAYMENT_PENDING: { label: "Pendiente Pago", variant: "warning", dot: "bg-amber-500" },
-  PAID: { label: "Pagado", variant: "success", dot: "bg-emerald-500" },
-  IN_PRODUCTION: { label: "En Preparación", variant: "info", dot: "bg-blue-500 animate-pulse" },
-  READY: { label: "Listo", variant: "success", dot: "bg-emerald-500" },
-  IN_TRANSIT: { label: "En Camino", variant: "warning", dot: "bg-indigo-500" },
-  DELIVERED: { label: "Entregado", variant: "success", dot: "bg-emerald-500" },
-  COMPLETED: { label: "Completado", variant: "success", dot: "bg-emerald-500" },
+const STATUS_MAP: Record<string, { label: string; tone: "neutral" | "info" | "warn" | "success" | "danger" | "muted" }> = {
+  DRAFT:           { label: "Borrador",      tone: "muted" },
+  QUOTED:          { label: "Cotizado",      tone: "info" },
+  PAYMENT_PENDING: { label: "Pend. pago",    tone: "warn" },
+  PAID:            { label: "Pagado",        tone: "success" },
+  IN_PRODUCTION:   { label: "Preparación",   tone: "info" },
+  READY:           { label: "Listo",         tone: "success" },
+  IN_TRANSIT:      { label: "En camino",     tone: "warn" },
+  DELIVERED:       { label: "Entregado",     tone: "success" },
+  COMPLETED:       { label: "Completado",    tone: "success" },
 };
 
+const QUICK_LINKS = [
+  { href: "/catering/menu",      code: "CRP", label: "Carta de catering",  desc: "Cotizar un evento o pedir un almuerzo." },
+  { href: "/pharma/catalogo",    code: "PHM", label: "Catálogo Pharma",    desc: "Aceites, tinturas, tópicos certificados." },
+  { href: "/liofilizados/catalogo", code: "LIO", label: "Frutas liofilizadas", desc: "Snacks y mayorista de fruta colombiana." },
+] as const;
+
 export default function ClienteDashboard() {
-  const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const firstName = user?.firstName || "Cliente";
+
+  const today = new Intl.DateTimeFormat("es-CO", {
+    day: "2-digit", month: "short", year: "numeric",
+  }).format(new Date()).toLowerCase();
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <p className="text-on-surface-variant text-xs uppercase tracking-[0.2em] mb-2">Portal de Cliente</p>
-          <h1 className="text-4xl font-semibold tracking-tight text-on-surface">
-            Hola, {user?.firstName || "Cliente"}
-          </h1>
-        </div>
+    <>
+      <DashHeader
+        eyebrow="§ Portal del cliente"
+        title={<>Hola, <span className="italic">{firstName}</span><span className="text-marigold">.</span></>}
+        date={today}
+      >
         <Link href="/catering/menu">
-          <button className="px-6 py-2.5 bg-gradient-to-br from-primary-container to-primary text-on-primary rounded-xl font-semibold text-sm shadow-lg shadow-primary/10 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2">
-            <span className="material-symbols-outlined text-lg">add</span>
-            Nuevo Pedido
-          </button>
+          <ActionBtn variant="marigold">+ Cotizar pedido</ActionBtn>
         </Link>
-      </header>
+      </DashHeader>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { title: "Pedidos Activos", value: "2", icon: "receipt_long" },
-          { title: "Eventos Próximos", value: "1", icon: "event" },
-          { title: "Total Gastado", value: formatCurrency(2470000), icon: "payments" },
-          { title: "Calificación Prom.", value: "4.9", icon: "star" },
-        ].map((stat) => (
-          <div key={stat.title} className="bg-surface-container-lowest rounded-xl p-5 shadow-sm shadow-emerald-900/5 border border-outline-variant/10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-3">
-              <span className="material-symbols-outlined text-primary-fixed-dim text-3xl opacity-20">{stat.icon}</span>
-            </div>
-            <p className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">{stat.title}</p>
-            <p className="text-2xl font-semibold text-on-surface mt-1">{stat.value}</p>
-          </div>
-        ))}
+      {/* KPIs */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-ink/15">
+        <div className="border-r border-b border-ink/15">
+          <StatBlock label="Pedidos activos"  value="2"                       meta="1 en cocina" trend="up" accent="marigold" />
+        </div>
+        <div className="border-r border-b border-ink/15">
+          <StatBlock label="Eventos próximos" value="1"                       meta="28 mar"      trend="flat" />
+        </div>
+        <div className="border-r border-b border-ink/15">
+          <StatBlock label="Inversión total"  value={formatCurrency(2470000)} meta="últimos 12m" trend="up" />
+        </div>
+        <div className="border-r border-b border-ink/15">
+          <StatBlock label="Calificación"     value="4.9"                     meta="3 reseñas"   trend="up" />
+        </div>
       </div>
 
-      {/* Recent Orders */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden">
-        <div className="p-6 border-b border-outline-variant/5 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-on-surface-variant">receipt_long</span>
-            <h4 className="text-lg font-semibold tracking-tight">Mis Pedidos Recientes</h4>
-          </div>
-          <button onClick={() => toast.info("Módulo de historial de pedidos próximamente")} className="text-primary-container font-semibold text-sm flex items-center gap-1 hover:underline">
-            Ver todos <span className="material-symbols-outlined text-sm">arrow_forward</span>
+      {/* Recent orders */}
+      <Panel
+        index="01"
+        title="Mis pedidos recientes"
+        meta={`${MOCK_ORDERS.length} totales`}
+        actions={
+          <button
+            onClick={() => toast.info("Historial completo · próximamente")}
+            className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink/65 hover:text-ink rv-link"
+          >
+            Ver todo
           </button>
-        </div>
-        <div className="divide-y divide-outline-variant/5">
-          {MOCK_ORDERS.map((order) => {
-            const status = STATUS_MAP[order.status] || { label: order.status, variant: "default" as const, dot: "bg-gray-500" };
+        }
+      >
+        <div className="divide-y divide-ink/10">
+          {MOCK_ORDERS.map((o, i) => {
+            const status = STATUS_MAP[o.status] || { label: o.status, tone: "muted" as const };
             return (
-              <div key={order.id} onClick={() => toast.info(`Detalles del pedido ${order.id}`)} className="flex items-center justify-between p-5 hover:bg-surface-container-low/50 transition-colors cursor-pointer">
-                <div>
-                  <p className="font-medium text-on-surface">{order.event}</p>
-                  <p className="text-xs text-on-surface-variant mt-0.5">{order.id} · {order.date}</p>
+              <button
+                key={o.id}
+                onClick={() => toast.info(`Detalles del pedido ${o.id}`)}
+                className="w-full flex items-baseline justify-between px-6 py-5 hover:bg-cream-warm transition-colors text-left group"
+              >
+                <div className="flex items-baseline gap-5">
+                  <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-ink/45 w-8 tabular">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <p className="font-display text-xl tracking-tight text-ink leading-tight">
+                      {o.event}
+                    </p>
+                    <p className="font-mono text-[11px] uppercase tracking-wider text-ink/55 mt-1">
+                      {o.id} · {o.date}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant={status.variant}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`}></span>
-                    {status.label}
-                  </Badge>
-                  <span className="font-semibold text-on-surface hidden sm:inline">{formatCurrency(order.total)}</span>
-                  <span className="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
+                <div className="flex items-baseline gap-6">
+                  <StatusPill tone={status.tone} label={status.label} />
+                  <span className="font-display text-xl tabular text-ink hidden sm:inline">
+                    {formatCurrency(o.total)}
+                  </span>
+                  <span className="font-display text-xl text-ink/40 group-hover:translate-x-1 transition-transform">
+                    →
+                  </span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
-      </div>
+      </Panel>
 
-      {/* Quick Actions */}
-      <div className="grid sm:grid-cols-3 gap-4">
-        {[
-          { href: "/catering/menu", icon: "restaurant_menu", title: "Hacer Pedido", desc: "Explora nuestro menú y ordena" },
-          { href: "/catering/eventos", icon: "event", title: "Crear Evento", desc: "Planifica tu próximo evento" },
-          { href: "/pharma/catalogo", icon: "star", title: "Catálogo Pharma", desc: "Explora nuestros productos de bienestar" },
-        ].map((action) => (
-          <Link key={action.href} href={action.href}>
-            <div className="bg-surface-container-lowest rounded-2xl p-6 flex flex-col items-center text-center gap-3 border border-outline-variant/10 shadow-sm hover:translate-y-[-2px] transition-all duration-300 cursor-pointer h-full">
-              <div className="p-3 rounded-xl bg-primary-fixed">
-                <span className="material-symbols-outlined text-primary text-2xl">{action.icon}</span>
-              </div>
-              <h3 className="font-bold text-on-surface">{action.title}</h3>
-              <p className="text-sm text-on-surface-variant">{action.desc}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
+      {/* Quick links */}
+      <Panel index="02" title="Empezar algo nuevo" meta="3 divisiones">
+        <div className="grid sm:grid-cols-3 divide-x divide-ink/15">
+          {QUICK_LINKS.map((q) => (
+            <Link
+              key={q.href}
+              href={q.href}
+              className="block p-6 hover:bg-cream-warm transition-colors group"
+            >
+              <span className={cn(
+                "font-mono text-[10.5px] uppercase tracking-[0.22em]",
+                q.code === "CRP" && "text-marigold",
+                q.code === "PHM" && "text-iris",
+                q.code === "LIO" && "text-persimmon",
+              )}>
+                {q.code}
+              </span>
+              <h3 className="mt-3 font-display text-2xl tracking-tight text-ink leading-tight">
+                {q.label}
+              </h3>
+              <p className="mt-3 font-serif italic text-[14px] leading-snug text-ink/65">
+                {q.desc}
+              </p>
+              <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.22em] text-ink group-hover:translate-x-1 transition-transform">
+                Entrar →
+              </p>
+            </Link>
+          ))}
+        </div>
+      </Panel>
+    </>
   );
 }

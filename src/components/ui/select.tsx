@@ -13,35 +13,55 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label
+            htmlFor={id}
+            className="block font-mono text-[10.5px] uppercase tracking-[0.18em] text-ink/65 mb-2"
+          >
             {label}
           </label>
         )}
-        <select
-          id={id}
-          className={cn(
-            "flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
-            error && "border-red-500 focus:ring-red-500",
-            className
-          )}
-          ref={ref}
-          {...props}
-        >
-          {placeholder && (
-            <option value="" disabled>
-              {placeholder}
-            </option>
-          )}
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+        <div className="relative">
+          <select
+            id={id}
+            ref={ref}
+            className={cn(
+              "block w-full appearance-none bg-transparent border-0 border-b border-ink/30",
+              "font-sans text-base text-ink",
+              "px-0 py-2.5 pr-8",
+              "focus:outline-none focus:border-ink focus:ring-0",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "transition-colors duration-150",
+              error && "border-error focus:border-error",
+              className,
+            )}
+            {...props}
+          >
+            {placeholder && (
+              <option value="" disabled>
+                {placeholder}
+              </option>
+            )}
+            {options.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <span
+            aria-hidden
+            className="material-symbols-outlined pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-ink/60 text-lg"
+          >
+            expand_more
+          </span>
+        </div>
+        {error && (
+          <p className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-error">
+            ✕ {error}
+          </p>
+        )}
       </div>
     );
-  }
+  },
 );
 Select.displayName = "Select";
 

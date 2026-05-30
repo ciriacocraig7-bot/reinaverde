@@ -3,6 +3,7 @@ import { registerSchema } from "@/lib/validators/auth";
 import { hashPassword } from "@/lib/auth/passwords";
 import { signToken } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/db/prisma";
+import { buildSessionCookie } from "@/lib/auth/cookies";
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,16 +56,21 @@ export async function POST(request: NextRequest) {
       role: user.role,
     });
 
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
+    const res = NextResponse.json(
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+        },
+        token,
       },
-      token,
-    }, { status: 201 });
+      { status: 201 },
+    );
+    res.headers.append("Set-Cookie", buildSessionCookie(token));
+    return res;
   } catch (error) {
     console.error("Register error:", error);
     return NextResponse.json(
