@@ -54,8 +54,9 @@ export function proxy(request: NextRequest) {
 
   if (isPublic) return NextResponse.next();
 
-  // Public API routes: auth, webhooks, catering pay, read-only catalogs.
+  // Public API routes: auth, webhooks, health, catering pay, read-only catalogs.
   const isPublicApi =
+    pathname === "/api/health" ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/webhooks/") ||
     pathname.startsWith("/api/catering/pay/") ||
