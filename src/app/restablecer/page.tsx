@@ -1,13 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/stores/auth-store";
 
 export default function RestablecerPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen grid place-items-center bg-cream">
+          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink/55">
+            Cargando…
+          </span>
+        </div>
+      }
+    >
+      <RestablecerForm />
+    </Suspense>
+  );
+}
+
+function RestablecerForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
