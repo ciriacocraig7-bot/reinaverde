@@ -1,5 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
 import { EditorialRule } from "@/components/marketing/editorial";
+import { useCartStore } from "@/stores/cart-store";
+import { usePharmaCart, useLiofilizadosCart } from "@/stores/shop-cart-store";
 
 type Variant = "pharma" | "liofilizados" | "catering";
 
@@ -32,6 +37,20 @@ const NEXT_STEPS: Record<Variant, string[]> = {
 
 export function PaymentConfirmation({ variant }: { variant: Variant }) {
   const accent = ACCENT[variant];
+
+  // Limpiar el carrito correspondiente al llegar a la página de confirmación.
+  // Esto reemplaza el viejo clearCart() en onPaymentStarted que vaciaba el
+  // carrito antes de que el usuario llegara al checkout de Bold.
+  const clearCatering = useCartStore((s) => s.clearCart);
+  const clearPharma = usePharmaCart((s) => s.clearCart);
+  const clearLiofilizados = useLiofilizadosCart((s) => s.clearCart);
+
+  useEffect(() => {
+    if (variant === "catering") clearCatering();
+    if (variant === "pharma") clearPharma();
+    if (variant === "liofilizados") clearLiofilizados();
+  }, [variant, clearCatering, clearPharma, clearLiofilizados]);
+
   return (
     <section className="max-w-[1400px] mx-auto px-6 sm:px-10 py-20 sm:py-32">
       <div className="grid grid-cols-12 gap-x-6">

@@ -44,7 +44,7 @@ interface BoldConfig {
 export default function LiofilizadosCarritoPage() {
   const {
     items, removeItem, updateQuantity, subtotal, tax, shippingCost, total,
-    itemCount, shipping, setShipping, guest, setGuest, clearCart,
+    itemCount, shipping, setShipping, guest, setGuest,
   } = useLiofilizadosCart();
   const { isAuthenticated, user } = useAuthStore();
   const [step, setStep] = useState<0 | 1 | 2>(0);
@@ -367,10 +367,8 @@ export default function LiofilizadosCarritoPage() {
                       customerData={boldConfig.customerData}
                       billingAddress={boldConfig.billingAddress}
                       buttonStyle="dark-L"
-                      onPaymentStarted={() => {
-                        clearCart();
-                        toast.success("Procesando pago...");
-                      }}
+                      onReady={() => toast.success("Bold listo · da click para pagar")}
+                      onError={(m) => toast.error(m)}
                     />
                   </div>
                 </div>

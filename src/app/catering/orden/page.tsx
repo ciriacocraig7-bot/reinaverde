@@ -46,7 +46,7 @@ export default function CateringOrdenPage() {
   const {
     items, guestCount, eventType, deliveryDate, deliveryTime, deliveryAddress,
     deliveryCity, notes, dietaryNotes, removeItem, updateQuantity, setGuestCount,
-    setEventType, setDeliveryInfo, setNotes, setDietaryNotes, subtotal, tax, total, clearCart,
+    setEventType, setDeliveryInfo, setNotes, setDietaryNotes, subtotal, tax, total,
   } = useCartStore();
 
   if (items.length === 0) {
@@ -355,10 +355,8 @@ export default function CateringOrdenPage() {
                       customerData={boldConfig.customerData}
                       billingAddress={boldConfig.billingAddress}
                       buttonStyle="dark-L"
-                      onPaymentStarted={() => {
-                        clearCart();
-                        toast.success("Procesando pago...");
-                      }}
+                      onReady={() => toast.success("Bold listo · da click para pagar")}
+                      onError={(m) => toast.error(m)}
                     />
                   </div>
                 </div>

@@ -44,7 +44,7 @@ interface BoldConfig {
 export default function PharmaCarritoPage() {
   const {
     items, removeItem, updateQuantity, subtotal, tax, shippingCost, total,
-    itemCount, shipping, setShipping, guest, setGuest, clearCart,
+    itemCount, shipping, setShipping, guest, setGuest,
   } = usePharmaCart();
   const { isAuthenticated } = useAuthStore();
   const [step, setStep] = useState<0 | 1 | 2>(0);
@@ -327,10 +327,8 @@ export default function PharmaCarritoPage() {
                       customerData={boldConfig.customerData}
                       billingAddress={boldConfig.billingAddress}
                       buttonStyle="dark-L"
-                      onPaymentStarted={() => {
-                        clearCart();
-                        toast.success("Procesando pago...");
-                      }}
+                      onReady={() => toast.success("Bold listo · da click para pagar")}
+                      onError={(m) => toast.error(m)}
                     />
                   </div>
                 </div>
