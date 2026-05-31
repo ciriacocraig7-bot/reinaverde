@@ -2,40 +2,126 @@ import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { EditorialRule, NumberedRow } from "@/components/marketing/editorial";
+import { EditorialRule } from "@/components/marketing/editorial";
 
-const EVENT_TYPES = [
-  {
-    code: "CRP",
-    name: "Corporativo",
-    description: "Almuerzos, juntas directivas, inauguraciones. Facturación electrónica con NIT.",
-    from: 28000,
-  },
-  {
-    code: "BDA",
-    name: "Bodas",
-    description: "Cocteles, banquetes y mesas dulces para 80-300 invitados, montaje incluido.",
-    from: 165000,
-  },
-  {
-    code: "SCL",
-    name: "Social",
-    description: "Cumpleaños, baby showers, reuniones íntimas. Menú flexible, servicio discreto.",
-    from: 42000,
-  },
-  {
-    code: "SUB",
-    name: "Suscripción",
-    description: "Almuerzos corporativos recurrentes. Menú semanal, precio acordado por porción.",
-    from: 22000,
-  },
-] as const;
+/* ════════════════════════════════════════════════════════════════
+   Reina Verde Catering — narrativa alineada al pitch deck oficial.
+   Posicionamiento: alta gastronomía orgánica saludable para eventos
+   corporativos. Más que comida — experiencias de marca.
+   ════════════════════════════════════════════════════════════════ */
 
-const DELIVERABLES = [
-  { ord: 1, title: "Cotización en menos de tres minutos", body: "Selecciona menú, ingresa comensales y fecha. La plataforma calcula sub-totales, impuestos y logística sin esperar correos." },
-  { ord: 2, title: "Producción visible en cada paso", body: "Una vez confirmas pago, tu pedido entra a la cola de cocina con timestamps. Puedes ver el estado real: preparación, listo, en ruta, entregado." },
-  { ord: 3, title: "Pago seguro con Bold", body: "Tarjetas, PSE, Nequi y Daviplata. La firma de integridad protege la transacción y un webhook confirma el pago automáticamente." },
-  { ord: 4, title: "Facturación que cierra el ciclo", body: "Factura electrónica DIAN emitida al confirmar el evento. Sin doble digitación contable, sin esperar el final del mes." },
+const DESAFIOS = [
+  {
+    code: "DSF",
+    title: "Monotonía gastronómica",
+    body:
+      "Opciones tradicionales predecibles que no sorprenden, no inspiran y no logran motivar a los invitados ni colaboradores durante el evento.",
+  },
+  {
+    code: "NTR",
+    title: "Bajo valor nutricional",
+    body:
+      "Predominio de comida ultra-procesada que genera pesadez, falta de energía y reduce drásticamente la productividad de los equipos.",
+  },
+  {
+    code: "PRS",
+    title: "Presentación deficiente",
+    body:
+      "Empaques y montajes descuidados o de baja calidad que fallan en reflejar el verdadero nivel y el prestigio de la empresa anfitriona.",
+  },
+];
+
+const PILARES = [
+  {
+    code: "ORG",
+    title: "Ingredientes orgánicos",
+    body: "Salud y sabor en perfecta armonía para nutrir a tu equipo, sin sacrificar el placer del plato.",
+  },
+  {
+    code: "GMT",
+    title: "Percepción gourmet",
+    body: "Cuidamos cada detalle visual para despertar el hambre visual de inmediato y elevar el estatus del evento.",
+  },
+  {
+    code: "ECO",
+    title: "Materiales sostenibles",
+    body: "Empaques y montajes ecofriendly que suman a la responsabilidad social de tu empresa, sin perder elegancia.",
+  },
+];
+
+const MOMENTOS = [
+  {
+    code: "DBR",
+    name: "Desayunos y brunchs",
+    description:
+      "Inicios de jornada llenos de vitalidad: jugos prensados, granolas artesanales, panadería de masa madre, fruta tropical y café de origen.",
+    image: "/img/momentos/desayunos.jpg",
+  },
+  {
+    code: "RFG",
+    name: "Refrigerios y snacks",
+    description:
+      "Barras diseñadas para recargar energía entre sesiones: frutos secos, chocolates oscuros, snacks proteicos y vegetales con dips artesanales.",
+    image: "/img/momentos/refrigerios.jpg",
+  },
+  {
+    code: "ALM",
+    name: "Almuerzos premium",
+    description:
+      "Estilo buffet interactivo o empacados de lujo. Proteínas marinadas, granos andinos, vegetales rostizados y aderezos de la casa.",
+    image: "/img/momentos/almuerzos.jpg",
+  },
+  {
+    code: "GAL",
+    name: "Cenas de gala",
+    description:
+      "Experiencias de alta cocina a la mesa, plato por plato, con maridaje y servicio coreografiado para reuniones de cierre.",
+    image: "/img/momentos/cenas.jpg",
+  },
+  {
+    code: "MEX",
+    name: "Mesas de experiencia",
+    description:
+      "Estaciones de dulces y salados artesanales: quesos, charcutería, repostería de autor, macarons y postres en miniatura.",
+    image: "/img/momentos/mesas-experiencia.jpg",
+  },
+  {
+    code: "COC",
+    name: "Coctelería saludable",
+    description:
+      "Mixología innovadora con destilados premium, botánicos frescos y reducciones bajas en azúcar. Barras de licores selectos opcionales.",
+    image: "/img/momentos/cocteleria.jpg",
+  },
+];
+
+const CIUDADES = [
+  "Medellín",
+  "Bogotá",
+  "Cali",
+  "Barranquilla",
+  "Cartagena",
+  "Armenia",
+];
+
+const RAZONES = [
+  {
+    code: "01",
+    title: "Confianza corporativa",
+    body:
+      "Cumplimiento estricto, puntualidad absoluta y capacidad operativa comprobada para manejar grandes volúmenes sin perder la calidad.",
+  },
+  {
+    code: "02",
+    title: "Personalización total",
+    body:
+      "Adaptamos los menús a las necesidades específicas, temáticas del evento y restricciones dietéticas de tus invitados especiales.",
+  },
+  {
+    code: "03",
+    title: "Estatus de marca",
+    body:
+      "Nuestro servicio premium trasciende la comida para convertirse en una extensión directa del prestigio de tu organización.",
+  },
 ];
 
 export default function CateringHomePage() {
@@ -48,22 +134,26 @@ export default function CateringHomePage() {
         <div className="grid grid-cols-12 gap-x-6">
           <div className="col-span-12 lg:col-span-3 mb-6 lg:mb-0">
             <div className="rv-rise rv-delay-0 font-mono text-[11px] uppercase tracking-[0.22em] text-marigold leading-relaxed">
-              <p>División 01</p>
-              <p>Catering corporativo</p>
-              <p>Bogotá / Sabana</p>
+              <p>Reina Verde · Catering</p>
+              <p>Alta gastronomía corporativa</p>
+              <p>Orgánica · Saludable</p>
             </div>
           </div>
 
           <div className="col-span-12 lg:col-span-9">
-            <h1 className="rv-rise rv-delay-1 font-display font-light tracking-[-0.035em] leading-[0.92] text-ink text-6xl sm:text-8xl lg:text-[136px]">
-              <span className="italic">Catering</span> sin
+            <h1 className="rv-rise rv-delay-1 font-display font-light tracking-[-0.035em] leading-[0.92] text-ink text-5xl sm:text-7xl lg:text-[120px]">
+              Elevamos el
               <br />
-              fricción
+              estándar de
+              <br />
+              tus <span className="italic">eventos</span>
               <span className="text-marigold">.</span>
             </h1>
             <p className="rv-rise rv-delay-3 mt-10 font-serif italic text-xl sm:text-2xl leading-snug text-ink/75 max-w-3xl">
-              Una operación que entiende que el evento corporativo perfecto no se nota.
-              Lo que se nota es cuando algo falta — y aquí no falta nada.
+              Más que comida — diseñamos experiencias de marca. Transformamos
+              ingredientes orgánicos y saludables en propuestas gourmet con
+              estética impecable y artesanal, diseñadas para proyectar el mejor
+              estatus de tu empresa en cada bocado.
             </p>
 
             <div className="rv-rise rv-delay-4 mt-12 flex flex-wrap gap-4">
@@ -71,7 +161,7 @@ export default function CateringHomePage() {
                 href="/catering/menu"
                 className="inline-flex items-center h-14 px-9 bg-marigold text-ink font-sans text-[14px] tracking-tight rv-press hover:bg-marigold-deep hover:text-cream"
               >
-                Explorar el menú →
+                Ver los seis momentos →
               </Link>
               <Link
                 href="/catering/orden"
@@ -83,148 +173,318 @@ export default function CateringHomePage() {
           </div>
         </div>
 
-        {/* Hero image */}
+        {/* Hero image alineada al pitch */}
         <div className="rv-fade rv-delay-4 mt-16 relative w-full aspect-[16/8] overflow-hidden border-y border-ink/15">
           <Image
-            src="/img/hero/catering.jpg"
-            alt="Mesa corporativa elegante con servicio Reina Verde"
+            src="/img/hero/hub-pitch.jpg"
+            alt="Mesa corporativa de Reina Verde — alta gastronomía orgánica para eventos"
             fill
             sizes="(max-width: 1400px) 100vw, 1400px"
             className="object-cover"
             priority
           />
         </div>
-
-        {/* KPI band */}
-        <dl className="rv-fade rv-delay-5 mt-12 grid grid-cols-2 sm:grid-cols-4 border-b border-ink/15 divide-x divide-ink/15">
-          {[
-            { k: "Eventos servidos", v: "500+" },
-            { k: "Comensales", v: "32k" },
-            { k: "Satisfacción", v: "98%" },
-            { k: "Cotización", v: "< 3m" },
-          ].map((s) => (
-            <div key={s.k} className="px-6 py-7">
-              <dt className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55 mb-2">
-                {s.k}
-              </dt>
-              <dd className="font-display text-4xl sm:text-5xl tracking-[-0.025em] tabular text-ink">
-                {s.v}
-              </dd>
-            </div>
-          ))}
-        </dl>
       </section>
 
-      {/* ════════════════ EVENT TYPES ════════════════ */}
+      {/* ════════════════ QUIÉNES SOMOS ════════════════ */}
       <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
-        <div className="grid grid-cols-12 gap-x-6 mb-16">
-          <div className="col-span-12 lg:col-span-4">
-            <EditorialRule index="01" label="Tipologías de evento" />
-            <h2 className="mt-6 font-display font-light text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.025em] text-ink">
-              Cuatro
+        <EditorialRule index="01" label="Quiénes somos" className="mb-12" />
+        <div className="grid grid-cols-12 gap-x-6">
+          <div className="col-span-12 lg:col-span-5">
+            <h2 className="font-display font-light text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.025em] text-ink">
+              Más que
               <br />
-              <span className="italic">naturalezas</span>
+              comida,
               <br />
-              distintas.
+              <span className="italic">creamos</span>
+              <br />
+              experiencias
+              <br />
+              de <span className="text-marigold">marca</span>.
             </h2>
           </div>
-          <div className="col-span-12 lg:col-span-7 lg:col-start-6 lg:pt-2">
+          <div className="col-span-12 lg:col-span-7 lg:pt-2">
             <p className="font-serif italic text-xl leading-snug text-ink/75 max-w-2xl">
-              No tratamos un almuerzo de directorio igual que una boda de doscientos.
-              Cada tipología tiene su propia ficha de producción, su propio flujo logístico,
-              y su propia métrica de satisfacción.
+              Somos una empresa especializada en el diseño y ejecución de catering
+              para todo tipo de eventos, con un enfoque experto en el sector
+              corporativo.
+            </p>
+            <p className="mt-6 text-[15px] leading-relaxed text-ink/80 max-w-2xl">
+              Transformamos ingredientes orgánicos y saludables en propuestas
+              gourmet con una estética impecable y artesanal, diseñadas para
+              proyectar el mejor estatus de tu empresa en cada bocado.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════ DESAFÍO CORPORATIVO ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
+        <div className="grid grid-cols-12 gap-x-6 mb-16">
+          <div className="col-span-12 lg:col-span-5">
+            <EditorialRule index="02" label="El problema" />
+            <h2 className="mt-6 font-display font-light text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.025em] text-ink">
+              El desafío
+              <br />
+              <span className="italic">corporativo</span>.
+            </h2>
+          </div>
+          <div className="col-span-12 lg:col-span-6 lg:col-start-7 lg:pt-2">
+            <p className="font-serif italic text-xl leading-snug text-ink/75 max-w-2xl">
+              Las áreas de talento humano, marketing y eventos llevan años
+              cargando con tres frustraciones que se repiten reunión tras
+              reunión. Las reconocemos — y las resolvemos.
             </p>
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-0 border-t border-ink/15">
-          {EVENT_TYPES.map((e, i) => (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-ink/15">
+          {DESAFIOS.map((d) => (
             <article
-              key={e.code}
-              className={`p-7 border-ink/15 ${i > 0 ? "border-t sm:border-t-0 sm:border-l" : ""} ${i > 1 ? "lg:border-t-0" : ""} ${i === 2 ? "sm:border-t lg:border-t-0 lg:border-l" : ""}`}
+              key={d.code}
+              className="p-7 sm:p-8 border-r border-b border-ink/15 bg-cream"
             >
-              <div className="flex items-baseline justify-between mb-6">
+              <div className="flex items-baseline justify-between mb-5">
                 <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-marigold">
-                  {e.code}
+                  {d.code}
                 </span>
-                <span className="font-mono text-[10.5px] uppercase tracking-wider text-ink/40">
-                  desde
-                </span>
+                <span className="font-display text-3xl text-ink/30">✕</span>
               </div>
-              <h3 className="font-display text-4xl tracking-tight text-ink mb-3 leading-none">
-                {e.name}
+              <h3 className="font-display text-3xl tracking-[-0.02em] leading-tight text-ink mb-4">
+                {d.title}
               </h3>
-              <p className="text-[14px] leading-relaxed text-ink/70 mb-7 min-h-[88px]">
-                {e.description}
-              </p>
-              <div className="flex items-baseline justify-between pt-5 border-t border-ink/10">
-                <span className="font-mono text-[10.5px] uppercase tracking-wider text-ink/50">
-                  /persona
-                </span>
-                <span className="font-display text-2xl tabular text-ink">
-                  ${new Intl.NumberFormat("es-CO").format(e.from)}
-                </span>
-              </div>
+              <p className="text-[15px] leading-relaxed text-ink/70">{d.body}</p>
             </article>
           ))}
         </div>
       </section>
 
-      {/* ════════════════ DELIVERABLES ════════════════ */}
+      {/* ════════════════ LA SOLUCIÓN ════════════════ */}
       <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
-        <EditorialRule index="02" label="Cómo opera la casa" className="mb-12" />
-
-        <div className="grid grid-cols-12 gap-x-6">
-          <div className="col-span-12 lg:col-span-4 mb-10 lg:mb-0">
-            <h2 className="font-display font-light text-5xl sm:text-6xl leading-[0.95] tracking-[-0.025em] text-ink">
-              De la
+        <div className="grid grid-cols-12 gap-x-6 mb-16">
+          <div className="col-span-12 lg:col-span-5">
+            <EditorialRule index="03" label="Cómo lo resolvemos" />
+            <h2 className="mt-6 font-display font-light text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.025em] text-ink">
+              La
               <br />
-              cotización a
-              <br />
-              la <span className="italic">factura</span>.
+              <span className="italic">solución</span>.
             </h2>
-            <p className="mt-8 font-serif italic text-lg text-ink/70 leading-snug max-w-md">
-              Cuatro pasos, todos automatizados, todos visibles para el cliente.
+            <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.22em] text-marigold">
+              Alta cocina saludable para negocios
             </p>
           </div>
-
-          <div className="col-span-12 lg:col-span-7 lg:col-start-6">
-            <div className="border-b border-ink/15">
-              {DELIVERABLES.map((d) => (
-                <NumberedRow key={d.ord} ordinal={d.ord} title={d.title}>
-                  {d.body}
-                </NumberedRow>
-              ))}
-            </div>
+          <div className="col-span-12 lg:col-span-6 lg:col-start-7 lg:pt-2">
+            <p className="font-serif italic text-xl leading-snug text-ink/75 max-w-2xl">
+              Tres pilares no negociables que sostienen cada servicio. Los
+              encuentras en cada pieza del menú — desde el café de bienvenida
+              hasta el último postre.
+            </p>
           </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-ink/15">
+          {PILARES.map((p) => (
+            <article
+              key={p.code}
+              className="p-7 sm:p-8 border-r border-b border-ink/15 bg-marigold/5"
+            >
+              <div className="flex items-baseline justify-between mb-5">
+                <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-marigold-deep">
+                  {p.code}
+                </span>
+                <span
+                  className="h-2 w-2 rounded-full bg-marigold ring-4 ring-marigold/30"
+                  aria-hidden
+                />
+              </div>
+              <h3 className="font-display text-3xl tracking-[-0.02em] leading-tight text-ink mb-4">
+                {p.title}
+              </h3>
+              <p className="text-[15px] leading-relaxed text-ink/75">{p.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* ════════════════ SEIS MOMENTOS ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
+        <div className="grid grid-cols-12 gap-x-6 mb-12">
+          <div className="col-span-12 lg:col-span-5">
+            <EditorialRule index="04" label="El menú" />
+            <h2 className="mt-6 font-display font-light text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.025em] text-ink">
+              Un menú
+              <br />
+              para cada
+              <br />
+              <span className="italic">momento</span>.
+            </h2>
+          </div>
+          <div className="col-span-12 lg:col-span-6 lg:col-start-7 lg:pt-2">
+            <p className="font-serif italic text-xl leading-snug text-ink/75 max-w-2xl">
+              Seis tipologías diseñadas para acompañar la jornada corporativa
+              completa — del desayuno de bienvenida a la coctelería de cierre.
+              Cada momento opera bajo los mismos tres pilares.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {MOMENTOS.map((m) => (
+            <Link
+              key={m.code}
+              href="/catering/menu"
+              className="group block border border-ink/15 bg-cream hover:shadow-paper-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300"
+            >
+              <div className="relative w-full aspect-[4/3] overflow-hidden border-b border-ink/10">
+                <Image
+                  src={m.image}
+                  alt={m.name}
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="p-6">
+                <div className="flex items-baseline justify-between mb-3">
+                  <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-marigold">
+                    § {m.code}
+                  </span>
+                  <span className="font-display text-2xl text-ink group-hover:translate-x-1 transition-transform">
+                    →
+                  </span>
+                </div>
+                <h3 className="font-display text-2xl tracking-tight text-ink mb-3 leading-tight">
+                  {m.name}
+                </h3>
+                <p className="text-[14px] leading-relaxed text-ink/70">
+                  {m.description}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ════════════════ COBERTURA NACIONAL ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <div>
+            <EditorialRule index="05" label="Cobertura" className="mb-8" />
+            <h2 className="font-display font-light text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.025em] text-ink">
+              Operamos
+              <br />
+              en seis
+              <br />
+              <span className="italic">ciudades</span>.
+            </h2>
+            <p className="mt-8 font-serif italic text-lg leading-snug text-ink/75 max-w-md">
+              Capacidad logística experta y estandarización de calidad impecable
+              para operar de manera escalable y eficiente donde tu empresa
+              nos necesite.
+            </p>
+
+            <ul className="mt-10 grid grid-cols-2 gap-y-4">
+              {CIUDADES.map((c, i) => (
+                <li key={c} className="flex items-baseline gap-3">
+                  <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-marigold tabular">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="font-display text-2xl text-ink tracking-tight">
+                    {c}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="relative w-full aspect-[16/10] border border-ink/15 overflow-hidden">
+            <Image
+              src="/img/cobertura/colombia.jpg"
+              alt="Cobertura nacional de Reina Verde Catering en seis ciudades de Colombia"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════ POR QUÉ REINA VERDE ════════════════ */}
+      <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
+        <EditorialRule index="06" label="Por qué elegirnos" className="mb-12" />
+        <h2 className="font-display font-light text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.025em] text-ink mb-16 max-w-3xl">
+          ¿Por qué <span className="italic">Reina Verde</span>?
+        </h2>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-ink/15">
+          {RAZONES.map((r) => (
+            <article
+              key={r.code}
+              className="p-7 sm:p-8 border-r border-b border-ink/15 bg-cream"
+            >
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-marigold">
+                § {r.code}
+              </span>
+              <h3 className="mt-6 font-display text-3xl tracking-[-0.02em] leading-tight text-ink mb-4">
+                {r.title}
+              </h3>
+              <p className="text-[15px] leading-relaxed text-ink/75">{r.body}</p>
+            </article>
+          ))}
         </div>
       </section>
 
       {/* ════════════════ CTA ════════════════ */}
       <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-32">
-        <div className="bg-marigold p-10 sm:p-16 relative overflow-hidden">
-          <div className="absolute top-4 right-6 font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/60">
-            § Reservar fecha
+        <div className="bg-ink text-cream p-10 sm:p-16 lg:p-20 relative overflow-hidden">
+          <div className="absolute top-4 right-6 font-mono text-[10.5px] uppercase tracking-[0.22em] text-cream/50">
+            § Contacto directo
           </div>
           <div className="grid lg:grid-cols-[1.4fr_1fr] gap-10 items-end">
-            <h2 className="font-display font-light text-5xl sm:text-7xl tracking-[-0.03em] leading-[0.92] text-ink">
-              ¿Tiene una
+            <h2 className="font-display font-light text-5xl sm:text-7xl lg:text-[88px] tracking-[-0.035em] leading-[0.92]">
+              Experiencia
               <br />
-              fecha en
-              <br />
-              <span className="italic">mente</span>?
+              <span className="italic">inolvidable</span>
+              <span className="text-marigold">.</span>
             </h2>
             <div className="flex flex-col gap-5">
-              <p className="font-serif italic text-lg text-ink/80 leading-snug">
-                Cotice ahora con su menú estimado y reserve antes de que se agote la fecha.
-                Las fechas próximas tienden a llenarse con seis semanas de anticipación.
+              <p className="font-serif italic text-xl leading-snug text-cream/85">
+                Contáctanos hoy para diseñar una propuesta a la medida de
+                tu empresa.
               </p>
-              <div className="flex flex-wrap gap-3">
+
+              <ul className="border-t border-cream/15 pt-5 space-y-3 font-mono text-[12px] uppercase tracking-[0.18em] text-cream/85">
+                <li className="flex items-baseline gap-3">
+                  <span className="text-marigold">◆</span>
+                  <a href="tel:+573147905135" className="rv-link">
+                    (+57) 314 790 5135
+                  </a>
+                </li>
+                <li className="flex items-baseline gap-3">
+                  <span className="text-marigold">◆</span>
+                  <a href="mailto:reinaverdecatering@gmail.com" className="rv-link">
+                    reinaverdecatering@gmail.com
+                  </a>
+                </li>
+                <li className="flex items-baseline gap-3">
+                  <span className="text-marigold">◆</span>
+                  <a
+                    href="https://instagram.com/reinaverdecatering"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rv-link"
+                  >
+                    @reinaverdecatering
+                  </a>
+                </li>
+              </ul>
+
+              <div className="flex flex-wrap gap-3 mt-2">
                 <Link
-                  href="/catering/menu"
-                  className="inline-flex items-center h-12 px-7 bg-ink text-cream font-sans text-[14px] tracking-tight rv-press hover:bg-ink-soft"
+                  href="/catering/orden"
+                  className="inline-flex items-center h-12 px-7 bg-marigold text-ink font-sans text-[14px] tracking-tight rv-press hover:bg-cream"
                 >
-                  Empezar cotización
+                  Cotizar evento →
                 </Link>
               </div>
             </div>

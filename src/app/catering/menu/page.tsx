@@ -31,38 +31,65 @@ interface MenuCategory {
   items: MenuItem[];
 }
 
+/**
+ * Menú reorganizado según los 6 momentos del pitch deck oficial:
+ *   DBR · Desayunos y Brunchs
+ *   RFG · Refrigerios y Snacks
+ *   ALM · Almuerzos Premium
+ *   GAL · Cenas de Gala
+ *   MEX · Mesas de Experiencia
+ *   COC · Coctelería Saludable
+ *
+ * Precios por persona (catering corporativo se cotiza así).
+ */
 const MOCK_CATEGORIES: MenuCategory[] = [
   {
-    id: "cat-1", code: "ENT", name: "Entradas",
+    id: "cat-1", code: "DBR", name: "Desayunos y brunchs",
     items: [
-      { id: "item-1", name: "Empanadas colombianas", description: "Carne o pollo con ají casero. Porción de tres.", basePrice: 15000, isVegetarian: false, isVegan: false, isGlutenFree: false, allergens: ["gluten"], categoryId: "cat-1" },
-      { id: "item-2", name: "Ensalada Caesar corporativa", description: "Lechuga romana, crutones artesanales, parmesano y aderezo caesar.", basePrice: 22000, isVegetarian: true, isVegan: false, isGlutenFree: false, allergens: ["gluten", "lácteos"], categoryId: "cat-1" },
-      { id: "item-3", name: "Tabla de quesos y frutas", description: "Selección de quesos locales con frutas de temporada y frutos secos.", basePrice: 35000, isVegetarian: true, isVegan: false, isGlutenFree: true, allergens: ["lácteos", "frutos secos"], categoryId: "cat-1" },
+      { id: "item-1",  name: "Brunch ejecutivo orgánico",        description: "Huevos pochados sobre pan de masa madre, palta machacada, microgreens, jugo prensado de temporada y café de origen.",                    basePrice: 32000, isVegetarian: true,  isVegan: false, isGlutenFree: false, allergens: ["gluten"], categoryId: "cat-1" },
+      { id: "item-2",  name: "Parfait de granola artesanal",     description: "Yogurt natural, granola tostada en miel, berries colombianos y semillas de chía. En frasco individual.",                                  basePrice: 22000, isVegetarian: true,  isVegan: false, isGlutenFree: true,  allergens: ["lácteos", "frutos secos"], categoryId: "cat-1" },
+      { id: "item-3",  name: "Estación de café specialty",       description: "Café de origen 100% colombiano. Opciones espresso, filtrado y leches vegetales.",                                                           basePrice: 12000, isVegetarian: true,  isVegan: true,  isGlutenFree: true,  allergens: [], categoryId: "cat-1" },
     ],
   },
   {
-    id: "cat-2", code: "PPL", name: "Platos principales",
+    id: "cat-2", code: "RFG", name: "Refrigerios y snacks",
     items: [
-      { id: "item-4", name: "Bandeja paisa ejecutiva", description: "Versión gourmet de la tradicional bandeja paisa con ingredientes premium.", basePrice: 38000, isVegetarian: false, isVegan: false, isGlutenFree: false, allergens: [], categoryId: "cat-2" },
-      { id: "item-5", name: "Salmón en salsa de maracuyá", description: "Filete de salmón con salsa de maracuyá, arroz integral y vegetales al grill.", basePrice: 45000, isVegetarian: false, isVegan: false, isGlutenFree: true, allergens: ["pescado"], categoryId: "cat-2" },
-      { id: "item-6", name: "Bowl vegano tropical", description: "Quinoa, aguacate, mango, frijoles negros, vegetales rostizados, vinagreta de limón.", basePrice: 28000, isVegetarian: true, isVegan: true, isGlutenFree: true, allergens: [], categoryId: "cat-2" },
-      { id: "item-7", name: "Pollo en salsa de champiñones", description: "Pechuga de pollo con salsa cremosa de champiñones, puré de papa y ensalada.", basePrice: 32000, isVegetarian: false, isVegan: false, isGlutenFree: true, allergens: ["lácteos"], categoryId: "cat-2" },
+      { id: "item-4",  name: "Barra de energía orgánica",        description: "Frutos secos, mix tropical, chocolate oscuro 70%, semillas tostadas y dátiles rellenos.",                                                   basePrice: 18000, isVegetarian: true,  isVegan: true,  isGlutenFree: true,  allergens: ["frutos secos"], categoryId: "cat-2" },
+      { id: "item-5",  name: "Tabla de quesos y charcutería",    description: "Quesos colombianos curados, charcutería selecta, frutos secos, frutas de temporada y masa madre.",                                          basePrice: 35000, isVegetarian: false, isVegan: false, isGlutenFree: false, allergens: ["lácteos", "gluten", "frutos secos"], categoryId: "cat-2" },
+      { id: "item-6",  name: "Estación de hummus y crudités",    description: "Hummus de la casa, baba ganoush, vegetales orgánicos en crudo, pita integral.",                                                             basePrice: 20000, isVegetarian: true,  isVegan: true,  isGlutenFree: false, allergens: ["gluten"], categoryId: "cat-2" },
     ],
   },
   {
-    id: "cat-3", code: "PST", name: "Postres",
+    id: "cat-3", code: "ALM", name: "Almuerzos premium",
     items: [
-      { id: "item-8", name: "Tres leches", description: "Pastel de tres leches con canela y frutas frescas.", basePrice: 12000, isVegetarian: true, isVegan: false, isGlutenFree: false, allergens: ["gluten", "lácteos"], categoryId: "cat-3" },
-      { id: "item-9", name: "Mousse de chocolate", description: "Mousse de chocolate belga 70% cacao con frutos rojos.", basePrice: 14000, isVegetarian: true, isVegan: false, isGlutenFree: true, allergens: ["lácteos"], categoryId: "cat-3" },
-      { id: "item-10", name: "Frutas de temporada", description: "Selección de frutas frescas colombianas con miel de abejas.", basePrice: 10000, isVegetarian: true, isVegan: true, isGlutenFree: true, allergens: [], categoryId: "cat-3" },
+      { id: "item-7",  name: "Bandeja paisa ejecutiva",          description: "Versión gourmet con frijoles cocinados a fuego lento, chicharrón crocante, plátano maduro, aguacate y huevo de campo.",                    basePrice: 42000, isVegetarian: false, isVegan: false, isGlutenFree: true,  allergens: [], categoryId: "cat-3" },
+      { id: "item-8",  name: "Salmón en salsa de maracuyá",      description: "Filete de salmón sellado, reducción de maracuyá, arroz integral con coco y vegetales rostizados.",                                          basePrice: 52000, isVegetarian: false, isVegan: false, isGlutenFree: true,  allergens: ["pescado"], categoryId: "cat-3" },
+      { id: "item-9",  name: "Bowl vegano tropical",             description: "Quinoa real, aguacate, mango, frijoles negros, vegetales rostizados, vinagreta de limón y semillas.",                                       basePrice: 36000, isVegetarian: true,  isVegan: true,  isGlutenFree: true,  allergens: [], categoryId: "cat-3" },
+      { id: "item-10", name: "Lonchera ejecutiva empacada",      description: "Almuerzo completo en empaque ecofriendly: proteína del día, granos, vegetal, fruta y postre. Cubertería biodegradable.",                    basePrice: 48000, isVegetarian: false, isVegan: false, isGlutenFree: true,  allergens: [], categoryId: "cat-3" },
     ],
   },
   {
-    id: "cat-4", code: "BBD", name: "Bebidas",
+    id: "cat-4", code: "GAL", name: "Cenas de gala",
     items: [
-      { id: "item-11", name: "Jugo natural (jarra)", description: "Jarra de jugo natural: lulo, maracuyá, mango o guanábana.", basePrice: 18000, isVegetarian: true, isVegan: true, isGlutenFree: true, allergens: [], categoryId: "cat-4" },
-      { id: "item-12", name: "Limonada de coco", description: "Limonada cremosa con coco rallado, hielo y hierbabuena.", basePrice: 15000, isVegetarian: true, isVegan: true, isGlutenFree: true, allergens: [], categoryId: "cat-4" },
-      { id: "item-13", name: "Café colombiano premium", description: "Estación de café de origen con opciones de preparación.", basePrice: 8000, isVegetarian: true, isVegan: true, isGlutenFree: true, allergens: [], categoryId: "cat-4" },
+      { id: "item-11", name: "Lomo fino sous vide",              description: "Lomo madurado 21 días, puré de raíces andinas, vegetales heritage y reducción de vino tinto. Plato por plato.",                            basePrice: 85000, isVegetarian: false, isVegan: false, isGlutenFree: true,  allergens: [], categoryId: "cat-4" },
+      { id: "item-12", name: "Atún sellado al sésamo",           description: "Atún rojo en costra de sésamo, fideos de arroz negro, vegetales encurtidos y emulsión de wasabi.",                                          basePrice: 78000, isVegetarian: false, isVegan: false, isGlutenFree: false, allergens: ["pescado", "sésamo"], categoryId: "cat-4" },
+      { id: "item-13", name: "Risotto de hongos silvestres",     description: "Arborio cremoso con hongos porcini, shiitake y portobello, queso parmesano y aceite trufado.",                                              basePrice: 62000, isVegetarian: true,  isVegan: false, isGlutenFree: true,  allergens: ["lácteos"], categoryId: "cat-4" },
+    ],
+  },
+  {
+    id: "cat-5", code: "MEX", name: "Mesas de experiencia",
+    items: [
+      { id: "item-14", name: "Estación de postres artesanales",  description: "Macarons en pastel, mini tartas de limón con merengue, trufas de chocolate 70% y bocados de mousse.",                                       basePrice: 28000, isVegetarian: true,  isVegan: false, isGlutenFree: false, allergens: ["gluten", "lácteos", "frutos secos"], categoryId: "cat-5" },
+      { id: "item-15", name: "Estación de canapés salados",      description: "Doce canapés de autor: ceviche en cuchara, foie con higos, atún tartar, queso de cabra con miel.",                                          basePrice: 38000, isVegetarian: false, isVegan: false, isGlutenFree: false, allergens: ["gluten", "lácteos", "pescado"], categoryId: "cat-5" },
+      { id: "item-16", name: "Mesa de quesos premium",           description: "Quesos colombianos e importados curados, mermeladas artesanales, miel de abeja, frutos secos y panes.",                                      basePrice: 45000, isVegetarian: true,  isVegan: false, isGlutenFree: false, allergens: ["lácteos", "gluten", "frutos secos"], categoryId: "cat-5" },
+    ],
+  },
+  {
+    id: "cat-6", code: "COC", name: "Coctelería saludable",
+    items: [
+      { id: "item-17", name: "Mixología signature",              description: "Tres cocteles de autor por invitado: spritz de maracuyá, gin tónica con botánicos, mojito de albahaca. Sin azúcar añadida.",                basePrice: 42000, isVegetarian: true,  isVegan: true,  isGlutenFree: true,  allergens: [], categoryId: "cat-6" },
+      { id: "item-18", name: "Limonada de coco premium",         description: "Limonada cremosa de coco con hierbabuena y hielo triturado en jarra de cristal.",                                                            basePrice: 15000, isVegetarian: true,  isVegan: true,  isGlutenFree: true,  allergens: [], categoryId: "cat-6" },
+      { id: "item-19", name: "Barra de licores selectos",        description: "Estación con whisky single malt, ron añejo, mezcal y aguardiente artesanal. Barman incluido.",                                              basePrice: 65000, isVegetarian: true,  isVegan: true,  isGlutenFree: true,  allergens: [], categoryId: "cat-6" },
     ],
   },
 ];

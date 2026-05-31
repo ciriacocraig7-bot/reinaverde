@@ -29,20 +29,39 @@ const LIOFILIZADOS: Record<string, string> = {
   "bulk-mango-1kg":              "/img/liofilizados/bulk-mango.jpg",
 };
 
+/**
+ * Catering menu re-mapeado a los 6 momentos del pitch.
+ * Las imágenes de plato individual antiguas (bandeja paisa, salmón maracuyá,
+ * bowl vegano, etc.) se conservan y se reusan donde aplica. Las imágenes
+ * de "momentos" (desayunos, refrigerios, etc.) sirven como portada del grupo
+ * en /catering pero NO se usan aquí — cada item tiene su propia foto.
+ */
 const CATERING_MENU: Record<string, string> = {
-  "item-1":  "/img/catering/empanadas.jpg",
-  "item-2":  "/img/catering/ensalada-caesar.jpg",
-  "item-3":  "/img/catering/tabla-quesos.jpg",
-  "item-4":  "/img/catering/bandeja-paisa.jpg",
-  "item-5":  "/img/catering/salmon-maracuya.jpg",
-  "item-6":  "/img/catering/bowl-vegano.jpg",
-  "item-7":  "/img/catering/pollo-champinones.jpg",
-  "item-8":  "/img/catering/tres-leches.jpg",
-  "item-9":  "/img/catering/mousse-chocolate.jpg",
-  "item-10": "/img/catering/frutas-temporada.jpg",
-  "item-11": "/img/catering/jugo-natural.jpg",
-  "item-12": "/img/catering/limonada-coco.jpg",
-  "item-13": "/img/catering/cafe-premium.jpg",
+  // DBR · Desayunos y brunchs
+  "item-1":  "/img/momentos/desayunos.jpg",
+  "item-2":  "/img/catering/frutas-temporada.jpg",
+  "item-3":  "/img/catering/cafe-premium.jpg",
+  // RFG · Refrigerios y snacks
+  "item-4":  "/img/momentos/refrigerios.jpg",
+  "item-5":  "/img/catering/tabla-quesos.jpg",
+  "item-6":  "/img/catering/ensalada-caesar.jpg",
+  // ALM · Almuerzos premium
+  "item-7":  "/img/catering/bandeja-paisa.jpg",
+  "item-8":  "/img/catering/salmon-maracuya.jpg",
+  "item-9":  "/img/catering/bowl-vegano.jpg",
+  "item-10": "/img/momentos/almuerzos.jpg",
+  // GAL · Cenas de gala
+  "item-11": "/img/momentos/cenas.jpg",
+  "item-12": "/img/catering/salmon-maracuya.jpg",
+  "item-13": "/img/catering/pollo-champinones.jpg",
+  // MEX · Mesas de experiencia
+  "item-14": "/img/catering/mousse-chocolate.jpg",
+  "item-15": "/img/momentos/mesas-experiencia.jpg",
+  "item-16": "/img/catering/tabla-quesos.jpg",
+  // COC · Coctelería saludable
+  "item-17": "/img/momentos/cocteleria.jpg",
+  "item-18": "/img/catering/limonada-coco.jpg",
+  "item-19": "/img/catering/jugo-natural.jpg",
 };
 
 export function imageForPharma(slug: string): string | null {

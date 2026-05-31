@@ -32,8 +32,9 @@ export function SiteFooter() {
             title="Casa"
             items={[
               { href: "/catering", label: "Catering" },
-              { href: "/pharma", label: "Pharma" },
-              { href: "/liofilizados", label: "Liofilizados" },
+              { href: "/catering/menu", label: "Los seis momentos" },
+              { href: "/catering/eventos", label: "Tipos de evento" },
+              { href: "/catering/nosotros", label: "Quiénes somos" },
             ]}
           />
           <FooterCol
@@ -42,6 +43,7 @@ export function SiteFooter() {
               { href: "/login", label: "Ingresar" },
               { href: "/registro", label: "Crear cuenta" },
               { href: "/cliente", label: "Mi panel" },
+              { href: "/catering/orden", label: "Cotizar evento" },
             ]}
           />
           <FooterCol
@@ -54,19 +56,45 @@ export function SiteFooter() {
           />
           <div>
             <h4 className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-ink/55 mb-5">
-              Colofón
+              Contacto
             </h4>
-            <p className="font-serif italic text-[15px] leading-relaxed text-ink/75">
-              Compuesto en{" "}
-              <span className="not-italic font-display text-ink">Fraunces</span> y{" "}
-              <span className="not-italic font-sans text-ink">Geist</span>. Servido sobre papel digital
-              desde la sabana cundiboyacense.
+            <ul className="space-y-3 font-sans text-[14px] text-ink/85">
+              <li>
+                <a
+                  href="tel:+573147905135"
+                  className="rv-link block"
+                  aria-label="Llamar al +57 314 790 5135"
+                >
+                  (+57) 314 790 5135
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:reinaverdecatering@gmail.com"
+                  className="rv-link block break-all"
+                >
+                  reinaverdecatering@gmail.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://instagram.com/reinaverdecatering"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rv-link inline-flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+                  @reinaverdecatering
+                </a>
+              </li>
+            </ul>
+
+            <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/45">
+              6 ciudades · cobertura nacional
             </p>
-            <div className="mt-6 flex gap-2 items-center">
-              <span className="font-mono text-[10px] tracking-widest text-ink/50">info@reinaverde.co</span>
-              <span className="h-1 w-1 rounded-full bg-ink/30" aria-hidden />
-              <span className="font-mono text-[10px] tracking-widest text-ink/50">+57 300 123 4567</span>
-            </div>
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/45">
+              Medellín · Bogotá · Cali · Barranquilla · Cartagena · Armenia
+            </p>
           </div>
         </div>
 
