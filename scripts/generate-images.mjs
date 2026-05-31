@@ -55,10 +55,18 @@ const MANIFEST = [
     out: "hero/hub.jpg",
     aspect_ratio: "16:9",
     prompt:
-      `Botanical still life, three small Colombian plants — a young cannabis sativa leaf cluster, ` +
-      `a sprig of fresh culinary herbs, and a slice of dried mango — arranged in three quadrants ` +
-      `on aged cream linen, ink-dark green background fading to soft cream. Hand-drawn botanical ` +
-      `illustration aesthetic blended with photography. ${STYLE.editorial}`,
+      `Magazine cover photography, dramatic overhead still life on a dark walnut wooden table partially ` +
+      `covered with crumpled cream linen tablecloth. Cinematic golden hour window light from the upper ` +
+      `left creating long sculptural shadows. Three editorial vignettes arranged in rule-of-thirds ` +
+      `composition: on the left a small bouquet of fresh culinary herbs (rosemary, thyme, sage) tied ` +
+      `with cream string and laid on the linen; in the center an amber pharmaceutical dropper bottle ` +
+      `next to one perfect fresh cannabis sativa leaf and a folded ivory certificate-of-analysis ` +
+      `paper sealed with cream wax; on the right an artisan kraft paper pouch of freeze-dried ` +
+      `Colombian mango chips spilling vibrant orange onto the cloth. Single warm marigold yellow ` +
+      `accent in the form of a small brass tasting spoon. Hyperrealistic, ultra-detailed, 8K, ` +
+      `FT Weekend magazine cover aesthetic, Mamiya RZ67 medium format film texture, color palette ` +
+      `of warm cream, deep walnut brown, ink-dark green, single marigold accent. Shallow depth of ` +
+      `field with sharp focus on the cannabis leaf and amber bottle, rich shadow detail`,
   },
   {
     out: "hero/catering.jpg",
@@ -239,6 +247,110 @@ const MANIFEST = [
       `Small kraft paper resealable pouch with minimal cream label "Snack mix tropical 40g", open ` +
       `at the top showing freeze-dried mango chunks, pineapple, and banana spilling onto cream ` +
       `paper. ${STYLE.product}`,
+  },
+
+  // ────────── Liofilizados · únicas faltantes ──────────
+  {
+    out: "liofilizados/guanabana.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Macro shot of freeze-dried Colombian guanábana (soursop) chunks on cream paper, creamy ` +
+      `off-white color with a soft yellowish tint, porous crystalline texture, scattered loose ` +
+      `with a small kraft paper bag in soft focus background. ${STYLE.product}`,
+  },
+  {
+    out: "liofilizados/kit-reposteria.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Curated pastry chef kit on cream paper: four small kraft paper pouches with minimal serif ` +
+      `labels for maracuyá powder, mango powder, mora powder, and freeze-dried strawberry pieces, ` +
+      `arranged neatly with a small ceramic measuring spoon and a folded chef's recipe card. ` +
+      `${STYLE.product}`,
+  },
+  {
+    out: "liofilizados/bulk-mango.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Large industrial 1kg kraft paper bag of freeze-dried Colombian mango chips, minimal cream ` +
+      `label reading "MANGO LIOFILIZADO · 1KG · presentación mayorista" in serif typography, ` +
+      `partially open at the top showing the vibrant orange dried fruit inside, on cream paper ` +
+      `with a few mango chips scattered around. ${STYLE.product}`,
+  },
+
+  // ────────── Pharma · únicas faltantes ──────────
+  {
+    out: "pharma/flores-og.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Premium dried hemp flower buds in a small cream glass jar with cork lid, label reading ` +
+      `"OG Kush 3.5g · less than 0.3% THC · indoor cultivation" in minimal serif, on cream paper ` +
+      `with a single dried hemp leaf and earthy moody side lighting. ${STYLE.product}`,
+  },
+
+  // ────────── Catering · platos faltantes del menú ──────────
+  {
+    out: "catering/ensalada-caesar.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Corporate Caesar salad on a cream ceramic plate: crisp romaine lettuce hearts, hand-cut ` +
+      `golden croutons, shaved parmesan, creamy dressing drizzle, lemon wedge on the side, ` +
+      `garnished with cracked black pepper. ${STYLE.food}`,
+  },
+  {
+    out: "catering/tabla-quesos.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Artisan cheese and fruit board on a dark walnut wooden plank: three Colombian artisan ` +
+      `cheeses, fresh figs, grapes, walnuts, honeycomb in a small ceramic dish, dried apricots, ` +
+      `scattered rosemary sprigs, served on linen tablecloth. ${STYLE.food}`,
+  },
+  {
+    out: "catering/pollo-champinones.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Pan-roasted chicken breast in a creamy mushroom sauce with porcini and shimeji, plated on ` +
+      `silky potato purée with charred broccolini and a sprig of thyme, served on a cream ceramic ` +
+      `plate. ${STYLE.food}`,
+  },
+  {
+    out: "catering/mousse-chocolate.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Dark Belgian chocolate mousse in a small ceramic cup, topped with fresh raspberries, a ` +
+      `mint leaf, and a delicate dust of cocoa powder, with a vintage silver spoon resting beside ` +
+      `it on linen napkin. ${STYLE.food}`,
+  },
+  {
+    out: "catering/frutas-temporada.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Colorful seasonal Colombian fruit composition in a cream ceramic shallow bowl: sliced mango, ` +
+      `passionfruit halves, dragon fruit cubes, fresh papaya, blueberries, drizzled with light ` +
+      `Colombian wildflower honey and topped with fresh mint. ${STYLE.food}`,
+  },
+  {
+    out: "catering/jugo-natural.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Tall glass pitcher of fresh Colombian maracuyá juice on a cream linen tablecloth, condensation ` +
+      `on the glass, ice cubes visible, garnished with fresh mint leaves and a halved passionfruit ` +
+      `beside it, warm natural daylight. ${STYLE.food}`,
+  },
+  {
+    out: "catering/limonada-coco.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Creamy Colombian coconut lemonade in a tall glass with crushed ice, fresh grated coconut on ` +
+      `top, mint sprig garnish, sliced lime on the rim, on a cream linen tablecloth with sunlight ` +
+      `streaming in from the side. ${STYLE.food}`,
+  },
+  {
+    out: "catering/cafe-premium.jpg",
+    aspect_ratio: "1:1",
+    prompt:
+      `Premium Colombian single-origin espresso pour: black coffee in a small ceramic cup on a ` +
+      `saucer, golden crema visible on top, fresh roasted coffee beans scattered on the linen ` +
+      `tablecloth beside it, soft window light. ${STYLE.food}`,
   },
 ];
 
