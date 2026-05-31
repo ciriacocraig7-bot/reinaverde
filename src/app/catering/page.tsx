@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -82,8 +83,20 @@ export default function CateringHomePage() {
           </div>
         </div>
 
+        {/* Hero image */}
+        <div className="rv-fade rv-delay-4 mt-16 relative w-full aspect-[16/8] overflow-hidden border-y border-ink/15">
+          <Image
+            src="/img/hero/catering.jpg"
+            alt="Mesa corporativa elegante con servicio Reina Verde"
+            fill
+            sizes="(max-width: 1400px) 100vw, 1400px"
+            className="object-cover"
+            priority
+          />
+        </div>
+
         {/* KPI band */}
-        <dl className="rv-fade rv-delay-5 mt-20 grid grid-cols-2 sm:grid-cols-4 border-y border-ink/15 divide-x divide-ink/15">
+        <dl className="rv-fade rv-delay-5 mt-12 grid grid-cols-2 sm:grid-cols-4 border-b border-ink/15 divide-x divide-ink/15">
           {[
             { k: "Eventos servidos", v: "500+" },
             { k: "Comensales", v: "32k" },

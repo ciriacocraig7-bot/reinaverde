@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -14,6 +15,7 @@ const DIVISIONS = [
     accent: "text-marigold",
     accentBg: "bg-marigold",
     accentRing: "ring-marigold/30",
+    image: "/img/hero/catering.jpg",
     capabilities: ["Menú a la carta", "Eventos y bodas", "Facturación B2B", "Logística propia"],
     proofPoints: [
       { k: "Servicios", v: "500+" },
@@ -31,6 +33,7 @@ const DIVISIONS = [
     accent: "text-iris",
     accentBg: "bg-iris",
     accentRing: "ring-iris/30",
+    image: "/img/hero/pharma.jpg",
     capabilities: ["Full-spectrum", "Broad-spectrum", "Tópicos", "Línea pet"],
     proofPoints: [
       { k: "Lotes únicos", v: "62" },
@@ -48,6 +51,7 @@ const DIVISIONS = [
     accent: "text-persimmon",
     accentBg: "bg-persimmon",
     accentRing: "ring-persimmon/30",
+    image: "/img/hero/liofilizados.jpg",
     capabilities: ["Tropicales", "Berries", "Mayorista", "Repostería"],
     proofPoints: [
       { k: "Origen", v: "Colombia" },
@@ -104,8 +108,20 @@ export default function HubPage() {
           </div>
         </div>
 
+        {/* Hero visual band */}
+        <div className="rv-fade rv-delay-4 mt-16 sm:mt-20 relative w-full aspect-[16/7] overflow-hidden border-y border-ink/15">
+          <Image
+            src="/img/hero/hub.jpg"
+            alt="Hoja de cannabis, hierbas culinarias y mango colombiano — las tres divisiones de Reina Verde"
+            fill
+            sizes="(max-width: 1400px) 100vw, 1400px"
+            className="object-cover"
+            priority
+          />
+        </div>
+
         {/* Marquee */}
-        <div className="rv-fade rv-delay-5 mt-20 border-y border-ink/15 py-4 overflow-hidden">
+        <div className="rv-fade rv-delay-5 mt-8 border-b border-ink/15 py-4 overflow-hidden">
           <Marquee
             items={[
               "Pagos por Bold",
@@ -130,9 +146,21 @@ export default function HubPage() {
               href={`/${d.slug}`}
               className={`group block rv-rise rv-delay-${i + 4}`}
             >
-              <article className="bg-cream-warm border border-ink/10 p-7 sm:p-8 h-full flex flex-col transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-paper-lg">
+              <article className="bg-cream-warm border border-ink/10 h-full flex flex-col transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-paper-lg overflow-hidden">
+                {/* Image cover */}
+                <div className="relative w-full aspect-[16/10] overflow-hidden border-b border-ink/10">
+                  <Image
+                    src={d.image}
+                    alt={`${d.name} — ${d.tagline}`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 33vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="p-7 sm:p-8 flex flex-col flex-1">
                 {/* Top row */}
-                <div className="flex items-start justify-between mb-8">
+                <div className="flex items-start justify-between mb-6">
                   <span className={`font-mono text-[11px] uppercase tracking-[0.22em] ${d.accent}`}>
                     § {d.index}
                   </span>
@@ -143,10 +171,10 @@ export default function HubPage() {
                 </div>
 
                 {/* Display name */}
-                <h3 className="font-display font-medium text-[56px] sm:text-[64px] tracking-[-0.03em] leading-[0.9] mb-3 text-ink">
+                <h3 className="font-display font-medium text-[48px] sm:text-[56px] tracking-[-0.03em] leading-[0.9] mb-3 text-ink">
                   {d.name}
                 </h3>
-                <p className="font-serif italic text-[18px] leading-snug text-ink/70 mb-7">
+                <p className="font-serif italic text-[17px] leading-snug text-ink/70 mb-7">
                   {d.tagline}
                 </p>
 
@@ -189,6 +217,7 @@ export default function HubPage() {
                   <span className="font-display text-3xl text-ink transition-transform group-hover:translate-x-1">
                     →
                   </span>
+                </div>
                 </div>
               </article>
             </Link>

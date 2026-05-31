@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -69,11 +70,19 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       <aside className="hidden lg:flex flex-col justify-between p-12 bg-marigold text-ink relative overflow-hidden">
-        <Link href="/" className="font-display italic text-3xl tracking-[-0.04em] leading-none">
+        <Image
+          src="/img/hero/registro.jpg"
+          alt=""
+          fill
+          sizes="50vw"
+          className="object-cover opacity-30 mix-blend-multiply"
+          priority
+        />
+        <Link href="/" className="relative font-display italic text-3xl tracking-[-0.04em] leading-none z-10">
           Reina<span className="text-ink/55">·</span>Verde
         </Link>
 
-        <div className="space-y-6">
+        <div className="relative space-y-6 z-10">
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink/65">
             § Abrir cuenta
           </span>
@@ -94,7 +103,7 @@ export default function RegisterPage() {
           </ul>
         </div>
 
-        <div className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55">
+        <div className="relative font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55 z-10">
           Bogotá, MMXXVI
         </div>
       </aside>

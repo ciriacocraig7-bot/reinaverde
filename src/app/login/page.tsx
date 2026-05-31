@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -48,11 +49,20 @@ export default function LoginPage() {
     <main className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       {/* Left — editorial intro panel */}
       <aside className="hidden lg:flex flex-col justify-between p-12 bg-ink text-cream relative overflow-hidden">
-        <Link href="/" className="font-display italic text-3xl tracking-[-0.04em] leading-none">
+        {/* Background photo at low opacity */}
+        <Image
+          src="/img/hero/login.jpg"
+          alt=""
+          fill
+          sizes="50vw"
+          className="object-cover opacity-25 mix-blend-screen"
+          priority
+        />
+        <Link href="/" className="relative font-display italic text-3xl tracking-[-0.04em] leading-none z-10">
           Reina<span className="text-cream/55">·</span>Verde
         </Link>
 
-        <div className="space-y-6">
+        <div className="relative space-y-6 z-10">
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-cream/55">
             § Acceso a la casa
           </span>
@@ -67,7 +77,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-cream/45 flex items-center gap-3">
+        <div className="relative font-mono text-[10.5px] uppercase tracking-[0.22em] text-cream/45 flex items-center gap-3 z-10">
           <span className="h-1 w-1 rounded-full bg-marigold" />
           <span>Compuesto en Fraunces & Geist</span>
         </div>

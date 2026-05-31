@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,6 +9,7 @@ import { useProducts, type ProductData } from "@/hooks/use-products";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { EditorialRule, PriceTag } from "@/components/marketing/editorial";
+import { imageForPharma } from "@/lib/product-images";
 import { cn } from "@/lib/utils";
 
 const FALLBACK_PRODUCTS: ProductData[] = [
@@ -112,13 +114,25 @@ export default function PharmaCatalogoPage() {
                 )}
               </div>
 
-              <div className="h-32 flex items-center justify-center mb-6 bg-cream-warm border border-ink/10">
-                <span
-                  className="material-symbols-outlined text-ink/30 group-hover:scale-110 transition-transform duration-500"
-                  style={{ fontSize: "56px", fontVariationSettings: "'FILL' 1" }}
-                >
-                  {p.icon || "spa"}
-                </span>
+              <div className="relative h-44 mb-6 bg-cream-warm border border-ink/10 overflow-hidden">
+                {imageForPharma(p.slug) ? (
+                  <Image
+                    src={imageForPharma(p.slug)!}
+                    alt={p.name}
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <span
+                      className="material-symbols-outlined text-ink/30"
+                      style={{ fontSize: "56px", fontVariationSettings: "'FILL' 1" }}
+                    >
+                      {p.icon || "spa"}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <h3 className="font-display text-2xl tracking-tight text-ink leading-tight mb-2 min-h-[64px]">

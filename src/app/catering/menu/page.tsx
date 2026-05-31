@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,6 +9,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { EditorialRule, PriceTag } from "@/components/marketing/editorial";
 import { useCartStore } from "@/stores/cart-store";
 import { Badge } from "@/components/ui/badge";
+import { imageForCateringMenu } from "@/lib/product-images";
 import { cn } from "@/lib/utils";
 
 interface MenuItem {
@@ -190,8 +192,20 @@ export default function CateringMenuPage() {
               {cat.items.map((item, i) => (
                 <article
                   key={item.id}
-                  className="p-7 border-r border-b border-ink/15 flex flex-col bg-cream"
+                  className="border-r border-b border-ink/15 flex flex-col bg-cream overflow-hidden"
                 >
+                  {imageForCateringMenu(item.id) && (
+                    <div className="relative w-full aspect-[4/3] border-b border-ink/10">
+                      <Image
+                        src={imageForCateringMenu(item.id)!}
+                        alt={item.name}
+                        fill
+                        sizes="(max-width: 1024px) 50vw, 33vw"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="p-7 flex flex-col flex-1">
                   <div className="flex items-baseline justify-between mb-5">
                     <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/50">
                       N° {String(i + 1).padStart(3, "0")}
@@ -233,6 +247,7 @@ export default function CateringMenuPage() {
                     >
                       Agregar
                     </button>
+                  </div>
                   </div>
                 </article>
               ))}

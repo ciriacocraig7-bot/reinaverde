@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -63,7 +64,19 @@ export default function LiofilizadosHomePage() {
           </div>
         </div>
 
-        <dl className="rv-fade rv-delay-5 mt-20 grid grid-cols-2 sm:grid-cols-4 border-y border-ink/15 divide-x divide-ink/15">
+        {/* Hero image */}
+        <div className="rv-fade rv-delay-4 mt-16 relative w-full aspect-[16/8] overflow-hidden border-y border-ink/15">
+          <Image
+            src="/img/hero/liofilizados.jpg"
+            alt="Frutas colombianas liofilizadas — mango, piña, uchuva, maracuyá"
+            fill
+            sizes="(max-width: 1400px) 100vw, 1400px"
+            className="object-cover"
+            priority
+          />
+        </div>
+
+        <dl className="rv-fade rv-delay-5 mt-12 grid grid-cols-2 sm:grid-cols-4 border-b border-ink/15 divide-x divide-ink/15">
           {[
             { k: "Origen", v: "Colombia" },
             { k: "Nutrientes", v: "95%" },
