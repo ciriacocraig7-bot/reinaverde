@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db/prisma";
 import { mapBoldWebhookStatus } from "@/lib/bold/button";
 import { verifyBoldSignature } from "@/lib/bold/webhook";
 
+// Bold puede tardar; cubrimos cold-start + Supabase wake.
+export const maxDuration = 15;
+
 /**
  * Bold webhook receiver.
  *

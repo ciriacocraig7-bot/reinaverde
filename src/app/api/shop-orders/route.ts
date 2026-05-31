@@ -4,6 +4,10 @@ import { readSession } from "@/lib/auth/cookies";
 import { createShopOrderSchema } from "@/lib/validators/shop";
 import { generateOrderNumber, calculateTax } from "@/lib/utils";
 
+// La transacción crea orden + decrementa stock + crea ítems en una sola
+// transacción Postgres; cubrimos cold-start + Supabase wake.
+export const maxDuration = 15;
+
 const SHIPPING_THRESHOLD = 150000;
 const SHIPPING_COST = 12000;
 

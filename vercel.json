@@ -1,17 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["gru1"],
-  "functions": {
-    "src/app/api/webhooks/bold/route.ts": {
-      "maxDuration": 15
-    },
-    "src/app/api/shop-orders/route.ts": {
-      "maxDuration": 15
-    },
-    "src/app/api/catering/pay/bold/route.ts": {
-      "maxDuration": 15
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",

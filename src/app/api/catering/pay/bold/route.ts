@@ -5,6 +5,9 @@ import { readSession } from "@/lib/auth/cookies";
 import { generateIntegritySignature } from "@/lib/bold/button";
 import { generateOrderNumber, calculateTax } from "@/lib/utils";
 
+// Crea Order + Payment en transacción + genera firma Bold.
+export const maxDuration = 15;
+
 const BOLD_API_KEY = process.env.NEXT_PUBLIC_BOLD_API_KEY || "";
 
 const itemSchema = z.object({
