@@ -55,8 +55,12 @@ export function proxy(request: NextRequest) {
   if (isPublic) return NextResponse.next();
 
   // Public API routes: auth, webhooks, health, catering pay, read-only catalogs.
+  // Shop-orders POST también es público porque soporta guest checkout (sin
+  // sesión). El handler valida internamente que venga `guest` data si no hay
+  // sesión. Para GET y rutas dinámicas con [id] sí pedimos auth aquí.
   const isPublicApi =
     pathname === "/api/health" ||
+    pathname === "/api/shop-orders" ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/webhooks/") ||
     pathname.startsWith("/api/catering/pay/") ||
@@ -64,7 +68,10 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/api/products") ||
     pathname.startsWith("/api/product-categories");
 
-  if (isApi && !isPublicApi) {
+  // Guest puede pedir config Bold sin sesión (el handler valida).
+  const isGuestPayPath = /^\/api\/shop-orders\/[a-f0-9-]+\/pay(\/bold)?$/.test(pathname);
+
+  if (isApi && !isPublicApi && !isGuestPayPath) {
     // Accept Bearer header OR rv-session cookie.
     const authHeader = request.headers.get("authorization");
     const hasBearer = authHeader?.startsWith("Bearer ");

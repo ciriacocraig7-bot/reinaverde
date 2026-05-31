@@ -19,13 +19,21 @@ interface ShippingInfo {
   notes: string;
 }
 
+interface GuestInfo {
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 interface ShopCartState {
   items: ShopCartItem[];
   shipping: ShippingInfo;
+  guest: GuestInfo;
   addItem: (item: ShopCartItem) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   setShipping: (info: Partial<ShippingInfo>) => void;
+  setGuest: (info: Partial<GuestInfo>) => void;
   clearCart: () => void;
   subtotal: () => number;
   tax: () => number;
@@ -44,6 +52,7 @@ function createShopCartStore(storeName: string) {
       (set, get) => ({
         items: [],
         shipping: { name: "", address: "", city: "", phone: "", notes: "" },
+        guest: { email: "", firstName: "", lastName: "" },
 
         addItem: (item) =>
           set((state) => {
@@ -79,10 +88,16 @@ function createShopCartStore(storeName: string) {
             shipping: { ...state.shipping, ...info },
           })),
 
+        setGuest: (info) =>
+          set((state) => ({
+            guest: { ...state.guest, ...info },
+          })),
+
         clearCart: () =>
           set({
             items: [],
             shipping: { name: "", address: "", city: "", phone: "", notes: "" },
+            guest: { email: "", firstName: "", lastName: "" },
           }),
 
         subtotal: () => get().items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0),

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { readSession } from "@/lib/auth/cookies";
+import { findOrCreateGuestUser } from "@/lib/auth/guest";
 import { createShopOrderSchema } from "@/lib/validators/shop";
 import { generateOrderNumber, calculateTax } from "@/lib/utils";
 
@@ -42,9 +43,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = readSession(request);
-    if (!payload) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
     const body = await request.json();
     const validation = createShopOrderSchema.safeParse(body);
 
@@ -56,6 +54,28 @@ export async function POST(request: NextRequest) {
     }
 
     const data = validation.data;
+
+    // ─── Resolve user: sesión o guest checkout ─────────────────
+    let userId: string;
+    const session = readSession(request);
+    if (session) {
+      userId = session.userId;
+    } else if (data.guest) {
+      const guest = await findOrCreateGuestUser({
+        email: data.guest.email,
+        firstName: data.guest.firstName,
+        lastName: data.guest.lastName,
+        phone: data.shippingPhone,
+      });
+      userId = guest.userId;
+    } else {
+      return NextResponse.json(
+        {
+          error: "Para continuar como invitado, incluye `guest: { email, firstName, lastName }` en el cuerpo de la solicitud.",
+        },
+        { status: 400 },
+      );
+    }
 
     // Fetch products and validate
     const productIds = data.items.map((i) => i.productId);
@@ -109,7 +129,7 @@ export async function POST(request: NextRequest) {
         data: {
           orderNumber: generateOrderNumber(),
           businessLine: data.businessLine,
-          userId: payload.userId,
+          userId,
           subtotal,
           tax,
           shipping,

@@ -28,6 +28,7 @@ function RestablecerForm() {
   const searchParams = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
   const token = searchParams.get("token") || "";
+  const isActivation = searchParams.get("activate") === "1";
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -83,16 +84,19 @@ function RestablecerForm() {
         </Link>
         <div className="space-y-6">
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-cream/65">
-            § Nueva contraseña
+            § {isActivation ? "Activar cuenta" : "Nueva contraseña"}
           </span>
           <h1 className="font-display font-light text-6xl xl:text-7xl tracking-[-0.035em] leading-[0.92]">
-            Última
-            <br />
-            <span className="italic">parada</span>.
+            {isActivation ? (
+              <>Activa tu<br /><span className="italic">cuenta</span>.</>
+            ) : (
+              <>Última<br /><span className="italic">parada</span>.</>
+            )}
           </h1>
           <p className="font-serif italic text-xl leading-snug max-w-md text-cream/85">
-            Escriba la nueva contraseña dos veces. Al confirmar quedará iniciada sesión
-            automáticamente.
+            {isActivation
+              ? "Tu pedido ya está pagado. Define una contraseña para acceder a tu panel y seguir el estado del envío."
+              : "Escriba la nueva contraseña dos veces. Al confirmar quedará iniciada sesión automáticamente."}
           </p>
         </div>
         <div className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-cream/55">
@@ -110,12 +114,14 @@ function RestablecerForm() {
           </Link>
 
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink/55">
-            § 04 — Nueva contraseña
+            § {isActivation ? "Activación" : "04 — Nueva contraseña"}
           </span>
           <h2 className="mt-3 font-display font-light tracking-[-0.025em] leading-[0.95] text-ink text-5xl sm:text-6xl">
-            Crear
-            <br />
-            <span className="italic">contraseña</span>.
+            {isActivation ? (
+              <>Crear<br /><span className="italic">acceso</span>.</>
+            ) : (
+              <>Crear<br /><span className="italic">contraseña</span>.</>
+            )}
           </h2>
 
           {!token && (

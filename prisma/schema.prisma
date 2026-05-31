@@ -120,12 +120,16 @@ enum ShopOrderStatus {
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
-  passwordHash  String
+  /// Vacío para usuarios "guest" creados al hacer checkout sin cuenta.
+  /// Después del pago se les envía un email con token para set password.
+  passwordHash  String    @default("")
   firstName     String
   lastName      String
   phone         String?
   role          UserRole  @default(CLIENTE)
   avatar        String?
+  /// Los guest users empiezan con isActive=false. Se activan en el webhook
+  /// cuando se confirma el pago de su primera orden.
   isActive      Boolean   @default(true)
   emailVerified Boolean   @default(false)
   createdAt     DateTime  @default(now())

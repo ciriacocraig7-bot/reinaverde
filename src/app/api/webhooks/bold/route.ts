@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { mapBoldWebhookStatus } from "@/lib/bold/button";
 import { verifyBoldSignature } from "@/lib/bold/webhook";
+import { activateGuestUserAfterPayment } from "@/lib/auth/guest";
+import { sendGuestActivationEmail, sendOrderPaidEmail } from "@/lib/email/templates";
 
 // Bold puede tardar; cubrimos cold-start + Supabase wake.
 export const maxDuration = 15;
@@ -134,8 +136,12 @@ export async function POST(request: NextRequest) {
     );
 
     if (mapped === "APPROVED") {
+      let userIdForEmail: string | null = null;
+      let orderNumberForEmail: string | null = null;
+      let totalForEmail = 0;
+
       if (target === "shop") {
-        await prisma.shopOrder.update({
+        const updated = await prisma.shopOrder.update({
           where: { id: shopOrder!.id },
           data: {
             status: "PAID",
@@ -143,9 +149,13 @@ export async function POST(request: NextRequest) {
             paymentMethod: method,
             paidAt: new Date(),
           },
+          select: { userId: true, orderNumber: true, total: true },
         });
+        userIdForEmail = updated.userId;
+        orderNumberForEmail = updated.orderNumber;
+        totalForEmail = Number(updated.total);
       } else {
-        await prisma.$transaction([
+        const [, ord] = await prisma.$transaction([
           prisma.payment.update({
             where: { id: cateringPayment!.id },
             data: {
@@ -158,9 +168,58 @@ export async function POST(request: NextRequest) {
           prisma.order.update({
             where: { id: cateringPayment!.orderId },
             data: { status: "PAID" },
+            select: { userId: true, orderNumber: true, total: true },
           }),
         ]);
+        userIdForEmail = ord.userId;
+        orderNumberForEmail = ord.orderNumber;
+        totalForEmail = Number(ord.total);
       }
+
+      // ─── Activación de guest + email transaccional ───────────
+      // Si el user que pagó era guest (sin contraseña), lo activamos y le
+      // mandamos el email con link para set password. Si no, solo mandamos
+      // confirmación del pago.
+      if (userIdForEmail) {
+        try {
+          const activation = await activateGuestUserAfterPayment(userIdForEmail);
+          if (activation) {
+            await sendGuestActivationEmail({
+              email: activation.email,
+              firstName: activation.firstName,
+              rawToken: activation.rawToken,
+              orderNumber: orderNumberForEmail ?? undefined,
+            });
+            log("bold.webhook.guest-activated", {
+              userId: userIdForEmail,
+              email: activation.email,
+              orderNumber: orderNumberForEmail,
+            });
+          } else {
+            // User ya tenía cuenta — solo confirmación.
+            const u = await prisma.user.findUnique({
+              where: { id: userIdForEmail },
+              select: { email: true, firstName: true },
+            });
+            if (u) {
+              await sendOrderPaidEmail({
+                email: u.email,
+                firstName: u.firstName,
+                orderNumber: orderNumberForEmail ?? "",
+                total: totalForEmail,
+              });
+            }
+          }
+        } catch (emailErr) {
+          // No bloqueamos el webhook si el email falla — el pedido está
+          // pagado y eso es lo crítico. Solo logueamos.
+          log("bold.webhook.email-failed", {
+            error: emailErr instanceof Error ? emailErr.message : String(emailErr),
+            userId: userIdForEmail,
+          });
+        }
+      }
+
       log("bold.webhook.approved", {
         target,
         orderId: order.id,

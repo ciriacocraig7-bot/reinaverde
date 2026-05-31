@@ -5,20 +5,24 @@ import { generateIntegritySignature } from "@/lib/bold/button";
 
 const BOLD_API_KEY = process.env.NEXT_PUBLIC_BOLD_API_KEY || "";
 
+export const maxDuration = 15;
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const payload = readSession(request);
-    if (!payload) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
     const { id } = await params;
 
-    // Fetch order with user details
     const order = await prisma.shopOrder.findUnique({
       where: { id },
       include: {
-        user: { select: { email: true, firstName: true, lastName: true, phone: true } },
+        user: {
+          select: {
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            passwordHash: true,
+          },
+        },
         items: { include: { product: { select: { name: true } } } },
       },
     });
@@ -27,36 +31,36 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
     }
 
-    // Verify ownership
-    if (order.userId !== payload.userId && payload.role !== "ADMIN") {
+    // ─── Authorización: 3 casos ─────────────────────────────────
+    //  (1) ADMIN — todo OK
+    //  (2) Dueño de la orden (sesión) — todo OK
+    //  (3) Guest pendiente — la orden pertenece a un user con passwordHash
+    //      vacío. No hay sesión real porque no han creado contraseña aún.
+    //      Permitimos pagarla.
+    const session = readSession(request);
+    const isOwner = session && session.userId === order.userId;
+    const isAdmin = session?.role === "ADMIN";
+    const isGuestPending =
+      !session && (!order.user.passwordHash || order.user.passwordHash.length === 0);
+
+    if (!isOwner && !isAdmin && !isGuestPending) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    // Check order can be paid
     if (order.status !== "PENDING" && order.status !== "CONFIRMED") {
       return NextResponse.json(
         { error: "Este pedido no se puede pagar en su estado actual" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const businessSlug = order.businessLine === "PHARMA" ? "pharma" : "liofilizados";
-    
-    // Amount in cents (sin decimales para Bold)
+
     const amount = Math.round(Number(order.total));
-    
-    // Generate order reference for Bold
     const boldOrderId = `BOLD-${order.orderNumber}`;
+    const integritySignature = generateIntegritySignature(boldOrderId, amount, "COP");
 
-    // Generate integrity signature
-    const integritySignature = generateIntegritySignature(
-      boldOrderId,
-      amount,
-      "COP"
-    );
-
-    // Update order with Bold reference
     await prisma.shopOrder.update({
       where: { id },
       data: {
@@ -65,9 +69,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
     });
 
-    // Product description
-    const description = order.items.length === 1 
-      ? order.items[0].product.name 
+    const description = order.items.length === 1
+      ? order.items[0].product.name
       : `${order.items.length} productos - Reina Verde`;
 
     return NextResponse.json({
@@ -76,8 +79,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       currency: "COP",
       orderId: boldOrderId,
       integritySignature,
-      description: description.slice(0, 100), // Max 100 chars
-      tax: "vat-19", // IVA 19%
+      description: description.slice(0, 100),
+      tax: "vat-19",
       redirectionUrl: `${baseUrl}/${businessSlug}/confirmacion?order=${order.id}&provider=bold`,
       customerData: {
         email: order.user.email,
@@ -95,7 +98,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     console.error("Bold button config error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Error al configurar pago Bold" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

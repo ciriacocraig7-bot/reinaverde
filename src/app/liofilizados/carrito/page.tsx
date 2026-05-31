@@ -44,9 +44,9 @@ interface BoldConfig {
 export default function LiofilizadosCarritoPage() {
   const {
     items, removeItem, updateQuantity, subtotal, tax, shippingCost, total,
-    itemCount, shipping, setShipping, clearCart,
+    itemCount, shipping, setShipping, guest, setGuest, clearCart,
   } = useLiofilizadosCart();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [processing, setProcessing] = useState(false);
   const [boldConfig, setBoldConfig] = useState<BoldConfig | null>(null);
@@ -81,16 +81,23 @@ export default function LiofilizadosCarritoPage() {
   }
 
   const handleCheckout = async () => {
+    // Si NO está autenticado, validamos los campos guest
     if (!isAuthenticated) {
-      toast.error("Inicia sesión para continuar");
-      return;
+      if (!guest.email || !guest.firstName || !guest.lastName) {
+        toast.error("Completa tu correo y nombre para continuar");
+        return;
+      }
     }
     setProcessing(true);
     try {
-      const token = localStorage.getItem("rv-token");
+      const token = typeof window !== "undefined" ? localStorage.getItem("rv-token") : null;
       const orderRes = await fetch("/api/shop-orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           businessLine: "LIOFILIZADOS",
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
@@ -100,6 +107,10 @@ export default function LiofilizadosCarritoPage() {
           shippingPhone: shipping.phone,
           shippingNotes: shipping.notes || undefined,
           paymentProvider: "BOLD",
+          // Solo enviamos guest cuando no hay sesión
+          ...(isAuthenticated
+            ? {}
+            : { guest: { email: guest.email, firstName: guest.firstName, lastName: guest.lastName } }),
         }),
       });
       if (!orderRes.ok) {
@@ -110,7 +121,8 @@ export default function LiofilizadosCarritoPage() {
 
       const boldRes = await fetch(`/api/shop-orders/${order.id}/pay/bold`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!boldRes.ok) throw new Error("Error al configurar pago con Bold");
       const boldData = await boldRes.json();
@@ -124,7 +136,8 @@ export default function LiofilizadosCarritoPage() {
   };
 
   const canProceedShipping =
-    !!shipping.name && !!shipping.address && !!shipping.city && !!shipping.phone;
+    !!shipping.name && !!shipping.address && !!shipping.city && !!shipping.phone &&
+    (isAuthenticated || (!!guest.email && !!guest.firstName && !!guest.lastName));
 
   return (
     <>
@@ -241,9 +254,55 @@ export default function LiofilizadosCarritoPage() {
                   Enviamos a toda Colombia. Empaque hermético con barrera de oxígeno
                   para mantener la fruta crujiente hasta su puerta.
                 </p>
+
+                {/* Datos de contacto — solo si no hay sesión activa */}
+                {!isAuthenticated && (
+                  <div className="space-y-6 pb-6 border-b border-ink/15">
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-persimmon">
+                        § Tus datos
+                      </span>
+                      <Link
+                        href="/login"
+                        className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-ink/55 hover:text-ink rv-link"
+                      >
+                        ¿Tienes cuenta? Ingresar
+                      </Link>
+                    </div>
+                    <Input
+                      id="guest-email"
+                      type="email"
+                      label="Correo electrónico"
+                      value={guest.email}
+                      onChange={(e) => setGuest({ email: e.target.value })}
+                      hint="Te enviaremos confirmación de pago y un link para crear tu cuenta."
+                      required
+                    />
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <Input
+                        id="guest-firstName"
+                        label="Nombre"
+                        value={guest.firstName}
+                        onChange={(e) => setGuest({ firstName: e.target.value })}
+                        required
+                      />
+                      <Input
+                        id="guest-lastName"
+                        label="Apellido"
+                        value={guest.lastName}
+                        onChange={(e) => setGuest({ lastName: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-persimmon block">
+                  § Dirección de envío
+                </span>
                 <Input
                   id="name"
-                  label="Nombre completo"
+                  label="Nombre del destinatario"
                   value={shipping.name}
                   onChange={(e) => setShipping({ name: e.target.value })}
                   required

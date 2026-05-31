@@ -42,6 +42,17 @@ export const shopOrderItemSchema = z.object({
   quantity: z.number().int().min(1),
 });
 
+/**
+ * Datos del usuario invitado (cuando no hay sesión activa).
+ * Si vienen, creamos/asociamos un user con `passwordHash=""` y `isActive=false`
+ * hasta que el pago se confirme.
+ */
+export const guestUserSchema = z.object({
+  email: z.string().email("Email inválido"),
+  firstName: z.string().min(2, "Nombre requerido"),
+  lastName: z.string().min(2, "Apellido requerido"),
+});
+
 export const createShopOrderSchema = z.object({
   businessLine: z.enum(["PHARMA", "LIOFILIZADOS"]),
   items: z.array(shopOrderItemSchema).min(1, "Debe agregar al menos un producto"),
@@ -51,6 +62,8 @@ export const createShopOrderSchema = z.object({
   shippingPhone: z.string().min(7, "Teléfono requerido"),
   shippingNotes: z.string().optional(),
   paymentProvider: z.enum(["WOMPI", "BOLD"]).optional(),
+  /** Solo presente si el cliente está haciendo guest checkout. */
+  guest: guestUserSchema.optional(),
 });
 
 export const updateShopOrderStatusSchema = z.object({
