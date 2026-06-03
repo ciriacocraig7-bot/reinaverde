@@ -193,7 +193,7 @@ export default function CateringEventosPage() {
                 <p>@reinaverdecatering</p>
               </div>
               <Link
-                href="/catering/menu"
+                href="/catering/cotizar"
                 className="inline-flex items-center h-12 px-7 bg-marigold text-ink font-sans text-[14px] tracking-tight rv-press hover:bg-cream w-fit"
               >
                 Empezar cotización →

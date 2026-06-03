@@ -164,7 +164,7 @@ export default function CateringHomePage() {
                 Ver los seis momentos →
               </Link>
               <Link
-                href="/catering/orden"
+                href="/catering/cotizar"
                 className="inline-flex items-center h-14 px-9 border border-ink/40 text-ink font-sans text-[14px] tracking-tight hover:border-ink hover:bg-ink hover:text-cream transition-colors"
               >
                 Cotizar evento
@@ -481,7 +481,7 @@ export default function CateringHomePage() {
 
               <div className="flex flex-wrap gap-3 mt-2">
                 <Link
-                  href="/catering/orden"
+                  href="/catering/cotizar"
                   className="inline-flex items-center h-12 px-7 bg-marigold text-ink font-sans text-[14px] tracking-tight rv-press hover:bg-cream"
                 >
                   Cotizar evento →

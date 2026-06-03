@@ -32,6 +32,9 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
     { href: "/admin/produccion",     label: "Producción",   code: "PRD", comingSoon: true },
     { href: "/admin/logistica",      label: "Logística",    code: "LOG", comingSoon: true },
     { href: "/admin/finanzas",       label: "Finanzas",     code: "FIN" },
+    { href: "/admin/pricing",        label: "Precios y tarifas", code: "PRC" },
+    { href: "/chef/recetas",         label: "Recetas",      code: "REC" },
+    { href: "/chef/ingredientes",    label: "Ingredientes", code: "ING" },
     { href: "/admin/proveedores",    label: "Proveedores",  code: "PRV", comingSoon: true },
     { href: "/admin/feedback",       label: "Feedback",     code: "FBK", comingSoon: true },
     { href: "/admin/usuarios",       label: "Usuarios",     code: "USR", comingSoon: true },
@@ -47,8 +50,9 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
   ],
   CHEF: [
     { href: "/chef",                label: "Cocina",        code: "COC" },
+    { href: "/chef/recetas",        label: "Recetas",       code: "REC" },
+    { href: "/chef/ingredientes",   label: "Ingredientes",  code: "ING" },
     { href: "/chef/produccion",     label: "Producción",    code: "PRD", comingSoon: true },
-    { href: "/chef/ingredientes",   label: "Ingredientes",  code: "ING", comingSoon: true },
   ],
   STAFF: [
     { href: "/staff",               label: "Mi panel",      code: "PNL" },
@@ -169,10 +173,10 @@ export function Sidebar() {
       {/* Footer */}
       <div className="border-t border-ink/15 px-3 py-4">
         <button
-          onClick={() => router.push("/catering/orden")}
+          onClick={() => router.push("/catering/cotizar")}
           className="block w-full text-center px-4 py-3 bg-ink text-cream font-sans text-[13px] tracking-tight rv-press hover:bg-ink-soft mb-4"
         >
-          + Nuevo pedido
+          + Nueva cotización
         </button>
 
         {/* User block */}

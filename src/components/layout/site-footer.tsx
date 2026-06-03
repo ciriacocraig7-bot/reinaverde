@@ -43,7 +43,7 @@ export function SiteFooter() {
               { href: "/login", label: "Ingresar" },
               { href: "/registro", label: "Crear cuenta" },
               { href: "/cliente", label: "Mi panel" },
-              { href: "/catering/orden", label: "Cotizar evento" },
+              { href: "/catering/cotizar", label: "Diseñar cotización" },
             ]}
           />
           <FooterCol

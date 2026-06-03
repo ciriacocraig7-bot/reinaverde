@@ -226,7 +226,7 @@ export default function CateringNosotrosPage() {
                 <p>@reinaverdecatering</p>
               </div>
               <Link
-                href="/catering/orden"
+                href="/catering/cotizar"
                 className="inline-flex items-center h-12 px-7 bg-ink text-cream font-sans text-[14px] tracking-tight rv-press hover:bg-ink-soft w-fit"
               >
                 Cotizar evento →

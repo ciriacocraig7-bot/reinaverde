@@ -64,6 +64,8 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/webhooks/") ||
     pathname.startsWith("/api/catering/pay/") ||
+    pathname.startsWith("/api/catering/pricing-preview") ||
+    pathname.startsWith("/api/catering/quotes") || // GET + POST + pay-bold + pdf
     pathname.startsWith("/api/menu") ||
     pathname.startsWith("/api/products") ||
     pathname.startsWith("/api/product-categories");

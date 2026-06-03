@@ -168,12 +168,24 @@ export async function POST(request: NextRequest) {
           prisma.order.update({
             where: { id: cateringPayment!.orderId },
             data: { status: "PAID" },
-            select: { userId: true, orderNumber: true, total: true },
+            select: { userId: true, orderNumber: true, total: true, quoteId: true },
           }),
         ]);
         userIdForEmail = ord.userId;
         orderNumberForEmail = ord.orderNumber;
         totalForEmail = Number(ord.total);
+
+        // Si la Order nació de una Quote (Diseñador de Producto), marcarla PAID.
+        if (ord.quoteId) {
+          await prisma.quote.update({
+            where: { id: ord.quoteId },
+            data: { status: "PAID" },
+          });
+          log("bold.webhook.quote-paid", {
+            quoteId: ord.quoteId,
+            orderId: cateringPayment!.orderId,
+          });
+        }
       }
 
       // ─── Activación de guest + email transaccional ───────────

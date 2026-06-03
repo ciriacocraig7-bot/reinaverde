@@ -113,6 +113,31 @@ enum ShopOrderStatus {
   REFUNDED
 }
 
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  PAYMENT_PENDING
+  PAID
+  EXPIRED
+  REJECTED
+  CONVERTED
+}
+
+enum TaxRegime {
+  COMMON
+  SIMPLE
+}
+
+enum MomentType {
+  DBR
+  RFG
+  ALM
+  GAL
+  MEX
+  COC
+}
+
 // ═══════════════════════════════════════════════════════════════
 // AUTH & USERS
 // ═══════════════════════════════════════════════════════════════
@@ -144,6 +169,7 @@ model User {
   sessions        Session[]
   shopOrders      ShopOrder[]
   passwordResetTokens PasswordResetToken[]
+  quotes          Quote[]
 
   @@map("users")
 }
@@ -234,6 +260,13 @@ model MenuItem {
   isGlutenFree    Boolean  @default(false)
   allergens       String[]
   isActive        Boolean  @default(true)
+  // — Cost designer fields —
+  momentType         MomentType?
+  servingSize        String?
+  laborMinutes       Int          @default(15)
+  difficultyFactor   Decimal      @default(1.0) @db.Decimal(4, 2)
+  targetMarginPercent Decimal     @default(0.40) @db.Decimal(4, 3)
+  // —
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -253,6 +286,12 @@ model Ingredient {
   minStock    Decimal  @default(0) @db.Decimal(10, 2)
   supplierId  String?
   isActive    Boolean  @default(true)
+  // — Cost designer fields —
+  /// Factor de rendimiento usable (1 - merma). 0.95 = 5% de pérdida.
+  yieldPercent Decimal @default(0.95) @db.Decimal(4, 3)
+  /// Categoría usada en el selector del backoffice ("Proteína", "Vegetal", etc.)
+  category    String?
+  // —
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -286,6 +325,8 @@ model Order {
   userId           String
   companyId        String?
   eventId          String?
+  /// Trazabilidad: si la orden nace de una Quote del diseñador.
+  quoteId          String?     @unique
   status           OrderStatus @default(DRAFT)
   subtotal         Decimal     @db.Decimal(12, 2)
   tax              Decimal     @default(0) @db.Decimal(12, 2)
@@ -304,6 +345,7 @@ model Order {
   user       User       @relation(fields: [userId], references: [id])
   company    Company?   @relation(fields: [companyId], references: [id])
   event      Event?     @relation(fields: [eventId], references: [id])
+  quote      Quote?     @relation(fields: [quoteId], references: [id])
   items      OrderItem[]
   payments   Payment[]
   production Production?
@@ -658,4 +700,147 @@ model ShopOrderItem {
   product Product   @relation(fields: [productId], references: [id])
 
   @@map("shop_order_items")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRICING CONFIG (DISEÑADOR DE PRODUCTO · CATERING)
+// ═══════════════════════════════════════════════════════════════
+
+/// Singleton: hay una sola fila con id = "default".
+/// Controla impuestos, mano de obra, CIF, transporte y retenciones.
+model PricingConfig {
+  id                          String     @id @default("default")
+  taxRegime                   TaxRegime  @default(COMMON)
+  vatRate                     Decimal    @default(0.19)  @db.Decimal(5, 4)
+  /// Tarifa única RST aplicable a actividad de catering / restaurantes (~5.4%).
+  simpleRate                  Decimal    @default(0.054) @db.Decimal(5, 4)
+  /// Impuesto Nacional al Consumo (servicio en sitio = 8%). 0 si no aplica.
+  incRate                     Decimal    @default(0.08)  @db.Decimal(5, 4)
+  /// Mano de obra base (COP por hora del chef/staff).
+  laborCostPerHour            Decimal    @default(18000) @db.Decimal(10, 2)
+  /// Factor prestacional + parafiscales (1.60 ≈ +60% sobre salario base).
+  laborBenefitFactor          Decimal    @default(1.60)  @db.Decimal(4, 2)
+  /// Costos indirectos de fabricación como % del CMP.
+  cifPercent                  Decimal    @default(0.08)  @db.Decimal(5, 4)
+  /// Transporte base por evento (COP).
+  transportBase               Decimal    @default(80000) @db.Decimal(10, 2)
+  /// Costo marginal por km (no usado en MVP — placeholder para geocoding futuro).
+  transportPerKm              Decimal    @default(2000)  @db.Decimal(10, 2)
+  /// Margen objetivo por defecto sobre venta.
+  defaultMarginPercent        Decimal    @default(0.40)  @db.Decimal(4, 3)
+  /// Retención en la fuente declarante (servicios = 4%).
+  reteFuenteRateDeclarante    Decimal    @default(0.04)  @db.Decimal(5, 4)
+  /// Retención en la fuente NO declarante (servicios = 6%).
+  reteFuenteRateNoDeclarante  Decimal    @default(0.06)  @db.Decimal(5, 4)
+  /// ReteIVA (sobre el IVA generado) — agente retenedor común 15%.
+  reteIvaRate                 Decimal    @default(0.15)  @db.Decimal(5, 4)
+  updatedBy                   String?
+  updatedAt                   DateTime   @updatedAt
+  createdAt                   DateTime   @default(now())
+
+  @@map("pricing_config")
+}
+
+/// Tarifas tributarias y de transporte por ciudad de operación.
+model CityTaxRate {
+  id                  String   @id @default(uuid())
+  city                String   @unique
+  /// ICA por mil. Bogotá servicios = 9.66 / 1000 = 0.00966.
+  icaRate             Decimal  @default(0.00966) @db.Decimal(6, 5)
+  /// ReteICA municipal sobre la base gravable.
+  reteIcaRate         Decimal  @default(0.00966) @db.Decimal(6, 5)
+  /// Recargo de transporte para esta ciudad (sumado al transportBase).
+  transportSurcharge  Decimal  @default(0)       @db.Decimal(10, 2)
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("city_tax_rates")
+}
+
+/// Tabla de descuentos por número de comensales.
+model VolumeDiscount {
+  id              String   @id @default(uuid())
+  minGuests       Int      @unique
+  discountPercent Decimal  @db.Decimal(4, 3)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("volume_discounts")
+}
+
+/// Modificadores estacionales (alta/regular/baja) por rango de fechas (mes/día).
+model SeasonalRate {
+  id            String   @id @default(uuid())
+  name          String
+  startMonth    Int
+  startDay      Int
+  endMonth      Int
+  endDay        Int
+  /// 1.15 = +15% (alta), 1.00 = neutro, 0.92 = -8% (baja).
+  rateModifier  Decimal  @default(1.0) @db.Decimal(4, 3)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("seasonal_rates")
+}
+
+/// Cotización emitida por el diseñador de producto. Es snapshot — todos los
+/// montos calculados se persisten para auditoría y para que la conversión
+/// a Order no dependa de cambios posteriores en PricingConfig.
+model Quote {
+  id                   String       @id @default(uuid())
+  quoteNumber          String       @unique
+  userId               String
+  status               QuoteStatus  @default(DRAFT)
+  // — Detalles del evento —
+  eventType            EventType?
+  momentTypes          MomentType[]
+  guestCount           Int
+  eventDate            DateTime
+  eventTime            String
+  eventCity            String
+  eventAddress         String
+  // — Composición (snapshot con customizaciones) —
+  itemsJson            Json
+  // — Desglose calculado —
+  cmpTotal             Decimal      @db.Decimal(12, 2)
+  cmoTotal             Decimal      @db.Decimal(12, 2)
+  cifTotal             Decimal      @db.Decimal(12, 2)
+  transportTotal       Decimal      @db.Decimal(12, 2)
+  costTotal            Decimal      @db.Decimal(12, 2)
+  marginAmount         Decimal      @db.Decimal(12, 2)
+  subtotal             Decimal      @db.Decimal(12, 2)
+  /// Descuento por volumen aplicado (puede ser 0).
+  volumeDiscountAmount Decimal      @default(0) @db.Decimal(12, 2)
+  /// Ajuste estacional (puede ser negativo si rateModifier < 1).
+  seasonalAdjustment   Decimal      @default(0) @db.Decimal(12, 2)
+  /// Base gravable después de ajustes (antes de impuestos).
+  taxableBase          Decimal      @db.Decimal(12, 2)
+  vatAmount            Decimal      @default(0) @db.Decimal(12, 2)
+  incAmount            Decimal      @default(0) @db.Decimal(12, 2)
+  icaAmount            Decimal      @default(0) @db.Decimal(12, 2)
+  simpleAmount         Decimal      @default(0) @db.Decimal(12, 2)
+  total                Decimal      @db.Decimal(12, 2)
+  // — Retenciones informativas (cliente agente retenedor) —
+  reteFuenteAmount     Decimal      @default(0) @db.Decimal(12, 2)
+  reteIvaAmount        Decimal      @default(0) @db.Decimal(12, 2)
+  reteIcaAmount        Decimal      @default(0) @db.Decimal(12, 2)
+  netReceivable        Decimal      @db.Decimal(12, 2)
+  // — Snapshot del config aplicado (para auditoría) —
+  pricingConfigSnapshot Json
+  // —
+  expiresAt            DateTime
+  notes                String?
+  dietaryNotes         String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id])
+  order Order?
+
+  @@index([userId, status])
+  @@map("quotes")
 }
