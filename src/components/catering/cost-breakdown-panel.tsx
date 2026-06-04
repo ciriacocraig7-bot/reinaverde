@@ -35,6 +35,9 @@ export function CostBreakdownPanel({ breakdown: b, expanded }: Props) {
         <Line label="Materia prima (CMP)" value={b.cmpTotal} />
         <Line label="Mano de obra (CMO)" value={b.cmoTotal} />
         <Line label="Costos indirectos (CIF)" value={b.cifTotal} />
+        {b.packagingTotal > 0 && (
+          <Line label="Empaque" value={b.packagingTotal} />
+        )}
         <Line
           label={`Logística · ${b.city}`}
           value={b.transportTotal}

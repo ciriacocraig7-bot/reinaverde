@@ -27,6 +27,7 @@ import { MomentChipGrid } from "@/components/catering/moment-chip-grid";
 import { DateWithSeason } from "@/components/catering/date-with-season";
 import { LiveEventNarrative } from "@/components/catering/live-event-narrative";
 import { DramaticTotal } from "@/components/catering/dramatic-total";
+import { GuestCheckoutInline, guestIsValid } from "@/components/checkout/guest-checkout-inline";
 import { useQuoteBuilder, type QuoteBuilderState } from "@/stores/quote-builder-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatCurrency } from "@/lib/utils";
@@ -169,7 +170,9 @@ export default function CotizarPage() {
       case 2:
         return items.length > 0;
       case 3:
-        return breakdown !== null && breakdown.total > 0;
+        if (breakdown === null || breakdown.total <= 0) return false;
+        if (isAuthenticated) return true;
+        return guestIsValid(guestData, false);
       default:
         return false;
     }
@@ -310,17 +313,16 @@ export default function CotizarPage() {
                 setDietaryNotes={builder.setDietaryNotes}
                 clientIsDeclarante={clientIsDeclarante}
                 setClientIsDeclarante={builder.setClientIsDeclarante}
-                isAuthenticated={isAuthenticated}
-                user={user}
-                guestData={guestData}
-                setGuestData={setGuestData}
               />
             )}
             {currentStep === 3 && (
               <ChapterCuenta
                 breakdown={breakdown}
                 previewing={previewing}
-                items={items}
+                isAuthenticated={isAuthenticated}
+                user={user}
+                guestData={guestData}
+                setGuestData={setGuestData}
               />
             )}
             {currentStep === 4 && bold && (
@@ -695,7 +697,9 @@ function ChapterMesa({
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CAPÍTULO III · Los acentos (customización + datos del contacto)
+// CAPÍTULO III · Los acentos (customización + régimen tributario)
+// Los datos del comprador NO se piden aquí — se piden en el Cap IV,
+// justo antes del botón de pago, para reducir fricción.
 // ═══════════════════════════════════════════════════════════════
 function ChapterAcentos({
   items,
@@ -706,10 +710,6 @@ function ChapterAcentos({
   setDietaryNotes,
   clientIsDeclarante,
   setClientIsDeclarante,
-  isAuthenticated,
-  user,
-  guestData,
-  setGuestData,
 }: {
   items: QuoteBuilderState["items"];
   updateItem: QuoteBuilderState["updateItem"];
@@ -719,10 +719,6 @@ function ChapterAcentos({
   setDietaryNotes: (s: string) => void;
   clientIsDeclarante: boolean;
   setClientIsDeclarante: (v: boolean) => void;
-  isAuthenticated: boolean;
-  user: { email: string; firstName: string; lastName: string } | null;
-  guestData: { email: string; firstName: string; lastName: string; phone: string };
-  setGuestData: (d: { email: string; firstName: string; lastName: string; phone: string }) => void;
 }) {
   return (
     <div className="space-y-12">
@@ -809,102 +805,58 @@ function ChapterAcentos({
 
       <hr className="border-ink/15" />
 
-      {/* Datos contacto + retención */}
-      <div className="grid lg:grid-cols-2 gap-8">
-        <div>
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-ink/55 mb-3">
-            § Datos de contacto
-          </p>
-          {isAuthenticated && user ? (
-            <p className="font-serif italic text-base text-ink/70 leading-snug">
-              Cotizando como <span className="text-ink not-italic">{user.firstName} {user.lastName}</span>{" "}
-              · {user.email}
-            </p>
-          ) : (
-            <div className="space-y-2.5">
-              <p className="font-serif italic text-[13px] text-ink/60 leading-snug">
-                No requiere crear cuenta. Tras el pago le enviamos un link
-                para activarla.
-              </p>
-              <div className="grid sm:grid-cols-2 gap-2.5">
-                <input
-                  placeholder="Email"
-                  type="email"
-                  value={guestData.email}
-                  onChange={(e) => setGuestData({ ...guestData, email: e.target.value })}
-                  className="h-12 px-3 border border-ink/25 bg-cream font-sans text-base text-ink focus:outline-none focus:border-ink"
-                />
-                <input
-                  placeholder="Teléfono"
-                  value={guestData.phone}
-                  onChange={(e) => setGuestData({ ...guestData, phone: e.target.value })}
-                  className="h-12 px-3 border border-ink/25 bg-cream font-sans text-base text-ink focus:outline-none focus:border-ink"
-                />
-                <input
-                  placeholder="Nombres"
-                  value={guestData.firstName}
-                  onChange={(e) => setGuestData({ ...guestData, firstName: e.target.value })}
-                  className="h-12 px-3 border border-ink/25 bg-cream font-sans text-base text-ink focus:outline-none focus:border-ink"
-                />
-                <input
-                  placeholder="Apellidos"
-                  value={guestData.lastName}
-                  onChange={(e) => setGuestData({ ...guestData, lastName: e.target.value })}
-                  className="h-12 px-3 border border-ink/25 bg-cream font-sans text-base text-ink focus:outline-none focus:border-ink"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-ink/55 mb-3">
-            § Régimen de retención
-          </p>
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={() => setClientIsDeclarante(true)}
+      {/* Régimen de retención (sus datos van en el Cap IV, junto al pago) */}
+      <div className="max-w-2xl">
+        <p className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-ink/55 mb-3">
+          § Régimen de retención
+        </p>
+        <p className="font-serif italic text-[13px] text-ink/60 leading-snug mb-3">
+          Si su empresa retiene en la fuente, el desglose del próximo capítulo
+          mostrará el neto que efectivamente recibirá Reina Verde.
+        </p>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setClientIsDeclarante(true)}
+            className={
+              "text-left px-4 py-3 border transition-colors " +
+              (clientIsDeclarante
+                ? "bg-ink text-cream border-ink"
+                : "bg-cream text-ink border-ink/25 hover:border-ink")
+            }
+          >
+            <span className="font-display text-lg leading-tight block">
+              Mi empresa es agente retenedor declarante
+            </span>
+            <span
               className={
-                "text-left px-4 py-3 border transition-colors " +
-                (clientIsDeclarante
-                  ? "bg-ink text-cream border-ink"
-                  : "bg-cream text-ink border-ink/25 hover:border-ink")
+                "font-serif italic text-sm " +
+                (clientIsDeclarante ? "text-cream/65" : "text-ink/55")
               }
             >
-              <span className="font-display text-lg leading-tight block">
-                Mi empresa es agente retenedor declarante
-              </span>
-              <span
-                className={
-                  "font-serif italic text-sm " +
-                  (clientIsDeclarante ? "text-cream/65" : "text-ink/55")
-                }
-              >
-                Aplica ReteFuente 4 % · ReteIVA 15 % · ReteICA municipal
-              </span>
-            </button>
-            <button
-              onClick={() => setClientIsDeclarante(false)}
+              Aplica ReteFuente 4 % · ReteIVA 15 % · ReteICA municipal
+            </span>
+          </button>
+          <button
+            onClick={() => setClientIsDeclarante(false)}
+            className={
+              "text-left px-4 py-3 border transition-colors " +
+              (!clientIsDeclarante
+                ? "bg-ink text-cream border-ink"
+                : "bg-cream text-ink border-ink/25 hover:border-ink")
+            }
+          >
+            <span className="font-display text-lg leading-tight block">
+              No es agente retenedor
+            </span>
+            <span
               className={
-                "text-left px-4 py-3 border transition-colors " +
-                (!clientIsDeclarante
-                  ? "bg-ink text-cream border-ink"
-                  : "bg-cream text-ink border-ink/25 hover:border-ink")
+                "font-serif italic text-sm " +
+                (!clientIsDeclarante ? "text-cream/65" : "text-ink/55")
               }
             >
-              <span className="font-display text-lg leading-tight block">
-                No es agente retenedor
-              </span>
-              <span
-                className={
-                  "font-serif italic text-sm " +
-                  (!clientIsDeclarante ? "text-cream/65" : "text-ink/55")
-                }
-              >
-                ReteFuente 6 % aplicable si corresponde
-              </span>
-            </button>
-          </div>
+              ReteFuente 6 % aplicable si corresponde
+            </span>
+          </button>
         </div>
       </div>
     </div>
@@ -912,16 +864,22 @@ function ChapterAcentos({
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CAPÍTULO IV · La cuenta — el reveal dramático
+// CAPÍTULO IV · La cuenta — el reveal dramático + datos del comprador
 // ═══════════════════════════════════════════════════════════════
 function ChapterCuenta({
   breakdown,
   previewing,
-  items,
+  isAuthenticated,
+  user,
+  guestData,
+  setGuestData,
 }: {
   breakdown: PricingBreakdown | null;
   previewing: boolean;
-  items: QuoteBuilderState["items"];
+  isAuthenticated: boolean;
+  user: { email: string; firstName: string; lastName: string } | null;
+  guestData: { email: string; firstName: string; lastName: string; phone: string };
+  setGuestData: (d: { email: string; firstName: string; lastName: string; phone: string }) => void;
 }) {
   return (
     <div className="space-y-10">
@@ -959,6 +917,9 @@ function ChapterCuenta({
               { label: "Materia prima (CMP)", val: breakdown.cmpTotal },
               { label: "Mano de obra (CMO · ×1.6 prestacional)", val: breakdown.cmoTotal },
               { label: "Costos indirectos (CIF)", val: breakdown.cifTotal },
+              ...(breakdown.packagingTotal > 0
+                ? [{ label: "Empaque", val: breakdown.packagingTotal }]
+                : []),
               { label: `Logística · ${breakdown.city}`, val: breakdown.transportTotal },
               { label: `Margen operativo (${(breakdown.marginPercent * 100).toFixed(0)} %)`, val: breakdown.marginAmount },
             ].map((r) => (
@@ -1038,6 +999,24 @@ function ChapterCuenta({
             </ul>
           </div>
         </div>
+      )}
+
+      {/* Datos del comprador — solo si guest, justo antes del botón de pago */}
+      {!isAuthenticated && (
+        <GuestCheckoutInline
+          value={guestData}
+          onChange={setGuestData}
+          caption="Sin crear cuenta. Tras el pago le enviamos un link para activarla."
+        />
+      )}
+      {isAuthenticated && user && (
+        <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55">
+          Cotizando como{" "}
+          <span className="text-ink not-italic">
+            {user.firstName} {user.lastName}
+          </span>{" "}
+          · {user.email}
+        </p>
       )}
 
       <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/45 max-w-prose">

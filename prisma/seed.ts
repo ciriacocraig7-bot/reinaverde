@@ -222,7 +222,7 @@ async function seedCateringReference() {
     console.log(`  · ${existingSeasons} seasonal rates ya existen, no sobrescribir`);
   }
 
-  // ── Ingredients (30 representativos, COP) ─────────────────────
+  // ── Ingredients (33 representativos, COP) ─────────────────────
   const ingredients: Array<{
     slug: string;
     name: string;
@@ -230,13 +230,15 @@ async function seedCateringReference() {
     category: string;
     costPerUnit: number;
     yieldPercent: number;
+    jumboReferencePrice?: number;
+    jumboReferenceUrl?: string;
   }> = [
-    // Proteínas (COP / g — costo por gramo)
-    { slug: "salmon-fresco",       name: "Salmón fresco",        unit: "g", category: "Proteína", costPerUnit:  85, yieldPercent: 0.85 },
-    { slug: "lomo-fino-res",       name: "Lomo fino de res",     unit: "g", category: "Proteína", costPerUnit:  78, yieldPercent: 0.90 },
-    { slug: "pechuga-pollo",       name: "Pechuga de pollo",     unit: "g", category: "Proteína", costPerUnit:  30, yieldPercent: 0.92 },
-    { slug: "atun-fresco",         name: "Atún fresco",          unit: "g", category: "Proteína", costPerUnit:  72, yieldPercent: 0.88 },
-    { slug: "huevo-organico",      name: "Huevo orgánico",       unit: "u", category: "Proteína", costPerUnit: 900, yieldPercent: 1.00 },
+    // Proteínas (COP / g — costo por gramo) · Jumbo referencias estimadas para comparar margen
+    { slug: "salmon-fresco",       name: "Salmón fresco",        unit: "g", category: "Proteína", costPerUnit:  85, yieldPercent: 0.85, jumboReferencePrice: 110 },
+    { slug: "lomo-fino-res",       name: "Lomo fino de res",     unit: "g", category: "Proteína", costPerUnit:  78, yieldPercent: 0.90, jumboReferencePrice:  95 },
+    { slug: "pechuga-pollo",       name: "Pechuga de pollo",     unit: "g", category: "Proteína", costPerUnit:  30, yieldPercent: 0.92, jumboReferencePrice:  38 },
+    { slug: "atun-fresco",         name: "Atún fresco",          unit: "g", category: "Proteína", costPerUnit:  72, yieldPercent: 0.88, jumboReferencePrice:  90 },
+    { slug: "huevo-organico",      name: "Huevo orgánico",       unit: "u", category: "Proteína", costPerUnit: 900, yieldPercent: 1.00, jumboReferencePrice: 1200 },
     { slug: "queso-cabra",         name: "Queso de cabra",       unit: "g", category: "Lácteo",   costPerUnit:  45, yieldPercent: 1.00 },
     { slug: "queso-manchego",      name: "Queso manchego",       unit: "g", category: "Lácteo",   costPerUnit:  55, yieldPercent: 1.00 },
     { slug: "queso-mozzarella",    name: "Mozzarella di bufala", unit: "g", category: "Lácteo",   costPerUnit:  38, yieldPercent: 1.00 },
@@ -263,10 +265,14 @@ async function seedCateringReference() {
     { slug: "leche-coco",          name: "Leche de coco",        unit: "ml",category: "Lácteo",   costPerUnit:   8, yieldPercent: 1.00 },
     { slug: "crema-leche",         name: "Crema de leche",       unit: "ml",category: "Lácteo",   costPerUnit:  10, yieldPercent: 1.00 },
     // Salsas / especias
-    { slug: "aceite-oliva",        name: "Aceite de oliva extra",unit: "ml",category: "Especia",  costPerUnit:  22, yieldPercent: 1.00 },
-    { slug: "salsa-soja",          name: "Salsa de soja premium",unit: "ml",category: "Especia",  costPerUnit:  18, yieldPercent: 1.00 },
-    { slug: "miel-organica",       name: "Miel orgánica",        unit: "g", category: "Especia",  costPerUnit:  35, yieldPercent: 1.00 },
-    { slug: "cacao-puro",          name: "Cacao puro 70%",       unit: "g", category: "Especia",  costPerUnit:  45, yieldPercent: 1.00 },
+    { slug: "aceite-oliva",        name: "Aceite de oliva extra",unit: "ml",category: "Especia",  costPerUnit:  22, yieldPercent: 1.00, jumboReferencePrice:  28 },
+    { slug: "salsa-soja",          name: "Salsa de soja premium",unit: "ml",category: "Especia",  costPerUnit:  18, yieldPercent: 1.00, jumboReferencePrice:  22 },
+    { slug: "miel-organica",       name: "Miel orgánica",        unit: "g", category: "Especia",  costPerUnit:  35, yieldPercent: 1.00, jumboReferencePrice:  42 },
+    { slug: "cacao-puro",          name: "Cacao puro 70%",       unit: "g", category: "Especia",  costPerUnit:  45, yieldPercent: 1.00, jumboReferencePrice:  55 },
+    // Empaque (cajas, bandejas, biodegradables) · NO se compra en Jumbo, sí en proveedores B2B
+    { slug: "caja-kraft-18",       name: "Caja kraft 18 cm",     unit: "u", category: "Empaque",  costPerUnit: 1800, yieldPercent: 1.00 },
+    { slug: "bandeja-biodegradable", name: "Bandeja biodegradable 22 cm", unit: "u", category: "Empaque", costPerUnit: 2200, yieldPercent: 1.00 },
+    { slug: "cubiertos-bambu",     name: "Set cubiertos bambú",  unit: "u", category: "Empaque",  costPerUnit:  950, yieldPercent: 1.00 },
   ];
 
   const ingredientMap = new Map<string, string>();
@@ -282,6 +288,9 @@ async function seedCateringReference() {
           category: ing.category,
           costPerUnit: ing.costPerUnit,
           yieldPercent: ing.yieldPercent,
+          jumboReferencePrice: ing.jumboReferencePrice ?? null,
+          jumboReferenceUrl: ing.jumboReferenceUrl ?? null,
+          ...(ing.jumboReferencePrice != null ? { lastJumboCheck: new Date() } : {}),
           isActive: true,
         },
       });
@@ -294,6 +303,9 @@ async function seedCateringReference() {
           category: ing.category,
           costPerUnit: ing.costPerUnit,
           yieldPercent: ing.yieldPercent,
+          jumboReferencePrice: ing.jumboReferencePrice ?? null,
+          jumboReferenceUrl: ing.jumboReferenceUrl ?? null,
+          lastJumboCheck: ing.jumboReferencePrice != null ? new Date() : null,
           stock: 0,
           minStock: 0,
         },

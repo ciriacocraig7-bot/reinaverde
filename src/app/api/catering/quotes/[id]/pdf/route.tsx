@@ -77,6 +77,7 @@ export async function GET(
       cmpTotal: Number(quote.cmpTotal),
       cmoTotal: Number(quote.cmoTotal),
       cifTotal: Number(quote.cifTotal),
+      packagingTotal: Number(quote.packagingTotal),
       transportTotal: Number(quote.transportTotal),
       costTotal: Number(quote.costTotal),
       marginAmount: Number(quote.marginAmount),

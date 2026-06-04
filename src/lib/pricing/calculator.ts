@@ -124,6 +124,7 @@ export async function calculatePricing(
   const hourlyRate = num(config.laborCostPerHour);
   const benefitFactor = num(config.laborBenefitFactor);
   const cifPercent = num(config.cifPercent);
+  const defaultPackagingPercent = num(config.defaultPackagingMarkupPercent);
   const transportBase = num(config.transportBase);
   const vatRate = num(config.vatRate);
   const simpleRate = num(config.simpleRate);
@@ -171,10 +172,11 @@ export async function calculatePricing(
       : [];
   const extraById = new Map(extraIngredients.map((e) => [e.id, e]));
 
-  // ── 4. CMP + CMO por item ─────────────────────────────────────
+  // ── 4. CMP + CMO + Empaque por item ───────────────────────────
   const itemBreakdowns: ItemBreakdown[] = [];
   let cmpTotal = 0;
   let cmoTotal = 0;
+  let packagingTotal = 0;
 
   for (const inputItem of input.items) {
     const menu = menuById.get(inputItem.menuItemId);
@@ -245,8 +247,20 @@ export async function calculatePricing(
     const cmoSubtotal =
       (laborMinutes / 60) * hourlyRate * benefitFactor * difficultyFactor * qty;
 
+    // Empaque por porción: el valor del MenuItem manda; si es 0, cae al markup
+    // global como % del CMP de esa porción. Permite que el chef declare empaque
+    // específico (caja kraft + cubiertos = $X COP) o se conforme con la regla
+    // global del PricingConfig.
+    const declaredPackaging = num(menu.packagingCostPerPortion);
+    const packagingPerPortion =
+      declaredPackaging > 0
+        ? declaredPackaging
+        : cmpPerPortion * defaultPackagingPercent;
+    const packagingSubtotal = packagingPerPortion * qty;
+
     cmpTotal += cmpSubtotal;
     cmoTotal += cmoSubtotal;
+    packagingTotal += packagingSubtotal;
 
     itemBreakdowns.push({
       menuItemId: menu.id,
@@ -255,6 +269,8 @@ export async function calculatePricing(
       ingredients: lines,
       cmpSubtotal,
       cmoSubtotal,
+      packagingSubtotal,
+      packagingPerPortion,
       laborMinutes,
       difficultyFactor,
     });
@@ -263,7 +279,8 @@ export async function calculatePricing(
   // ── 5. CIF + Transporte ───────────────────────────────────────
   const cifTotal = cmpTotal * cifPercent;
   const transportTotal = transportBase + transportSurcharge;
-  const costTotal = cmpTotal + cmoTotal + cifTotal + transportTotal;
+  const costTotal =
+    cmpTotal + cmoTotal + cifTotal + packagingTotal + transportTotal;
 
   // ── 6. Margen sobre venta: m = margenSobreVenta
   //     subtotal × m = ganancia ⇒ ganancia = costo × m/(1-m)
@@ -357,6 +374,8 @@ export async function calculatePricing(
     cmoTotal: ROUND(cmoTotal),
     cifTotal: ROUND(cifTotal),
     cifPercent,
+    packagingTotal: ROUND(packagingTotal),
+    packagingPercent: defaultPackagingPercent,
     transportTotal: ROUND(transportTotal),
     transportBase: ROUND(transportBase),
     transportSurcharge: ROUND(transportSurcharge),
@@ -408,6 +427,7 @@ export async function calculatePricing(
       laborCostPerHour: hourlyRate,
       laborBenefitFactor: benefitFactor,
       cifPercent,
+      defaultPackagingMarkupPercent: defaultPackagingPercent,
       defaultMarginPercent: safeMargin,
       reteFuenteRate,
       reteIvaRate,
@@ -433,7 +453,12 @@ export async function calculatePricing(
 export async function calculateMenuItemSuggestedPrice(
   menuItemId: string,
   marginOverride?: number,
-): Promise<{ pricePerPerson: number; cmpPerPerson: number; cmoPerPerson: number }> {
+): Promise<{
+  pricePerPerson: number;
+  cmpPerPerson: number;
+  cmoPerPerson: number;
+  packagingPerPerson: number;
+}> {
   const config = await prisma.pricingConfig.findUnique({
     where: { id: "default" },
   });
@@ -448,6 +473,7 @@ export async function calculateMenuItemSuggestedPrice(
   const hourlyRate = num(config.laborCostPerHour);
   const benefitFactor = num(config.laborBenefitFactor);
   const cifPercent = num(config.cifPercent);
+  const packagingDefault = num(config.defaultPackagingMarkupPercent);
   const marginPercent =
     marginOverride ?? num(menu.targetMarginPercent) ?? num(config.defaultMarginPercent);
 
@@ -462,7 +488,9 @@ export async function calculateMenuItemSuggestedPrice(
     benefitFactor *
     num(menu.difficultyFactor);
   const cif = cmp * cifPercent;
-  const cost = cmp + cmo + cif;
+  const declared = num(menu.packagingCostPerPortion);
+  const packaging = declared > 0 ? declared : cmp * packagingDefault;
+  const cost = cmp + cmo + cif + packaging;
   const safeMargin = Math.max(0, Math.min(0.85, marginPercent));
   const price = cost / Math.max(0.01, 1 - safeMargin);
 
@@ -470,5 +498,6 @@ export async function calculateMenuItemSuggestedPrice(
     pricePerPerson: ROUND(price),
     cmpPerPerson: ROUND(cmp),
     cmoPerPerson: ROUND(cmo),
+    packagingPerPerson: ROUND(packaging),
   };
 }

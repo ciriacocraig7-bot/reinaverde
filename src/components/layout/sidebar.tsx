@@ -27,14 +27,18 @@ const ROLE_META: Record<Role, { title: string; section: string; accent: string }
 const NAV_ITEMS: Record<Role, NavItem[]> = {
   ADMIN: [
     { href: "/admin",                label: "Tablero",      code: "TBL" },
+    { href: "/admin/productos",      label: "Productos",    code: "PRD" },
+    { href: "/admin/categorias",     label: "Categorías",   code: "CAT" },
     { href: "/admin/ordenes",        label: "Órdenes",      code: "ORD", comingSoon: true },
     { href: "/admin/eventos",        label: "Eventos",      code: "EVT", comingSoon: true },
-    { href: "/admin/produccion",     label: "Producción",   code: "PRD", comingSoon: true },
+    { href: "/admin/produccion",     label: "Producción",   code: "PRO", comingSoon: true },
     { href: "/admin/logistica",      label: "Logística",    code: "LOG", comingSoon: true },
     { href: "/admin/finanzas",       label: "Finanzas",     code: "FIN" },
     { href: "/admin/pricing",        label: "Precios y tarifas", code: "PRC" },
+    { href: "/admin/precios-jumbo",  label: "Precios Jumbo", code: "JMB" },
     { href: "/chef/recetas",         label: "Recetas",      code: "REC" },
     { href: "/chef/ingredientes",    label: "Ingredientes", code: "ING" },
+    { href: "/chef/compras",         label: "Compras del día", code: "CMP" },
     { href: "/admin/proveedores",    label: "Proveedores",  code: "PRV", comingSoon: true },
     { href: "/admin/feedback",       label: "Feedback",     code: "FBK", comingSoon: true },
     { href: "/admin/usuarios",       label: "Usuarios",     code: "USR", comingSoon: true },
@@ -52,6 +56,7 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
     { href: "/chef",                label: "Cocina",        code: "COC" },
     { href: "/chef/recetas",        label: "Recetas",       code: "REC" },
     { href: "/chef/ingredientes",   label: "Ingredientes",  code: "ING" },
+    { href: "/chef/compras",        label: "Compras del día", code: "CMP" },
     { href: "/chef/produccion",     label: "Producción",    code: "PRD", comingSoon: true },
   ],
   STAFF: [

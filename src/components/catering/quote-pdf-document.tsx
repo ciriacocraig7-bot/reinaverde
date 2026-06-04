@@ -106,6 +106,7 @@ export interface QuotePDFProps {
     cmpTotal: number;
     cmoTotal: number;
     cifTotal: number;
+    packagingTotal: number;
     transportTotal: number;
     costTotal: number;
     marginAmount: number;
@@ -199,6 +200,12 @@ export function QuotePDFDocument(props: QuotePDFProps) {
           <Text style={styles.label}>Costos indirectos (CIF)</Text>
           <Text style={styles.amount}>{COP(b.cifTotal)}</Text>
         </View>
+        {b.packagingTotal > 0 && (
+          <View style={styles.row}>
+            <Text style={styles.label}>Empaque (cajas / bandejas / biodegradables)</Text>
+            <Text style={styles.amount}>{COP(b.packagingTotal)}</Text>
+          </View>
+        )}
         <View style={styles.row}>
           <Text style={styles.label}>Logística y transporte</Text>
           <Text style={styles.amount}>{COP(b.transportTotal)}</Text>

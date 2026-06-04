@@ -53,6 +53,7 @@ export interface RecipeFormInitial {
   laborMinutes?: number;
   difficultyFactor?: number;
   targetMarginPercent?: number;
+  packagingCostPerPortion?: number;
   isVegetarian?: boolean;
   isVegan?: boolean;
   isGlutenFree?: boolean;
@@ -82,6 +83,9 @@ export function RecipeForm({ mode, initial }: Props) {
   );
   const [marginPercent, setMarginPercent] = useState(
     initial?.targetMarginPercent ?? 0.40,
+  );
+  const [packagingCost, setPackagingCost] = useState(
+    initial?.packagingCostPerPortion ?? 0,
   );
   const [isVegetarian, setIsVegetarian] = useState(initial?.isVegetarian ?? false);
   const [isVegan, setIsVegan] = useState(initial?.isVegan ?? false);
@@ -138,18 +142,20 @@ export function RecipeForm({ mode, initial }: Props) {
       config.laborBenefitFactor *
       difficultyFactor;
     const cif = cmp * config.cifPercent;
-    const cost = cmp + cmo + cif;
+    const packaging = packagingCost > 0 ? packagingCost : 0;
+    const cost = cmp + cmo + cif + packaging;
     const safeMargin = Math.max(0, Math.min(0.85, marginPercent));
     const price = cost / Math.max(0.01, 1 - safeMargin);
     return {
       cmp,
       cmo,
       cif,
+      packaging,
       cost,
       price,
       margin: price - cost,
     };
-  }, [ingredientLines, ingMap, config, laborMinutes, difficultyFactor, marginPercent]);
+  }, [ingredientLines, ingMap, config, laborMinutes, difficultyFactor, marginPercent, packagingCost]);
 
   // ─── Handlers ─────────────────────────────────────────────
   const addIngredient = (ingId: string) => {
@@ -188,6 +194,7 @@ export function RecipeForm({ mode, initial }: Props) {
         laborMinutes,
         difficultyFactor,
         targetMarginPercent: marginPercent,
+        packagingCostPerPortion: packagingCost,
         isVegetarian,
         isVegan,
         isGlutenFree,
@@ -402,6 +409,21 @@ export function RecipeForm({ mode, initial }: Props) {
                 className="w-full accent-marigold-deep"
               />
             </Field>
+            <Field label="Empaque por porción (COP)">
+              <input
+                type="number"
+                min={0}
+                step={50}
+                value={packagingCost}
+                onChange={(e) => setPackagingCost(Math.max(0, Number(e.target.value)))}
+                className={INPUT_CLASS}
+                placeholder="Ej. 1800 (caja + cubiertos)"
+              />
+              <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-ink/45 mt-1">
+                Caja, bandeja, cubiertos biodegradables, etiqueta. Si dejas 0
+                se aplica el markup global de PricingConfig.
+              </span>
+            </Field>
           </div>
         </Panel>
 
@@ -437,6 +459,9 @@ export function RecipeForm({ mode, initial }: Props) {
                 <Line label="Materia prima (CMP)" value={liveCost.cmp} />
                 <Line label="Mano de obra (CMO × 1.6 prestacional)" value={liveCost.cmo} />
                 <Line label="Costos indirectos (CIF)" value={liveCost.cif} />
+                {liveCost.packaging > 0 && (
+                  <Line label="Empaque" value={liveCost.packaging} />
+                )}
                 <div className="border-t border-ink/15 mt-3 pt-3">
                   <Line label="Costo total" value={liveCost.cost} bold />
                   <Line

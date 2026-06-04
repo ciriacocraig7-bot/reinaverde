@@ -30,6 +30,7 @@ export default function EditarRecetaPage({
           laborMinutes: r.laborMinutes,
           difficultyFactor: r.difficultyFactor,
           targetMarginPercent: r.targetMarginPercent,
+          packagingCostPerPortion: r.packagingCostPerPortion ?? 0,
           isVegetarian: r.isVegetarian,
           isVegan: r.isVegan,
           isGlutenFree: r.isGlutenFree,

@@ -133,7 +133,7 @@ export default function PharmaCarritoPage() {
   };
 
   const canProceedShipping =
-    !!shipping.name && !!shipping.address && !!shipping.city && !!shipping.phone &&
+    !!shipping.name && !!shipping.address && !!shipping.city &&
     (isAuthenticated || (!!guest.email && !!guest.firstName && !!guest.lastName));
 
   return (
@@ -292,8 +292,8 @@ export default function PharmaCarritoPage() {
                 <div className="grid sm:grid-cols-2 gap-6">
                   <Input id="city" label="Ciudad" value={shipping.city}
                     onChange={(e) => setShipping({ city: e.target.value })} required />
-                  <Input id="phone" label="Teléfono" value={shipping.phone}
-                    onChange={(e) => setShipping({ phone: e.target.value })} required />
+                  <Input id="phone" label="Teléfono (opcional)" value={shipping.phone}
+                    onChange={(e) => setShipping({ phone: e.target.value })} />
                 </div>
                 <Input id="notes" label="Notas (opcional)" value={shipping.notes}
                   onChange={(e) => setShipping({ notes: e.target.value })}

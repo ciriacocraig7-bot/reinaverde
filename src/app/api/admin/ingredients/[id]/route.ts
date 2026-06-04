@@ -20,6 +20,8 @@ const patchSchema = z.object({
   minStock: z.number().min(0).optional(),
   supplierId: z.string().min(1).nullable().optional(),
   isActive: z.boolean().optional(),
+  jumboReferencePrice: z.number().min(0).nullable().optional(),
+  jumboReferenceUrl: z.string().url().max(500).nullable().optional(),
 });
 
 export async function PATCH(
@@ -39,9 +41,14 @@ export async function PATCH(
     );
   }
   try {
+    // Si actualiza el precio Jumbo, marcamos lastJumboCheck = now.
+    const data: Record<string, unknown> = { ...parsed.data };
+    if ("jumboReferencePrice" in parsed.data || "jumboReferenceUrl" in parsed.data) {
+      data.lastJumboCheck = new Date();
+    }
     const upd = await prisma.ingredient.update({
       where: { id },
-      data: parsed.data,
+      data,
     });
     return NextResponse.json({ ingredient: { id: upd.id, name: upd.name } });
   } catch (err) {

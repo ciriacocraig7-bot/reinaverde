@@ -266,6 +266,8 @@ model MenuItem {
   laborMinutes       Int          @default(15)
   difficultyFactor   Decimal      @default(1.0) @db.Decimal(4, 2)
   targetMarginPercent Decimal     @default(0.40) @db.Decimal(4, 3)
+  /// Costo de empaque por porción (caja, bandeja, biodegradables). COP.
+  packagingCostPerPortion Decimal @default(0) @db.Decimal(10, 2)
   // —
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -289,8 +291,15 @@ model Ingredient {
   // — Cost designer fields —
   /// Factor de rendimiento usable (1 - merma). 0.95 = 5% de pérdida.
   yieldPercent Decimal @default(0.95) @db.Decimal(4, 3)
-  /// Categoría usada en el selector del backoffice ("Proteína", "Vegetal", etc.)
+  /// Categoría usada en el selector del backoffice ("Proteína", "Vegetal", "Empaque", etc.)
   category    String?
+  // — Jumbo reference (precio del mismo insumo en supermercado Jumbo) —
+  /// Precio de referencia Jumbo (COP por nuestra unidad). Permite comparar margen.
+  jumboReferencePrice Decimal? @db.Decimal(10, 2)
+  /// Link directo al producto en jumbocolombia.com (opcional).
+  jumboReferenceUrl   String?
+  /// Última vez que se editó el precio Jumbo.
+  lastJumboCheck      DateTime?
   // —
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -728,6 +737,8 @@ model PricingConfig {
   transportPerKm              Decimal    @default(2000)  @db.Decimal(10, 2)
   /// Margen objetivo por defecto sobre venta.
   defaultMarginPercent        Decimal    @default(0.40)  @db.Decimal(4, 3)
+  /// Markup global de empaque sobre CMP cuando la receta no especifica packagingCostPerPortion.
+  defaultPackagingMarkupPercent Decimal  @default(0)     @db.Decimal(4, 3)
   /// Retención en la fuente declarante (servicios = 4%).
   reteFuenteRateDeclarante    Decimal    @default(0.04)  @db.Decimal(5, 4)
   /// Retención en la fuente NO declarante (servicios = 6%).
@@ -809,6 +820,7 @@ model Quote {
   cmpTotal             Decimal      @db.Decimal(12, 2)
   cmoTotal             Decimal      @db.Decimal(12, 2)
   cifTotal             Decimal      @db.Decimal(12, 2)
+  packagingTotal       Decimal      @default(0) @db.Decimal(12, 2)
   transportTotal       Decimal      @db.Decimal(12, 2)
   costTotal            Decimal      @db.Decimal(12, 2)
   marginAmount         Decimal      @db.Decimal(12, 2)

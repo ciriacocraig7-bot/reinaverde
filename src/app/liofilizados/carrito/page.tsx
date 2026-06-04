@@ -136,7 +136,7 @@ export default function LiofilizadosCarritoPage() {
   };
 
   const canProceedShipping =
-    !!shipping.name && !!shipping.address && !!shipping.city && !!shipping.phone &&
+    !!shipping.name && !!shipping.address && !!shipping.city &&
     (isAuthenticated || (!!guest.email && !!guest.firstName && !!guest.lastName));
 
   return (
@@ -324,10 +324,9 @@ export default function LiofilizadosCarritoPage() {
                   />
                   <Input
                     id="phone"
-                    label="Teléfono"
+                    label="Teléfono (opcional)"
                     value={shipping.phone}
                     onChange={(e) => setShipping({ phone: e.target.value })}
-                    required
                   />
                 </div>
                 <Input

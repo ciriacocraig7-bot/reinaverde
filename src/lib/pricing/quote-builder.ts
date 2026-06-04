@@ -68,6 +68,7 @@ export async function buildQuote(opts: BuildQuoteOptions) {
           cmpTotal: breakdown.cmpTotal,
           cmoTotal: breakdown.cmoTotal,
           cifTotal: breakdown.cifTotal,
+          packagingTotal: breakdown.packagingTotal,
           transportTotal: breakdown.transportTotal,
           costTotal: breakdown.costTotal,
           marginAmount: breakdown.marginAmount,

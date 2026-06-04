@@ -65,6 +65,10 @@ export interface ItemBreakdown {
   ingredients: IngredientCostLine[];
   cmpSubtotal: number;
   cmoSubtotal: number;
+  /** Costo de empaque para todas las porciones del plato. */
+  packagingSubtotal: number;
+  /** Empaque por porción (lo declarado en MenuItem o el fallback global). */
+  packagingPerPortion: number;
   laborMinutes: number;
   difficultyFactor: number;
 }
@@ -98,6 +102,8 @@ export interface PricingBreakdown {
   cmoTotal: number;
   cifTotal: number;
   cifPercent: number;
+  packagingTotal: number;
+  packagingPercent: number;
   transportTotal: number;
   transportBase: number;
   transportSurcharge: number;
@@ -141,6 +147,7 @@ export interface PricingBreakdown {
     laborCostPerHour: number;
     laborBenefitFactor: number;
     cifPercent: number;
+    defaultPackagingMarkupPercent: number;
     defaultMarginPercent: number;
     reteFuenteRate: number;
     reteIvaRate: number;

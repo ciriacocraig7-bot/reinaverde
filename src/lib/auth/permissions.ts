@@ -21,6 +21,10 @@ export type Permission =
   | "users:write"
   | "feedback:read"
   | "feedback:write"
+  | "products:read"
+  | "products:write"
+  | "categories:write"
+  | "shopping:read"
   | "dashboard:admin"
   | "dashboard:finance"
   | "dashboard:production"
@@ -39,6 +43,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "suppliers:read", "suppliers:write",
     "users:read", "users:write",
     "feedback:read", "feedback:write",
+    "products:read", "products:write", "categories:write",
+    "shopping:read",
     "dashboard:admin", "dashboard:finance", "dashboard:production", "dashboard:logistics",
     "settings:read", "settings:write",
   ],
@@ -49,10 +55,12 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "feedback:read", "feedback:write",
   ],
   CHEF: [
-    "menu:read",
+    "menu:read", "menu:write",
     "orders:read",
     "production:read", "production:write",
     "suppliers:read",
+    "products:read",
+    "shopping:read",
     "dashboard:production",
   ],
   STAFF: [

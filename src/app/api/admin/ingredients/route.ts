@@ -51,6 +51,10 @@ export async function GET(request: NextRequest) {
       stock: Number(i.stock),
       minStock: Number(i.minStock),
       supplierId: i.supplierId,
+      jumboReferencePrice:
+        i.jumboReferencePrice != null ? Number(i.jumboReferencePrice) : null,
+      jumboReferenceUrl: i.jumboReferenceUrl,
+      lastJumboCheck: i.lastJumboCheck ? i.lastJumboCheck.toISOString() : null,
     })),
   });
 }

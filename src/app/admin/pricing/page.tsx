@@ -21,6 +21,7 @@ interface PricingConfig {
   transportBase: number;
   transportPerKm: number;
   defaultMarginPercent: number;
+  defaultPackagingMarkupPercent: number;
   reteFuenteRateDeclarante: number;
   reteFuenteRateNoDeclarante: number;
   reteIvaRate: number;
@@ -249,6 +250,13 @@ export default function AdminPricingPage() {
               label="Margen por defecto"
               value={config.defaultMarginPercent}
               onChange={(v) => setConfig({ ...config, defaultMarginPercent: v })}
+            />
+            <PercentField
+              label="Empaque por defecto (% sobre CMP)"
+              value={config.defaultPackagingMarkupPercent}
+              onChange={(v) =>
+                setConfig({ ...config, defaultPackagingMarkupPercent: v })
+              }
             />
             <NumberField
               label="Transporte base (COP)"
