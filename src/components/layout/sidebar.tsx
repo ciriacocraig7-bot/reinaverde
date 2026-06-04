@@ -29,7 +29,7 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
     { href: "/admin",                label: "Tablero",      code: "TBL" },
     { href: "/admin/productos",      label: "Productos",    code: "PRD" },
     { href: "/admin/categorias",     label: "Categorías",   code: "CAT" },
-    { href: "/admin/ordenes",        label: "Órdenes",      code: "ORD", comingSoon: true },
+    { href: "/admin/ordenes",        label: "Órdenes",      code: "ORD" },
     { href: "/admin/eventos",        label: "Eventos",      code: "EVT", comingSoon: true },
     { href: "/admin/produccion",     label: "Producción",   code: "PRO", comingSoon: true },
     { href: "/admin/logistica",      label: "Logística",    code: "LOG", comingSoon: true },

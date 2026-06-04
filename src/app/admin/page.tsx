@@ -391,9 +391,15 @@ export default function AdminDashboard() {
                 const status = STATUS_MAP[r.status] || { label: r.status, tone: "muted" as const };
                 const line = LINE_TAG[r.line];
                 return (
-                  <tr key={r.id} className="hover:bg-cream-warm transition-colors">
+                  <tr
+                    key={r.id}
+                    className="hover:bg-cream-warm transition-colors cursor-pointer"
+                    onClick={() => router.push(`/admin/pedidos/${r.id}`)}
+                  >
                     <td className="px-6 py-4 font-mono text-[12px] text-ink tabular">
-                      {r.reference}
+                      <span className="underline underline-offset-4 decoration-ink/30 hover:decoration-ink">
+                        {r.reference}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">

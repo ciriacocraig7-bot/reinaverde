@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
       status: o.status,
       total: Number(o.total),
       date: o.deliveryDate.toISOString(),
-      href: null, // futuro: /cliente/pedidos/[id]
+      href: `/cliente/pedidos/${o.id}`,
       businessLine: "CATERING",
     });
   }
@@ -108,10 +108,7 @@ export async function GET(request: NextRequest) {
       status: s.status,
       total: Number(s.total),
       date: s.createdAt.toISOString(),
-      href:
-        s.businessLine === "PHARMA"
-          ? `/pharma/confirmacion?order=${s.id}`
-          : `/liofilizados/confirmacion?order=${s.id}`,
+      href: `/cliente/pedidos/${s.id}`,
       businessLine: s.businessLine,
     });
   }
@@ -131,7 +128,7 @@ export async function GET(request: NextRequest) {
       status: q.status,
       total: Number(q.total),
       date: q.eventDate.toISOString(),
-      href: `/catering/cotizar/confirmacion?quote=${q.id}`,
+      href: `/cliente/pedidos/${q.id}`,
       businessLine: "CATERING",
     });
   }
