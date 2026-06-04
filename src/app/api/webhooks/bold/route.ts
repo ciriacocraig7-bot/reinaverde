@@ -3,7 +3,12 @@ import { prisma } from "@/lib/db/prisma";
 import { mapBoldWebhookStatus } from "@/lib/bold/button";
 import { verifyBoldSignature } from "@/lib/bold/webhook";
 import { activateGuestUserAfterPayment } from "@/lib/auth/guest";
-import { sendGuestActivationEmail, sendOrderPaidEmail } from "@/lib/email/templates";
+import {
+  sendGuestActivationEmail,
+  sendOrderPaidEmail,
+  sendCateringQuotePaidEmail,
+  sendShopOrderPaidEmail,
+} from "@/lib/email/templates";
 
 // Bold puede tardar; cubrimos cold-start + Supabase wake.
 export const maxDuration = 15;
@@ -139,6 +144,18 @@ export async function POST(request: NextRequest) {
       let userIdForEmail: string | null = null;
       let orderNumberForEmail: string | null = null;
       let totalForEmail = 0;
+      // Metadata adicional para elegir la plantilla editorial correcta.
+      let shopOrderIdForEmail: string | null = null;
+      let shopBusinessLine: "PHARMA" | "LIOFILIZADOS" | "CATERING" | null = null;
+      let cateringOrderIdForEmail: string | null = null;
+      let quoteForEmail: {
+        id: string;
+        quoteNumber: string;
+        total: number;
+        eventDate: Date;
+        eventCity: string;
+        guestCount: number;
+      } | null = null;
 
       if (target === "shop") {
         const updated = await prisma.shopOrder.update({
@@ -149,11 +166,19 @@ export async function POST(request: NextRequest) {
             paymentMethod: method,
             paidAt: new Date(),
           },
-          select: { userId: true, orderNumber: true, total: true },
+          select: {
+            id: true,
+            userId: true,
+            orderNumber: true,
+            total: true,
+            businessLine: true,
+          },
         });
         userIdForEmail = updated.userId;
         orderNumberForEmail = updated.orderNumber;
         totalForEmail = Number(updated.total);
+        shopOrderIdForEmail = updated.id;
+        shopBusinessLine = updated.businessLine;
       } else {
         const [, ord] = await prisma.$transaction([
           prisma.payment.update({
@@ -168,19 +193,42 @@ export async function POST(request: NextRequest) {
           prisma.order.update({
             where: { id: cateringPayment!.orderId },
             data: { status: "PAID" },
-            select: { userId: true, orderNumber: true, total: true, quoteId: true },
+            select: {
+              id: true,
+              userId: true,
+              orderNumber: true,
+              total: true,
+              quoteId: true,
+            },
           }),
         ]);
         userIdForEmail = ord.userId;
         orderNumberForEmail = ord.orderNumber;
         totalForEmail = Number(ord.total);
+        cateringOrderIdForEmail = ord.id;
 
         // Si la Order nació de una Quote (Diseñador de Producto), marcarla PAID.
         if (ord.quoteId) {
-          await prisma.quote.update({
+          const updatedQuote = await prisma.quote.update({
             where: { id: ord.quoteId },
             data: { status: "PAID" },
+            select: {
+              id: true,
+              quoteNumber: true,
+              total: true,
+              eventDate: true,
+              eventCity: true,
+              guestCount: true,
+            },
           });
+          quoteForEmail = {
+            id: updatedQuote.id,
+            quoteNumber: updatedQuote.quoteNumber,
+            total: Number(updatedQuote.total),
+            eventDate: updatedQuote.eventDate,
+            eventCity: updatedQuote.eventCity,
+            guestCount: updatedQuote.guestCount,
+          };
           log("bold.webhook.quote-paid", {
             quoteId: ord.quoteId,
             orderId: cateringPayment!.orderId,
@@ -189,12 +237,13 @@ export async function POST(request: NextRequest) {
       }
 
       // ─── Activación de guest + email transaccional ───────────
-      // Si el user que pagó era guest (sin contraseña), lo activamos y le
-      // mandamos el email con link para set password. Si no, solo mandamos
-      // confirmación del pago.
+      // Si el user que pagó era guest (sin contraseña), lo activamos primero
+      // y mandamos el email con link de activación. Después o en su lugar,
+      // mandamos el email editorial específico según el tipo de orden.
       if (userIdForEmail) {
         try {
           const activation = await activateGuestUserAfterPayment(userIdForEmail);
+          // 1. Email de activación (solo si el usuario es guest nuevo)
           if (activation) {
             await sendGuestActivationEmail({
               email: activation.email,
@@ -207,13 +256,37 @@ export async function POST(request: NextRequest) {
               email: activation.email,
               orderNumber: orderNumberForEmail,
             });
-          } else {
-            // User ya tenía cuenta — solo confirmación.
-            const u = await prisma.user.findUnique({
-              where: { id: userIdForEmail },
-              select: { email: true, firstName: true },
-            });
-            if (u) {
+          }
+          // 2. Email editorial específico de la línea
+          const u = await prisma.user.findUnique({
+            where: { id: userIdForEmail },
+            select: { email: true, firstName: true },
+          });
+          if (u) {
+            if (quoteForEmail) {
+              // Catering · Cotización del diseñador
+              await sendCateringQuotePaidEmail({
+                email: u.email,
+                firstName: u.firstName,
+                quoteNumber: quoteForEmail.quoteNumber,
+                quoteId: quoteForEmail.id,
+                total: quoteForEmail.total,
+                eventDate: quoteForEmail.eventDate,
+                eventCity: quoteForEmail.eventCity,
+                guestCount: quoteForEmail.guestCount,
+              });
+            } else if (target === "shop" && shopOrderIdForEmail && shopBusinessLine) {
+              // Pharma / Liofilizados
+              await sendShopOrderPaidEmail({
+                email: u.email,
+                firstName: u.firstName,
+                orderNumber: orderNumberForEmail ?? "",
+                orderId: shopOrderIdForEmail,
+                total: totalForEmail,
+                businessLine: shopBusinessLine,
+              });
+            } else {
+              // Catering orden vieja sin Quote — usar plantilla genérica.
               await sendOrderPaidEmail({
                 email: u.email,
                 firstName: u.firstName,
@@ -221,6 +294,15 @@ export async function POST(request: NextRequest) {
                 total: totalForEmail,
               });
             }
+            log("bold.webhook.editorial-email-sent", {
+              userId: userIdForEmail,
+              email: u.email,
+              kind: quoteForEmail
+                ? "catering-quote"
+                : target === "shop"
+                  ? `shop-${shopBusinessLine}`
+                  : "catering-generic",
+            });
           }
         } catch (emailErr) {
           // No bloqueamos el webhook si el email falla — el pedido está
