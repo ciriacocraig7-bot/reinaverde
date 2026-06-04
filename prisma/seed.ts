@@ -167,12 +167,24 @@ async function seedCateringReference() {
   console.log("🍴 Seeding catering reference data...");
 
   // ── PricingConfig (upsert singleton) ──────────────────────────
+  // Reina Verde NO es responsable del IVA: régimen SIMPLE con tarifas en 0.
+  // El motor de pricing sigue siendo válido por si en el futuro la empresa
+  // cambia de régimen — solo cambiamos los DEFAULTS sembrados.
   await prisma.pricingConfig.upsert({
     where: { id: "default" },
-    create: { id: "default" }, // defaults definidos en schema
-    update: {}, // no pisar overrides manuales del admin
+    create: {
+      id: "default",
+      taxRegime: "SIMPLE",
+      vatRate: 0,
+      simpleRate: 0,
+    },
+    update: {
+      taxRegime: "SIMPLE",
+      vatRate: 0,
+      simpleRate: 0,
+    },
   });
-  console.log("  ✓ PricingConfig 'default' OK");
+  console.log("  ✓ PricingConfig 'default' OK (sin IVA, régimen SIMPLE)");
 
   // ── CityTaxRate (6 ciudades del pitch) ────────────────────────
   const cities = [

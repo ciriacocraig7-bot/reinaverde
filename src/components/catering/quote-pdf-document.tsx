@@ -129,6 +129,10 @@ export interface QuotePDFProps {
 export function QuotePDFDocument(props: QuotePDFProps) {
   const { breakdown: b } = props;
   const isCommon = b.regime === "COMMON";
+  const hasAnyTax =
+    b.vatAmount > 0 || b.icaAmount > 0 || b.simpleAmount > 0;
+  const hasAnyRetention =
+    b.reteFuenteAmount > 0 || b.reteIvaAmount > 0 || b.reteIcaAmount > 0;
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -235,23 +239,43 @@ export function QuotePDFDocument(props: QuotePDFProps) {
         </View>
 
         {/* Impuestos */}
-        <Text style={styles.h2}>§ 05 · Impuestos · Régimen {isCommon ? "Común" : "Simple (RST)"}</Text>
-        {isCommon ? (
+        {hasAnyTax ? (
           <>
-            <View style={styles.row}>
-              <Text style={styles.label}>IVA 19%</Text>
-              <Text style={styles.amount}>{COP(b.vatAmount)}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>ICA municipal</Text>
-              <Text style={styles.amount}>{COP(b.icaAmount)}</Text>
-            </View>
+            <Text style={styles.h2}>
+              § 05 · Impuestos · Régimen {isCommon ? "Común" : "Simple (RST)"}
+            </Text>
+            {isCommon ? (
+              <>
+                {b.vatAmount > 0 && (
+                  <View style={styles.row}>
+                    <Text style={styles.label}>IVA 19%</Text>
+                    <Text style={styles.amount}>{COP(b.vatAmount)}</Text>
+                  </View>
+                )}
+                {b.icaAmount > 0 && (
+                  <View style={styles.row}>
+                    <Text style={styles.label}>ICA municipal</Text>
+                    <Text style={styles.amount}>{COP(b.icaAmount)}</Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              b.simpleAmount > 0 && (
+                <View style={styles.row}>
+                  <Text style={styles.label}>Tarifa única RST</Text>
+                  <Text style={styles.amount}>{COP(b.simpleAmount)}</Text>
+                </View>
+              )
+            )}
           </>
         ) : (
-          <View style={styles.row}>
-            <Text style={styles.label}>Tarifa única RST (≈5.4%)</Text>
-            <Text style={styles.amount}>{COP(b.simpleAmount)}</Text>
-          </View>
+          <>
+            <Text style={styles.h2}>§ 05 · Régimen tributario</Text>
+            <Text style={{ ...styles.label, lineHeight: 1.5 }}>
+              Reina Verde no es responsable de IVA. La factura no discrimina
+              impuestos y por lo tanto no hay retenciones aplicables.
+            </Text>
+          </>
         )}
 
         <View style={styles.totalBox}>
@@ -259,35 +283,41 @@ export function QuotePDFDocument(props: QuotePDFProps) {
           <Text style={styles.totalValue}>{COP(b.total)}</Text>
         </View>
 
-        {/* Retenciones */}
-        <Text style={styles.h2}>§ 06 · Retenciones estimadas</Text>
-        <Text style={styles.small}>
-          Si tu empresa es agente retenedor declarante, podrá practicar las
-          siguientes retenciones al momento del pago. Verificar con tu contador
-          la aplicabilidad según tu condición tributaria.
-        </Text>
-        {isCommon && (
+        {/* Retenciones — solo si hay impuestos retenibles */}
+        {hasAnyRetention && (
           <>
+            <Text style={styles.h2}>§ 06 · Retenciones estimadas</Text>
+            <Text style={styles.small}>
+              Si tu empresa es agente retenedor declarante, podrá practicar las
+              siguientes retenciones al momento del pago. Verificar con tu contador
+              la aplicabilidad según tu condición tributaria.
+            </Text>
+            {isCommon && b.reteFuenteAmount > 0 && (
+              <View style={styles.row}>
+                <Text style={styles.label}>ReteFuente servicios (4%)</Text>
+                <Text style={styles.amount}>− {COP(b.reteFuenteAmount)}</Text>
+              </View>
+            )}
+            {isCommon && b.reteIvaAmount > 0 && (
+              <View style={styles.row}>
+                <Text style={styles.label}>ReteIVA (15% del IVA)</Text>
+                <Text style={styles.amount}>− {COP(b.reteIvaAmount)}</Text>
+              </View>
+            )}
+            {b.reteIcaAmount > 0 && (
+              <View style={styles.row}>
+                <Text style={styles.label}>ReteICA municipal</Text>
+                <Text style={styles.amount}>− {COP(b.reteIcaAmount)}</Text>
+              </View>
+            )}
             <View style={styles.row}>
-              <Text style={styles.label}>ReteFuente servicios (4%)</Text>
-              <Text style={styles.amount}>− {COP(b.reteFuenteAmount)}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>ReteIVA (15% del IVA)</Text>
-              <Text style={styles.amount}>− {COP(b.reteIvaAmount)}</Text>
+              <Text style={[styles.label, { fontFamily: "Helvetica-Bold" }]}>
+                Neto a transferir a Reina Verde
+              </Text>
+              <Text style={styles.amount}>{COP(b.netReceivable)}</Text>
             </View>
           </>
         )}
-        <View style={styles.row}>
-          <Text style={styles.label}>ReteICA municipal</Text>
-          <Text style={styles.amount}>− {COP(b.reteIcaAmount)}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={[styles.label, { fontFamily: "Helvetica-Bold" }]}>
-            Neto a transferir a Reina Verde
-          </Text>
-          <Text style={styles.amount}>{COP(b.netReceivable)}</Text>
-        </View>
 
         <Text style={{ ...styles.small, marginTop: 20 }}>
           Pago 100% adelantado vía Bold. Esta cotización es válida hasta {props.expiresAt}.

@@ -17,16 +17,24 @@ interface Props {
 export function CostBreakdownPanel({ breakdown: b, expanded }: Props) {
   const [showRetentions, setShowRetentions] = useState(expanded ?? false);
   const isCommon = b.regime === "COMMON";
+  const hasAnyTax =
+    b.vat.amount > 0 ||
+    b.ica.amount > 0 ||
+    b.simple.amount > 0 ||
+    b.inc.amount > 0;
+  const headerSubtitle = !hasAnyTax
+    ? `${b.city} · Reina Verde no responsable de IVA`
+    : `${b.city} · Régimen ${isCommon ? "común" : "simple"}`;
 
   return (
     <div className="border border-ink/15 bg-cream">
       {/* Header */}
       <div className="p-6 border-b border-ink/15">
         <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-marigold-deep mb-2">
-          § Desglose tributario
+          § Desglose
         </p>
         <h3 className="font-display text-2xl text-ink leading-tight">
-          {b.city} · Régimen {isCommon ? "común" : "simple"}
+          {headerSubtitle}
         </h3>
       </div>
 
@@ -69,17 +77,39 @@ export function CostBreakdownPanel({ breakdown: b, expanded }: Props) {
         </div>
       )}
 
-      {/* Impuestos */}
-      <div className="px-6 py-4 space-y-1 border-b border-ink/15">
-        {isCommon ? (
-          <>
-            <Line label="IVA 19%" value={b.vat.amount} />
-            <Line label={`ICA municipal (${(b.ica.rate * 1000).toFixed(2)}/1000)`} value={b.ica.amount} />
-          </>
-        ) : (
-          <Line label="Tarifa única RST (5.4%)" value={b.simple.amount} />
-        )}
-      </div>
+      {/* Impuestos — sólo si hay alguno aplicado */}
+      {hasAnyTax ? (
+        <div className="px-6 py-4 space-y-1 border-b border-ink/15">
+          {isCommon ? (
+            <>
+              {b.vat.amount > 0 && <Line label="IVA 19%" value={b.vat.amount} />}
+              {b.ica.amount > 0 && (
+                <Line
+                  label={`ICA municipal (${(b.ica.rate * 1000).toFixed(2)}/1000)`}
+                  value={b.ica.amount}
+                />
+              )}
+            </>
+          ) : (
+            b.simple.amount > 0 && (
+              <Line
+                label={`Tarifa única RST (${(b.simple.rate * 100).toFixed(1)}%)`}
+                value={b.simple.amount}
+              />
+            )
+          )}
+        </div>
+      ) : (
+        <div className="px-6 py-4 border-b border-ink/15">
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55">
+            Sin impuestos al consumidor
+          </p>
+          <p className="font-serif italic text-[13px] text-ink/65 leading-snug mt-1">
+            Reina Verde no es responsable de IVA. El total que cobra es el
+            costo + margen, sin discriminar impuestos en la factura.
+          </p>
+        </div>
+      )}
 
       {/* Total */}
       <div className="px-6 py-5 bg-ink text-cream">
@@ -91,20 +121,22 @@ export function CostBreakdownPanel({ breakdown: b, expanded }: Props) {
         </p>
       </div>
 
-      {/* Retenciones accordion */}
-      <button
-        onClick={() => setShowRetentions(!showRetentions)}
-        className="w-full px-6 py-4 flex items-center justify-between border-t border-ink/15 hover:bg-cream-warm transition-colors"
-      >
-        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink/65 text-left">
-          ¿Tu empresa es agente retenedor?
-        </span>
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-marigold-deep">
-          {showRetentions ? "▴ Ocultar" : "▾ Ver retenciones"}
-        </span>
-      </button>
+      {/* Retenciones accordion — solo si hay algo retenible */}
+      {hasAnyTax && b.retentions.total > 0 && (
+        <button
+          onClick={() => setShowRetentions(!showRetentions)}
+          className="w-full px-6 py-4 flex items-center justify-between border-t border-ink/15 hover:bg-cream-warm transition-colors"
+        >
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink/65 text-left">
+            ¿Tu empresa es agente retenedor?
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-marigold-deep">
+            {showRetentions ? "▴ Ocultar" : "▾ Ver retenciones"}
+          </span>
+        </button>
+      )}
 
-      {showRetentions && (
+      {showRetentions && hasAnyTax && b.retentions.total > 0 && (
         <div className="px-6 py-4 space-y-1 border-t border-ink/15 bg-cream-warm">
           <p className="font-serif italic text-[13px] leading-snug text-ink/70 mb-3">
             Si tu empresa practica retenciones al momento del pago, este es

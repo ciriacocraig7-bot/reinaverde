@@ -143,6 +143,33 @@ export default function LiofilizadosCarritoPage() {
     <>
       <SiteHeader line="liofilizados" />
 
+      {/* Escape strip — siempre visible */}
+      <div className="bg-cream-warm/60 border-b border-ink/10 sticky top-[64px] sm:top-[68px] z-30 backdrop-blur-sm">
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-10 py-2 flex items-baseline justify-between gap-4 flex-wrap text-[12px] sm:text-[13px]">
+          <div className="flex items-baseline gap-4">
+            <Link href="/" className="font-mono uppercase tracking-[0.22em] text-ink/65 hover:text-ink transition-colors">
+              ← Inicio
+            </Link>
+            <span className="text-ink/25">·</span>
+            <Link href="/liofilizados" className="font-mono uppercase tracking-[0.22em] text-ink/65 hover:text-ink transition-colors">
+              Liofilizados
+            </Link>
+            <span className="text-ink/25">·</span>
+            <Link href="/liofilizados/catalogo" className="font-mono uppercase tracking-[0.22em] text-ink/65 hover:text-ink transition-colors">
+              Catálogo
+            </Link>
+            <span className="text-ink/25">·</span>
+            <span className="font-mono uppercase tracking-[0.22em] text-persimmon">Checkout</span>
+          </div>
+          <Link
+            href="/liofilizados/catalogo"
+            className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55 hover:text-ink transition-colors"
+          >
+            Seguir comprando
+          </Link>
+        </div>
+      </div>
+
       <section className="max-w-[1400px] mx-auto px-6 sm:px-10 pt-12">
         {/* Header row */}
         <div className="grid grid-cols-12 gap-x-6 mb-10">

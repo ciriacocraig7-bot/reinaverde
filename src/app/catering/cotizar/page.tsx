@@ -241,6 +241,45 @@ export default function CotizarPage() {
     <>
       <SiteHeader line="catering" />
 
+      {/* ════════════════ ESCAPE STRIP — siempre visible ════════════════ */}
+      <div className="bg-cream-warm/60 border-b border-ink/10 sticky top-[64px] sm:top-[68px] z-30 backdrop-blur-sm">
+        <div className="max-w-[1500px] mx-auto px-6 sm:px-10 py-2 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-baseline gap-4 text-[12px] sm:text-[13px]">
+            <Link
+              href="/"
+              className="font-mono uppercase tracking-[0.22em] text-ink/65 hover:text-ink transition-colors"
+            >
+              ← Inicio
+            </Link>
+            <span className="text-ink/25">·</span>
+            <Link
+              href="/catering"
+              className="font-mono uppercase tracking-[0.22em] text-ink/65 hover:text-ink transition-colors"
+            >
+              Catering
+            </Link>
+            <span className="text-ink/25">·</span>
+            <span className="font-mono uppercase tracking-[0.22em] text-marigold-deep">
+              Cotizar
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              if (
+                confirm(
+                  "¿Salir del cotizador y volver al inicio? Su progreso se guarda automáticamente y puede continuar después.",
+                )
+              ) {
+                window.location.href = "/";
+              }
+            }}
+            className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55 hover:text-persimmon transition-colors"
+          >
+            Salir del cotizador
+          </button>
+        </div>
+      </div>
+
       {/* ════════════════ HERO EDITORIAL ════════════════ */}
       <section className="max-w-[1500px] mx-auto px-6 sm:px-10 pt-12 sm:pt-16 pb-10">
         <div className="grid grid-cols-12 gap-x-6 items-end">
@@ -895,9 +934,11 @@ function ChapterCuenta({
           amount={breakdown.total}
           label="Total a pagar"
           caption={
-            breakdown.regime === "COMMON"
+            breakdown.regime === "COMMON" && breakdown.vat.amount > 0
               ? `Incluye IVA 19 % y ICA municipal de ${breakdown.city}.`
-              : `Tarifa única de Régimen Simple aplicada.`
+              : breakdown.simple.amount > 0
+                ? `Tarifa única de Régimen Simple aplicada.`
+                : `Reina Verde no es responsable de IVA. El total incluye costo, mano de obra prestacional, empaque y logística — sin impuestos al consumidor.`
           }
         />
       ) : (
@@ -959,46 +1000,64 @@ function ChapterCuenta({
             )}
           </ul>
 
-          {/* Retenciones */}
-          <div className="bg-cream-warm border border-ink/15 p-6">
-            <p className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-marigold-deep mb-3">
-              § Retenciones estimadas
-            </p>
-            <p className="font-serif italic text-base text-ink/70 leading-snug max-w-2xl">
-              Si su empresa es agente retenedor, descuenta estos valores al
-              pagar la factura. Reina Verde recibe el neto.
-            </p>
-            <ul className="mt-4 grid sm:grid-cols-2 gap-x-8 gap-y-2">
-              {breakdown.regime === "COMMON" && (
-                <>
+          {/* Retenciones — solo si hay impuestos retenibles */}
+          {breakdown.retentions.total > 0 && (
+            <div className="bg-cream-warm border border-ink/15 p-6">
+              <p className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-marigold-deep mb-3">
+                § Retenciones estimadas
+              </p>
+              <p className="font-serif italic text-base text-ink/70 leading-snug max-w-2xl">
+                Si su empresa es agente retenedor, descuenta estos valores al
+                pagar la factura. Reina Verde recibe el neto.
+              </p>
+              <ul className="mt-4 grid sm:grid-cols-2 gap-x-8 gap-y-2">
+                {breakdown.regime === "COMMON" && breakdown.retentions.reteFuente.amount > 0 && (
                   <li className="flex justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-ink/65">
                     ReteFuente
                     <span className="font-display tabular text-ink not-italic">
                       − {formatCurrency(breakdown.retentions.reteFuente.amount)}
                     </span>
                   </li>
+                )}
+                {breakdown.regime === "COMMON" && breakdown.retentions.reteIva.amount > 0 && (
                   <li className="flex justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-ink/65">
                     ReteIVA
                     <span className="font-display tabular text-ink not-italic">
                       − {formatCurrency(breakdown.retentions.reteIva.amount)}
                     </span>
                   </li>
-                </>
-              )}
-              <li className="flex justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-ink/65">
-                ReteICA
-                <span className="font-display tabular text-ink not-italic">
-                  − {formatCurrency(breakdown.retentions.reteIca.amount)}
-                </span>
-              </li>
-              <li className="flex justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-ink font-semibold border-t border-ink/15 pt-2 mt-2 sm:col-span-2">
-                Neto a girar a Reina Verde
-                <span className="font-display tabular text-ink not-italic">
-                  {formatCurrency(breakdown.netReceivable)}
-                </span>
-              </li>
-            </ul>
-          </div>
+                )}
+                {breakdown.retentions.reteIca.amount > 0 && (
+                  <li className="flex justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-ink/65">
+                    ReteICA
+                    <span className="font-display tabular text-ink not-italic">
+                      − {formatCurrency(breakdown.retentions.reteIca.amount)}
+                    </span>
+                  </li>
+                )}
+                <li className="flex justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-ink font-semibold border-t border-ink/15 pt-2 mt-2 sm:col-span-2">
+                  Neto a girar a Reina Verde
+                  <span className="font-display tabular text-ink not-italic">
+                    {formatCurrency(breakdown.netReceivable)}
+                  </span>
+                </li>
+              </ul>
+            </div>
+          )}
+
+          {/* Caso "no responsable de IVA" — banda explicativa */}
+          {breakdown.retentions.total === 0 && (
+            <div className="bg-cream-warm border border-ink/15 p-6">
+              <p className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-marigold-deep mb-2">
+                § Sin retenciones
+              </p>
+              <p className="font-serif italic text-base text-ink/70 leading-snug max-w-2xl">
+                Reina Verde no es responsable de IVA. La factura no incluye
+                impuestos discriminados, por lo tanto no aplican retenciones.
+                El total que ve es el total que Reina Verde recibe.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
