@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { consume, ipFromRequest, type RateLimitConfig } from "@/lib/rate-limit";
 
-const PUBLIC_PATHS = ["/", "/menu", "/eventos", "/nosotros", "/login", "/registro", "/recuperar", "/restablecer", "/api/auth"];
+const PUBLIC_PATHS = ["/", "/menu", "/eventos", "/nosotros", "/login", "/registro", "/recuperar", "/restablecer", "/feedback", "/api/auth"];
 const DASHBOARD_PREFIXES = ["/admin", "/cliente", "/chef", "/staff", "/proveedor", "/finanzas"];
 
 // ─── Rate limits ─────────────────────────────────────────────────
@@ -66,6 +66,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/api/catering/pay/") ||
     pathname.startsWith("/api/catering/pricing-preview") ||
     pathname.startsWith("/api/catering/quotes") || // GET + POST + pay-bold + pdf
+    pathname.startsWith("/api/feedback") || // GET público + POST feedback
     pathname.startsWith("/api/menu") ||
     pathname.startsWith("/api/products") ||
     pathname.startsWith("/api/product-categories");

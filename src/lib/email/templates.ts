@@ -309,3 +309,54 @@ export async function sendShopOrderPaidEmail(args: ShopOrderEmailArgs) {
 
   return sendEmail({ to: args.email, subject, text, html });
 }
+
+// ════════════════════════════════════════════════════════════════
+// Feedback request · 48h post-DELIVERED
+// ════════════════════════════════════════════════════════════════
+
+export async function sendFeedbackRequestEmail(args: {
+  email: string;
+  firstName: string;
+  orderNumber: string;
+  orderId: string;
+  eventCity?: string;
+}) {
+  const feedbackUrl = `${BASE_URL}/feedback/${args.orderId}`;
+  const subject = `¿Cómo fue el evento? · Pedido ${args.orderNumber}`;
+
+  const text =
+    `Hola ${args.firstName},\n\n` +
+    `Han pasado 48 horas desde su evento${args.eventCity ? ` en ${args.eventCity}` : ""}.\n\n` +
+    `¿Cómo estuvo? Tres calificaciones rápidas y un comentario libre.\n` +
+    `Toma menos de un minuto:\n\n` +
+    `${feedbackUrl}\n\n` +
+    `Su opinión moldea los próximos eventos.\n\n` +
+    `— Equipo Reina Verde\n`;
+
+  const html = buildEditorialEmail({
+    accent: "marigold",
+    preheader: "¿Cómo fue el evento?",
+    hiddenPreview: `Queremos saber cómo fue · ${args.orderNumber}`,
+    headline: `${args.firstName}, queremos saber cómo fue`,
+    kicker: `Han pasado 48 horas desde su evento${args.eventCity ? ` en ${args.eventCity}` : ""}. Tres calificaciones rápidas y un comentario libre — toma menos de un minuto.`,
+    sections: [
+      {
+        eyebrow: "Feedback",
+        title: "Califique su experiencia",
+        body: [
+          "Comida: sabor, frescura, presentación del plato.",
+          "Servicio: puntualidad, montaje, atención del staff.",
+          "Experiencia general: ¿cómo lo resume en una nota?",
+        ],
+        cta: { label: "Dejar feedback", href: feedbackUrl },
+      },
+      {
+        body: "Su opinión es privada a menos que usted decida hacerla pública. Solo se mostrará su nombre de pila e inicial del apellido — sin email, sin empresa, sin datos personales.",
+      },
+    ],
+    footerSignature: "— Equipo Reina Verde",
+    footerNote: "Cada feedback recibido mejora el próximo evento. Esto no es marketing — es iteración.",
+  });
+
+  return sendEmail({ to: args.email, subject, text, html });
+}

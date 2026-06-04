@@ -11,6 +11,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { requireRoles } from "@/lib/auth/require-role";
 import { OrderStatus, ShopOrderStatus } from "@/generated/prisma/enums";
+import { sendFeedbackRequestEmail } from "@/lib/email/templates";
+import { notifyChefOrderDelivered } from "@/lib/whatsapp/send";
 
 export const maxDuration = 15;
 
@@ -46,9 +48,44 @@ export async function PATCH(
           status: status as typeof OrderStatus[keyof typeof OrderStatus],
           ...(notes ? { notes } : {}),
         },
-        select: { id: true, orderNumber: true, status: true },
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          userId: true,
+          deliveryCity: true,
+        },
       });
-      return NextResponse.json({ ok: true, kind: "catering-order", ...updated });
+
+      // Si se marca como DELIVERED:
+      //  1. Enviar email de feedback al cliente
+      //  2. Notificar al chef por WhatsApp
+      if (status === "DELIVERED") {
+        const user = await prisma.user.findUnique({
+          where: { id: updated.userId },
+          select: { email: true, firstName: true, lastName: true },
+        });
+        if (user) {
+          sendFeedbackRequestEmail({
+            email: user.email,
+            firstName: user.firstName,
+            orderNumber: updated.orderNumber,
+            orderId: updated.id,
+            eventCity: updated.deliveryCity ?? undefined,
+          }).catch((err) => {
+            console.error("feedback email failed:", err);
+          });
+
+          const CHEF_PHONE = process.env.WHATSAPP_CHEF_PHONE || "573147905135";
+          notifyChefOrderDelivered({
+            chefPhone: CHEF_PHONE,
+            orderNumber: updated.orderNumber,
+            clientName: `${user.firstName} ${user.lastName}`.trim(),
+          }).catch(() => {});
+        }
+      }
+
+      return NextResponse.json({ ok: true, kind: "catering-order", id: updated.id, orderNumber: updated.orderNumber, status: updated.status });
     } catch (err) {
       if ((err as { code?: string }).code === "P2025") {
         // No era Order — intentar ShopOrder

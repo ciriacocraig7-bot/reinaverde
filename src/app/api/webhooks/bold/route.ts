@@ -4,6 +4,10 @@ import { mapBoldWebhookStatus } from "@/lib/bold/button";
 import { verifyBoldSignature } from "@/lib/bold/webhook";
 import { activateGuestUserAfterPayment } from "@/lib/auth/guest";
 import {
+  notifyChefNewCateringOrder,
+  notifyClientPaymentReceived,
+} from "@/lib/whatsapp/send";
+import {
   sendGuestActivationEmail,
   sendOrderPaidEmail,
   sendCateringQuotePaidEmail,
@@ -303,6 +307,42 @@ export async function POST(request: NextRequest) {
                   ? `shop-${shopBusinessLine}`
                   : "catering-generic",
             });
+
+            // ─── WhatsApp notificaciones ─────────────────────
+            // Obtener phone del user (si existe) para notificar cliente.
+            // Notificar chef siempre (phone fijo del negocio).
+            const CHEF_PHONE = process.env.WHATSAPP_CHEF_PHONE || "573147905135";
+            const userFull = await prisma.user.findUnique({
+              where: { id: userIdForEmail },
+              select: { phone: true, firstName: true, lastName: true },
+            });
+
+            if (quoteForEmail) {
+              // Catering → notificar chef
+              notifyChefNewCateringOrder({
+                chefPhone: CHEF_PHONE,
+                orderNumber: orderNumberForEmail ?? "",
+                clientName: `${userFull?.firstName ?? ""} ${userFull?.lastName ?? ""}`.trim(),
+                eventCity: quoteForEmail.eventCity,
+                eventDate: quoteForEmail.eventDate.toISOString().slice(0, 10),
+                guestCount: quoteForEmail.guestCount,
+                total: quoteForEmail.total,
+              }).catch(() => {});
+            }
+
+            // Notificar cliente si tiene teléfono
+            if (userFull?.phone) {
+              notifyClientPaymentReceived({
+                clientPhone: userFull.phone,
+                clientName: userFull.firstName,
+                orderNumber: orderNumberForEmail ?? "",
+                total: totalForEmail,
+                eventCity: quoteForEmail?.eventCity,
+                eventDate: quoteForEmail
+                  ? quoteForEmail.eventDate.toISOString().slice(0, 10)
+                  : undefined,
+              }).catch(() => {});
+            }
           }
         } catch (emailErr) {
           // No bloqueamos el webhook si el email falla — el pedido está
