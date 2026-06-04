@@ -225,3 +225,137 @@ export async function shoppingListForDate(date: Date) {
   to.setUTCDate(to.getUTCDate() + 1);
   return shoppingListForDateRange(from, to);
 }
+
+// ═══════════════════════════════════════════════════════════════
+// VERSIÓN CLIENT-SAFE — para que el cliente vea qué se compra para su evento.
+// SIN costos unitarios, SIN precios Jumbo, SIN proveedor, SIN deltas de margen.
+// Solo: nombre del insumo, cantidad total, unidad y categoría.
+// ═══════════════════════════════════════════════════════════════
+
+export interface PublicShoppingListItem {
+  name: string;
+  category: string;
+  unit: string;
+  totalQuantity: number;
+}
+
+export interface PublicShoppingListResult {
+  /** Items planos ordenados por categoría → nombre. */
+  items: PublicShoppingListItem[];
+  /** Agrupados por categoría para render directo. */
+  groupedByCategory: Record<string, PublicShoppingListItem[]>;
+  /** Metadata del evento. */
+  event: {
+    quoteNumber: string;
+    eventDate: string;
+    eventCity: string;
+    guestCount: number;
+  };
+}
+
+/**
+ * Genera el shopping list para una Quote del cliente (sin Order todavía).
+ * Lee Quote.itemsJson para expandir las recetas y agrupar ingredientes.
+ *
+ * Es la versión que se le entrega al cliente: NO contiene precios, NO contiene
+ * datos del proveedor, NO contiene comparativas con Jumbo. Solo "esto es lo
+ * que se va a comprar para tu evento".
+ */
+export async function shoppingListForQuote(
+  quoteId: string,
+): Promise<PublicShoppingListResult | null> {
+  const quote = await prisma.quote.findUnique({
+    where: { id: quoteId },
+    select: {
+      quoteNumber: true,
+      eventDate: true,
+      eventCity: true,
+      guestCount: true,
+      itemsJson: true,
+    },
+  });
+  if (!quote) return null;
+
+  // Quote.itemsJson tiene shape: [{ menuItemId, quantity, customizations? }, ...]
+  const items = quote.itemsJson as Array<{
+    menuItemId: string;
+    quantity: number;
+    customizations?: {
+      portionMultiplier?: number;
+      removedIngredientIds?: string[];
+    };
+  }>;
+  if (!Array.isArray(items) || items.length === 0) {
+    return {
+      items: [],
+      groupedByCategory: {},
+      event: {
+        quoteNumber: quote.quoteNumber,
+        eventDate: quote.eventDate.toISOString(),
+        eventCity: quote.eventCity,
+        guestCount: quote.guestCount,
+      },
+    };
+  }
+
+  // Cargar menu items con sus ingredientes
+  const menuItems = await prisma.menuItem.findMany({
+    where: { id: { in: items.map((i) => i.menuItemId) } },
+    include: { ingredients: { include: { ingredient: true } } },
+  });
+  const byId = new Map(menuItems.map((m) => [m.id, m]));
+
+  // Agregar por ingredientId (sin keeping costos)
+  const aggregated = new Map<string, PublicShoppingListItem>();
+  for (const it of items) {
+    const menu = byId.get(it.menuItemId);
+    if (!menu) continue;
+    const portion = it.customizations?.portionMultiplier ?? 1;
+    const removed = new Set(it.customizations?.removedIngredientIds ?? []);
+    for (const mi of menu.ingredients) {
+      const ing = mi.ingredient;
+      if (removed.has(ing.id)) continue;
+      const yieldPct = num(ing.yieldPercent) || 1;
+      const perPortion = (num(mi.quantity) * portion) / yieldPct;
+      const total = perPortion * it.quantity;
+      const existing = aggregated.get(ing.id);
+      if (existing) {
+        existing.totalQuantity += total;
+      } else {
+        aggregated.set(ing.id, {
+          name: ing.name,
+          category: ing.category ?? "Otro",
+          unit: ing.unit,
+          totalQuantity: total,
+        });
+      }
+    }
+  }
+
+  const list = [...aggregated.values()].map((x) => ({
+    ...x,
+    // Redondeo a 1 decimal para que el cliente no vea ruido tipo 47.853214 g.
+    totalQuantity: Math.round(x.totalQuantity * 10) / 10,
+  }));
+  list.sort((a, b) => {
+    if (a.category === b.category) return a.name.localeCompare(b.name, "es");
+    return a.category.localeCompare(b.category, "es");
+  });
+
+  const groupedByCategory: Record<string, PublicShoppingListItem[]> = {};
+  for (const it of list) {
+    if (!groupedByCategory[it.category]) groupedByCategory[it.category] = [];
+    groupedByCategory[it.category].push(it);
+  }
+
+  return {
+    items: list,
+    groupedByCategory,
+    event: {
+      quoteNumber: quote.quoteNumber,
+      eventDate: quote.eventDate.toISOString(),
+      eventCity: quote.eventCity,
+      guestCount: quote.guestCount,
+    },
+  };
+}

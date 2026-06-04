@@ -28,6 +28,7 @@ import { DateWithSeason } from "@/components/catering/date-with-season";
 import { LiveEventNarrative } from "@/components/catering/live-event-narrative";
 import { DramaticTotal } from "@/components/catering/dramatic-total";
 import { GuestCheckoutInline, guestIsValid } from "@/components/checkout/guest-checkout-inline";
+import { QuoteDocumentsPanel } from "@/components/catering/quote-documents-panel";
 import { useQuoteBuilder, type QuoteBuilderState } from "@/stores/quote-builder-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatCurrency } from "@/lib/utils";
@@ -1070,16 +1071,19 @@ function ChapterCierre({
         />
       </div>
 
-      <p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink/55">
-        ¿Necesita la cotización en PDF antes de pagar?{" "}
-        <Link
-          href={`/api/catering/quotes/${quoteId}/pdf`}
-          target="_blank"
-          className="text-marigold-deep underline underline-offset-4 hover:text-ink transition-colors"
-        >
-          Descargar cotización (PDF) →
-        </Link>
-      </p>
+      {/* Documentos descargables del cliente */}
+      {quoteId && (
+        <div className="pt-6 border-t border-ink/15">
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-marigold-deep mb-3">
+            § Documentos de su cotización
+          </p>
+          <p className="font-serif italic text-base text-ink/70 leading-snug mb-5 max-w-2xl">
+            Puede descargar la cotización formal o la lista de insumos que se
+            comprarán para su evento, incluso antes de confirmar el pago.
+          </p>
+          <QuoteDocumentsPanel quoteId={quoteId} quoteNumber={quoteNumber} />
+        </div>
+      )}
     </div>
   );
 }

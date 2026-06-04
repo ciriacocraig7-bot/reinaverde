@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { EditorialRule } from "@/components/marketing/editorial";
+import { QuoteDocumentsPanel } from "@/components/catering/quote-documents-panel";
 import { useQuoteBuilder } from "@/stores/quote-builder-store";
 
 function ConfirmacionInner() {
@@ -79,15 +80,21 @@ function ConfirmacionInner() {
             </ol>
           </div>
 
+          {/* Documentos descargables / imprimibles */}
+          {quoteId && (
+            <div className="mt-16">
+              <p className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-marigold-deep mb-3">
+                § Documentos de su evento
+              </p>
+              <p className="font-serif italic text-lg text-ink/70 leading-snug mb-6 max-w-2xl">
+                Descárguelos para sus archivos o imprímalos. La lista de compras
+                muestra exactamente qué insumos se compran para su evento.
+              </p>
+              <QuoteDocumentsPanel quoteId={quoteId} quoteNumber={quoteNumber} />
+            </div>
+          )}
+
           <div className="mt-12 flex flex-wrap gap-4">
-            {quoteId && (
-              <Link
-                href={`/api/catering/quotes/${quoteId}/pdf`}
-                className="inline-flex items-center h-12 px-7 bg-marigold text-ink font-sans text-[14px] tracking-tight rv-press hover:bg-cream"
-              >
-                Descargar cotización (PDF) →
-              </Link>
-            )}
             <Link
               href="/catering"
               className="inline-flex items-center h-12 px-7 border border-ink/40 text-ink font-sans text-[14px] tracking-tight hover:border-ink hover:bg-ink hover:text-cream transition-colors"
