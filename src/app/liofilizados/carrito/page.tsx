@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLiofilizadosCart } from "@/stores/shop-cart-store";
@@ -228,10 +229,14 @@ export default function LiofilizadosCarritoPage() {
                     <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-ink/50 w-10">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <div className="h-16 w-16 bg-cream-warm border border-ink/10 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-ink/40 text-2xl">
-                        {item.icon || "nutrition"}
-                      </span>
+                    <div className="relative h-16 w-16 bg-cream-warm border border-ink/10 flex items-center justify-center shrink-0 overflow-hidden">
+                      {item.image ? (
+                        <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
+                      ) : (
+                        <span className="material-symbols-outlined text-ink/40 text-2xl">
+                          {item.icon || "nutrition"}
+                        </span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-display text-xl text-ink leading-tight truncate">

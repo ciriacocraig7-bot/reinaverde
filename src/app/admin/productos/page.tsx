@@ -142,6 +142,38 @@ export default function ProductosPage() {
     load();
   };
 
+  const restoreOne = async (id: string) => {
+    const res = await fetch("/api/admin/products/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "resume", ids: [id] }),
+    });
+    const d = await res.json();
+    if (!res.ok) {
+      toast.error(d.error ?? "Error al restaurar");
+      return;
+    }
+    toast.success("Producto restaurado");
+    load();
+  };
+
+  const runMoveCategory = async (categoryId: string) => {
+    const ids = [...selected];
+    const res = await fetch("/api/admin/products/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "moveCategory", ids, payload: { categoryId } }),
+    });
+    const d = await res.json();
+    if (!res.ok) {
+      toast.error(d.error ?? "Error al mover");
+      return;
+    }
+    toast.success(`${d.affected} producto(s) movido(s) de categoría`);
+    clearSelection();
+    load();
+  };
+
   return (
     <>
       <DashHeader
@@ -339,12 +371,22 @@ export default function ProductosPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/productos/${p.id}/editar`}
-                      className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-marigold-deep hover:text-ink transition-colors"
-                    >
-                      Editar →
-                    </Link>
+                    <div className="flex flex-col items-end gap-1.5">
+                      {!p.isActive && (
+                        <button
+                          onClick={() => restoreOne(p.id)}
+                          className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-iris hover:text-ink transition-colors"
+                        >
+                          ↺ Restaurar
+                        </button>
+                      )}
+                      <Link
+                        href={`/admin/productos/${p.id}/editar`}
+                        className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-marigold-deep hover:text-ink transition-colors"
+                      >
+                        Editar →
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -374,9 +416,24 @@ export default function ProductosPage() {
           { key: "tag",        label: "+ Tag",      variant: "iris",      onRun: () => runTagBulk("tag") },
           { key: "untag",      label: "− Tag",      variant: "outline",   onRun: () => runTagBulk("untag") },
           { key: "delete",     label: "Eliminar",   variant: "danger",
-            confirm: `¿Pausar ${selected.size} producto(s)? Esto los oculta del catálogo.`,
+            confirm: `¿Eliminar ${selected.size} producto(s)? Se ocultan del catálogo. No se borran de la base — puedes restaurarlos filtrando por "Pausados".`,
             onRun: () => runBulk("delete") },
         ]}
+        selects={
+          filteredCategories.length > 0
+            ? [
+                {
+                  key: "moveCategory",
+                  label: "Mover a categoría…",
+                  options: filteredCategories.map((c) => ({
+                    value: c.id,
+                    label: `${c.businessLine} · ${c.name}`,
+                  })),
+                  onSelect: runMoveCategory,
+                },
+              ]
+            : undefined
+        }
       />
     </>
   );

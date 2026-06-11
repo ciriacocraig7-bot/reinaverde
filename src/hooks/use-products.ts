@@ -9,6 +9,7 @@ export interface ProductData {
   description?: string | null;
   shortDesc?: string | null;
   image?: string | null;
+  images?: string[] | null;
   icon?: string | null;
   price: number;
   comparePrice?: number | null;

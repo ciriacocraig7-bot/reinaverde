@@ -42,6 +42,7 @@ export default function LiofilizadosCatalogoPage() {
     addItem({
       productId: p.id,
       name: p.name,
+      image: p.image || p.images?.[0] || imageForLiofilizados(p.slug) || undefined,
       icon: p.icon || "nutrition",
       unitPrice: p.price,
       quantity: 1,
@@ -103,7 +104,9 @@ export default function LiofilizadosCatalogoPage() {
       {/* Product grid — editorial cards */}
       <section className="max-w-[1400px] mx-auto px-6 sm:px-10 mt-12">
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 border-t border-l border-ink/15">
-          {filtered.map((p, i) => (
+          {filtered.map((p, i) => {
+            const img = p.image || p.images?.[0] || imageForLiofilizados(p.slug);
+            return (
             <article
               key={p.id}
               className="group p-7 border-r border-b border-ink/15 flex flex-col bg-cream hover:bg-persimmon/[0.04] transition-colors"
@@ -121,9 +124,9 @@ export default function LiofilizadosCatalogoPage() {
 
               {/* product photograph */}
               <div className="relative h-44 mb-6 bg-cream-warm border border-ink/10 overflow-hidden">
-                {imageForLiofilizados(p.slug) ? (
+                {img ? (
                   <Image
-                    src={imageForLiofilizados(p.slug)!}
+                    src={img}
                     alt={p.name}
                     fill
                     sizes="(max-width: 1024px) 50vw, 25vw"
@@ -159,7 +162,8 @@ export default function LiofilizadosCatalogoPage() {
                 </button>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </section>
 
